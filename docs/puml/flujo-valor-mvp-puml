@@ -1,0 +1,38 @@
+@startuml
+title Flujo de valor principal del MVP — Restaurant System / Fratelli
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultTextAlignment center
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+
+start
+
+:Usuario se autentica;
+
+:Registra o inicia un pedido;
+
+:Selecciona platos y/o productos;
+
+:Genera la comanda;
+
+:Cocina recibe la información del pedido;
+
+:Se prepara y completa el pedido;
+
+:Se registra la venta y el medio de pago;
+
+:Se actualizan los movimientos\nde inventario correspondientes;
+
+:La operación queda asociada\nal turno activo;
+
+:Se registran otros movimientos\ndel turno cuando correspondan;
+
+:Se realiza el cierre\nde turno / caja;
+
+:Se consulta el reporte\nde ventas;
+
+stop
+
+@enduml
