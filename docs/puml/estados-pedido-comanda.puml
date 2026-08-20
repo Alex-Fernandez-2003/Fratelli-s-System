@@ -1,0 +1,51 @@
+@startuml
+title Estados de pedido y comanda — Restaurant System / Fratelli
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+
+state "PEDIDO" as Pedido {
+    [*] --> PENDIENTE
+
+    PENDIENTE --> EN_PREPARACION : iniciar preparación
+    EN_PREPARACION --> LISTO : completar preparación
+    LISTO --> ENTREGADO : entregar pedido
+
+    PENDIENTE --> CANCELADO : cancelar
+    EN_PREPARACION --> CANCELADO : cancelar
+
+    ENTREGADO --> [*]
+    CANCELADO --> [*]
+}
+
+state "COMANDA" as Comanda {
+    [*] --> C_PENDIENTE
+
+    state "PENDIENTE" as C_PENDIENTE
+    state "EN_PREPARACION" as C_EN_PREPARACION
+    state "LISTA" as C_LISTA
+    state "CANCELADA" as C_CANCELADA
+
+    C_PENDIENTE --> C_EN_PREPARACION : iniciar preparación
+    C_EN_PREPARACION --> C_LISTA : completar preparación
+
+    C_PENDIENTE --> C_CANCELADA : cancelar
+    C_EN_PREPARACION --> C_CANCELADA : cancelar
+
+    C_LISTA --> [*]
+    C_CANCELADA --> [*]
+}
+
+note bottom of Pedido
+La cancelación ordinaria solo se permite
+antes de que el pedido alcance LISTO.
+end note
+
+note bottom of Comanda
+La cancelación ordinaria solo se permite
+antes de que la comanda alcance LISTA.
+end note
+
+@enduml
