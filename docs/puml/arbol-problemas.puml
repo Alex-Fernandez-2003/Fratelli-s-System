@@ -1,0 +1,99 @@
+@startuml
+title Árbol de problemas — Restaurant System / Fratelli
+
+top to bottom direction
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultTextAlignment center
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor #555555
+    FontColor #222222
+}
+
+' =========================================================
+' CAUSAS
+' =========================================================
+
+rectangle "Registro manual de\nentradas y salidas\ndel personal" as C1
+
+rectangle "Producción registrada\nen hojas y posteriormente\ntranscrita al sistema" as C2
+
+rectangle "Compras gestionadas\nmediante listas, recibos\ny medios externos" as C3
+
+rectangle "Gastos diarios y\ncaja chica registrados\nmanualmente" as C4
+
+rectangle "Información de proveedores\ny pagos distribuida entre\nrecibos y WhatsApp" as C5
+
+rectangle "Ausencia de alertas\nautomáticas de\nstock bajo" as C6
+
+rectangle "Acceso limitado a\ndeterminados reportes" as C7
+
+
+' =========================================================
+' PROBLEMA CENTRAL
+' =========================================================
+
+rectangle "PROBLEMA CENTRAL\n\nFragmentación y descoordinación\nde información entre los procesos\ndigitales y los registros manuales\nde Fratelli" as P
+
+
+' =========================================================
+' EFECTOS
+' =========================================================
+
+rectangle "Diferencias entre\ninventario registrado\ny operación real" as E1
+
+rectangle "Faltantes frecuentes\nde productos o\ningredientes" as E2
+
+rectangle "Sobrantes de\ndeterminados productos" as E3
+
+rectangle "Trabajo adicional y\ndificultades en el uso de\ninformación para pagos" as E4
+
+rectangle "Dependencia de revisiones\nperiódicas para detectar\nexistencias bajas" as E5
+
+rectangle "Información de compras\ndistribuida entre\nvarios medios" as E6
+
+rectangle "Gastos diarios fuera\ndel sistema principal" as E7
+
+rectangle "Dependencia de otros\nusuarios para acceder a\ndeterminados reportes" as E8
+
+
+' =========================================================
+' RELACIONES CAUSA -> PROBLEMA
+' =========================================================
+
+C1 --> P
+C2 --> P
+C3 --> P
+C4 --> P
+C5 --> P
+C6 --> P
+C7 --> P
+
+
+' =========================================================
+' RELACIONES PROBLEMA -> EFECTOS
+' =========================================================
+
+P --> E1
+P --> E2
+P --> E3
+P --> E4
+P --> E5
+P --> E6
+P --> E7
+P --> E8
+
+
+legend bottom
+  |= Nivel |= Significado |
+  | Causas | Situaciones identificadas que contribuyen al problema |
+  | Problema central | Situación principal que se pretende abordar |
+  | Efectos | Consecuencias sustentadas por el relevamiento |
+endlegend
+
+@enduml

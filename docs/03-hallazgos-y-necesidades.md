@@ -1690,41 +1690,70 @@ Adicionalmente, el negocio ha decidido reemplazar el sistema actual, por lo que 
 
 ---
 
-# 16. Mapa del problema
+# 16. Árbol de problemas
+
+A partir de los hallazgos consolidados durante el relevamiento, se construye el siguiente árbol de problemas para representar de forma visual la relación entre las principales causas identificadas, el problema central del proyecto y sus efectos observados.
+
+El árbol se basa exclusivamente en la evidencia obtenida mediante el documento descriptivo inicial y la entrevista `ENT-01`. No se incorporan impactos económicos, porcentajes ni consecuencias que no hayan sido sustentadas por el relevamiento.
+
+![Árbol de problemas de Fratelli](images/arbol-problemas.png)
+
+> **Fuente editable:** [`puml/arbol-problemas.puml`](puml/arbol-problemas.puml)
 
 ## 16.1. Problema central
 
+> **Fragmentación y descoordinación de información entre los procesos digitales y los registros manuales utilizados actualmente por Fratelli.**
+
+El problema central no implica que el restaurante carezca de un sistema. Fratelli ya cuenta con una plataforma que cubre varias funciones importantes; la dificultad aparece porque determinados procesos continúan dependiendo de planillas, hojas de producción, cuadernos, recibos, Excel y WhatsApp, provocando que la información se encuentre distribuida o deba ser transferida manualmente entre distintos medios.
+
+## 16.2. Causas principales
+
+Las principales causas sustentadas por el relevamiento son:
+
+- registro manual de entradas y salidas del personal;
+- registro manual de producción seguido de una transcripción posterior al sistema;
+- compras gestionadas mediante listas, recibos y medios externos;
+- gastos diarios y caja chica registrados manualmente;
+- información de proveedores y pagos distribuida entre recibos y WhatsApp;
+- ausencia de alertas automáticas para existencias bajas;
+- configuración de acceso que obliga a determinados usuarios a depender de otros para obtener algunos reportes.
+
+Estas causas se encuentran relacionadas con los hallazgos `H-001`, `H-003`, `H-005`, `H-007`, `H-009`, `H-010` y `H-011`.
+
+## 16.3. Efectos observados
+
+La evidencia permite identificar como efectos:
+
+- diferencias entre el inventario registrado y las cantidades manejadas durante la operación;
+- faltantes frecuentes de determinados productos o ingredientes;
+- existencia de sobrantes;
+- trabajo adicional y posibilidad de dificultades al utilizar registros manuales de asistencia para calcular pagos;
+- dependencia de revisiones periódicas para identificar existencias bajas;
+- información de compras distribuida entre varios medios;
+- gastos diarios que permanecen fuera del sistema principal;
+- dependencia de intermediarios para acceder a determinados reportes.
+
+Estos efectos se relacionan principalmente con los hallazgos `H-002`, `H-004`, `H-006`, `H-007`, `H-009`, `H-010` y `H-011`.
+
+## 16.4. Lectura del árbol
+
+La relación general puede resumirse de la siguiente manera:
+
 ```text
+Procesos manuales y externos
++
+Doble registro o transferencia de información
++
+Falta de mecanismos de control y acceso
+                    ↓
 Fragmentación y descoordinación de información
-entre procesos digitales y manuales
+                    ↓
+Diferencias de inventario
+Faltantes y sobrantes
+Trabajo administrativo adicional
+Información distribuida
+Dependencia de revisiones e intermediarios
 ```
-
-## 16.2. Causas directas sustentadas
-
-```text
-├── Registro manual de asistencia
-├── Producción anotada en hojas y transcrita después
-├── Compras gestionadas fuera del sistema
-├── Gastos diarios registrados en cuadernos
-├── Información de proveedores distribuida en recibos/WhatsApp
-├── Falta de alertas de stock bajo
-└── Permisos insuficientes para determinados reportes
-```
-
-## 16.3. Efectos sustentados
-
-```text
-├── Diferencias de inventario
-├── Faltantes frecuentes
-├── Sobrantes
-├── Trabajo adicional para calcular pagos
-├── Dependencia de revisión periódica de stock
-├── Información de compras dispersa
-├── Gastos fuera del sistema
-└── Dependencia de intermediarios para reportes
-```
-
-No se agregan efectos económicos o métricas que no hayan sido demostrados.
 
 ---
 
