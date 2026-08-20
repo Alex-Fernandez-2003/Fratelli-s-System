@@ -31,7 +31,7 @@ El proyecto será desarrollado por un equipo de **cuatro estudiantes**.
 1. **Alex Saúl Fernandez Valdez**
 2. **Ana Paola Viscarra Chambi**
 3. **Miguel Angel Colque Calizaya**
-4. **Pendiente de registrar**
+4. **Josué Matias Arroyo Reynoso**
 
 ---
 
@@ -86,7 +86,7 @@ Integrantes registrados:
 - Alex Saúl Fernandez Valdez.
 - Ana Paola Viscarra Chambi.
 - Miguel Angel Colque Calizaya.
-- Cuarto integrante pendiente de registrar.
+- Josué Matias Arroyo Reynoso.
 
 La distribución interna de responsabilidades técnicas podrá evolucionar durante el proyecto y no se fija todavía como una división rígida por frontend, backend, base de datos u otras áreas.
 
@@ -114,7 +114,7 @@ Durante esta etapa se buscará:
 
 ## 6. Evidencia inicial disponible
 
-Actualmente se dispone de evidencia proveniente directamente de una persona con experiencia en el funcionamiento del restaurante.
+Actualmente se dispone de evidencia documental y de una entrevista formal realizada a Ana Paola Viscarra Chambi, trabajadora actual de Fratelli y Product Owner del proyecto.
 
 ### Evidencia documental
 
@@ -124,7 +124,7 @@ Ubicación:
 
 ```text
 docs/evidence/relevamiento/entrevista-01-trabajadora/
-└── detalle-manera-trabajo.pdf
+└── detalle-de-la-manera-de-trabajo.pdf
 ```
 
 ### Evidencia de audio
@@ -133,7 +133,7 @@ Ubicación:
 
 ```text
 docs/evidence/relevamiento/entrevista-01-trabajadora/
-└── entrevista-audio.<formato>
+└── entrevista-1-audio.mp3
 ```
 
 ### Transcripción
@@ -144,6 +144,8 @@ Ubicación:
 docs/evidence/relevamiento/entrevista-01-trabajadora/
 └── transcripcion.md
 ```
+
+La entrevista fue realizada mediante discord el **19 de agosto de 2026** por **Josué Matias Arroyo Reynoso** y quedó registrada en audio y transcripción.
 
 Los archivos originales de evidencia no deberán modificarse. Los análisis, interpretaciones, hallazgos y necesidades derivados de ellos se documentarán por separado.
 
@@ -238,37 +240,37 @@ Los documentos de síntesis deberán referenciar estas fuentes y evitar duplicar
 
 ## 10. Estado inicial del proyecto
 
-| Elemento                     | Estado                     |
-| ---------------------------- | -------------------------- |
-| Organización objetivo        | Confirmada                 |
-| Product Owner                | Definido                   |
-| Equipo de desarrollo         | Equipo de 4                |
-| Repositorio                  | Definido                   |
-| Metodología                  | Scrum                      |
-| Evidencia documental inicial | Disponible                 |
-| Audio de relevamiento        | Disponible                 |
-| Contexto del negocio         | Parcialmente conocido      |
-| Problema central             | Pendiente de validar       |
-| Necesidades consolidadas     | Pendientes                 |
-| Objetivos                    | Pendientes                 |
-| Alcance                      | Pendiente                  |
-| MVP                          | Pendiente                  |
-| SRS                          | Pendiente                  |
-| Product Backlog              | Pendiente                  |
-| Historias de usuario         | Pendientes                 |
-| Arquitectura                 | Pendiente                  |
-| Stack tecnológico            | Pendiente de decisión      |
-| Modelo de datos              | Pendiente                  |
-| Primer Sprint                | Pendiente de planificación |
+| Elemento                     | Estado                                                      |
+| ---------------------------- | ----------------------------------------------------------- |
+| Organización objetivo        | Confirmada                                                  |
+| Product Owner                | Definido                                                    |
+| Equipo de desarrollo         | Equipo de 4                                                 |
+| Repositorio                  | Definido                                                    |
+| Metodología                  | Scrum                                                       |
+| Evidencia documental inicial | Disponible                                                  |
+| Audio de relevamiento        | Disponible                                                  |
+| Contexto del negocio         | Relevamiento inicial completado                             |
+| Problema central             | Diagnóstico listo para consolidar en hallazgos              |
+| Necesidades consolidadas     | Pendientes de formalizar en `03-hallazgos-y-necesidades.md` |
+| Objetivos                    | Pendientes                                                  |
+| Alcance                      | Pendiente                                                   |
+| MVP                          | Pendiente                                                   |
+| SRS                          | Pendiente                                                   |
+| Product Backlog              | Pendiente                                                   |
+| Historias de usuario         | Pendientes                                                  |
+| Arquitectura                 | Pendiente                                                   |
+| Stack tecnológico            | Pendiente de decisión                                       |
+| Modelo de datos              | Pendiente                                                   |
+| Primer Sprint                | Pendiente de planificación                                  |
 
 ---
 
 ## 11. Control documental
 
-| Campo            | Valor                             |
-| ---------------- | --------------------------------- |
-| Documento        | `00-ficha-proyecto.md`            |
-| Versión inicial  | `0.1`                             |
-| Estado           | Borrador inicial                  |
-| Fecha            | 19 de agosto de 2026              |
-| Próxima revisión | Antes de iniciar el primer Sprint |
+| Campo                | Valor                                       |
+| -------------------- | ------------------------------------------- |
+| Documento            | `00-ficha-proyecto.md`                      |
+| Versión actual       | `0.2`                                       |
+| Estado               | Ficha actualizada tras relevamiento inicial |
+| Última actualización | 20 de agosto de 2026                        |
+| Próxima revisión     | Antes de iniciar Sprint 0                   |
