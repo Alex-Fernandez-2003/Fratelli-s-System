@@ -7,8 +7,8 @@
 | **Proyecto**               | Restaurant System                                           |
 | **Organización**           | Restaurante Fratelli                                        |
 | **Fecha**                  | 19 de agosto de 2026                                        |
-| **Modalidad**              | Presencial                                                  |
-| **Entrevistador (E)**      | Miguel Angel Colque Calizaya                                |
+| **Modalidad**              | Virtual (Discord)                                           |
+| **Entrevistador (E)**      | Josué Matias Arroyo Reynoso                                 |
 | **Entrevistada (A)**       | Ana Paola Viscarra Chambi                                   |
 | **Rol de la entrevistada** | Trabajadora actual de Fratelli y Product Owner del proyecto |
 | **Registro original**      | `entrevista-1-audio.mp3`                                    |

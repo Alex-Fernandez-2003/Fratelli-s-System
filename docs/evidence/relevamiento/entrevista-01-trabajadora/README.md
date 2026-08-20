@@ -2,19 +2,19 @@
 
 ## Identificación
 
-| Campo | Valor |
-|---|---|
-| **Código de sesión** | `ENT-01` |
-| **Proyecto** | Restaurant System |
-| **Organización** | Restaurante Fratelli |
-| **Fecha de entrevista** | 19 de agosto de 2026 |
-| **Modalidad** | Presencial |
-| **Entrevistador** | Miguel Angel Colque Calizaya |
-| **Entrevistada** | Ana Paola Viscarra Chambi |
-| **Rol relevante** | Trabajadora actual de Fratelli y Product Owner |
-| **Duración del audio** | Aproximadamente 23 min 11 s |
-| **Técnica** | Entrevista semiestructurada |
-| **Estado** | Completada y transcrita |
+| Campo                   | Valor                                          |
+| ----------------------- | ---------------------------------------------- |
+| **Código de sesión**    | `ENT-01`                                       |
+| **Proyecto**            | Restaurant System                              |
+| **Organización**        | Restaurante Fratelli                           |
+| **Fecha de entrevista** | 19 de agosto de 2026                           |
+| **Modalidad**           | Virtual (Discord)                              |
+| **Entrevistador**       | Josué Matias Arroyo Reynoso                    |
+| **Entrevistada**        | Ana Paola Viscarra Chambi                      |
+| **Rol relevante**       | Trabajadora actual de Fratelli y Product Owner |
+| **Duración del audio**  | Aproximadamente 23 min 11 s                    |
+| **Técnica**             | Entrevista semiestructurada                    |
+| **Estado**              | Completada y transcrita                        |
 
 ## Archivos de evidencia
 
