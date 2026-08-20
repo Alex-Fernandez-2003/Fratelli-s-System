@@ -1,0 +1,96 @@
+@startuml
+title Árbol de soluciones — Restaurant System / Fratelli
+
+top to bottom direction
+
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultTextAlignment center
+skinparam ArrowColor #555555
+skinparam ArrowThickness 1.5
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor #555555
+    FontColor #222222
+}
+
+' =========================================================
+' MEDIOS
+' =========================================================
+
+rectangle "Registro central y confiable\nde entradas y salidas\ndel personal" as M1
+
+rectangle "Registro más directo de\nproducción, reduciendo la\ndoble captura de información" as M2
+
+rectangle "Información de compras\ncentralizada en una\nfuente digital" as M3
+
+rectangle "Gastos diarios y caja chica\nregistrados en una\nfuente central" as M4
+
+rectangle "Información de proveedores\ny pagos organizada\nde forma centralizada" as M5
+
+rectangle "Detección oportuna\nde existencias bajas" as M6
+
+rectangle "Acceso directo a reportes\nsegún autorización\ndel usuario" as M7
+
+
+' =========================================================
+' SOLUCIÓN CENTRAL
+' =========================================================
+
+rectangle "SOLUCIÓN CENTRAL\n\nGestión centralizada y coordinada\nde la información operativa y\nadministrativa de Fratelli mediante\nun sistema independiente con\ncontinuidad funcional" as S
+
+
+' =========================================================
+' BENEFICIOS ESPERADOS
+' =========================================================
+
+rectangle "Mayor consistencia entre\ninventario registrado\ny operación" as B1
+
+rectangle "Mayor anticipación\nante posibles faltantes" as B2
+
+rectangle "Información de asistencia\nmás confiable para procesos\nadministrativos" as B3
+
+rectangle "Menor dependencia de\ntranscripciones manuales" as B4
+
+rectangle "Información de compras\ny proveedores más\naccesible" as B5
+
+rectangle "Gastos diarios integrados\na una fuente central" as B6
+
+rectangle "Acceso más directo\na información y reportes\nautorizados" as B7
+
+
+' =========================================================
+' RELACIONES MEDIOS -> SOLUCIÓN
+' =========================================================
+
+M1 --> S
+M2 --> S
+M3 --> S
+M4 --> S
+M5 --> S
+M6 --> S
+M7 --> S
+
+
+' =========================================================
+' RELACIONES SOLUCIÓN -> BENEFICIOS
+' =========================================================
+
+S --> B1
+S --> B2
+S --> B3
+S --> B4
+S --> B5
+S --> B6
+S --> B7
+
+
+legend bottom
+  |= Nivel |= Significado |
+  | Medios | Cambios conceptuales derivados de las causas identificadas |
+  | Solución central | Estado positivo que se pretende alcanzar |
+  | Beneficios esperados | Resultados que deberán validarse durante el proyecto |
+endlegend
+
+@enduml
