@@ -56,9 +56,9 @@ docs/requirements/
 | **Documento**             | `06-srs.md`                  |
 | **Proyecto**              | Restaurant System            |
 | **Organización objetivo** | Restaurante Fratelli         |
-| **Versión inicial**       | `0.1`                        |
-| **Estado**                | SRS inicial                  |
-| **Fecha**                 | 20 de agosto de 2026         |
+| **Versión actual**        | `0.2`                        |
+| **Estado**                | SRS revalidada y refinada    |
+| **Fecha**                 | 21 de agosto de 2026         |
 | **Product Owner**         | Ana Paola Viscarra Chambi    |
 | **Scrum Master**          | Alex Saúl Fernandez Valdez   |
 | **Baseline de alcance**   | `05-alcance-y-mvp.md`        |
@@ -84,7 +84,7 @@ El MVP aprobado cubrirá:
 - stock mínimo;
 - alertas de stock bajo;
 - producción;
-- lotes de producción;
+- registros de producción y existencias preparadas;
 - pedidos;
 - comandas;
 - ventas;
@@ -157,19 +157,23 @@ Relación entre un plato o preparación y los ingredientes necesarios para produ
 
 No se considera todavía una receta culinaria detallada; representa la información mínima requerida para controlar consumo de ingredientes.
 
-## 5.7. Lote de producción
+## 5.7. Registro de producción y existencia preparada
 
-Registro que representa una cantidad producida de un plato o preparación en una operación determinada.
+Un **registro de producción** representa un evento en el que se obtiene una cantidad final de una preparación y conserva, como mínimo, fecha, cantidad y responsable.
 
-El lote permite mantener separados:
+La **existencia preparada** representa la cantidad total disponible para venta de esa preparación después de sumar producciones y restar salidas.
+
+La baseline del MVP no requiere seleccionar lotes independientes cuando una misma preparación se produce varias veces:
 
 ```text
 Inventario de ingredientes
-        ↓ producción
-Lotes de platos/preparaciones
+        ↓ producción confirmada
+Registro de producción + aumento de existencia preparada
         ↓ venta
-Salida del producto preparado
+Disminución de existencia preparada
 ```
+
+Cada evento de producción permanece trazable aunque la disponibilidad se consolide.
 
 ## 5.8. Stock mínimo
 
@@ -265,7 +269,7 @@ Rol orientado principalmente a:
 - recepción/consulta de comandas;
 - estados de preparación;
 - producción;
-- lotes;
+- existencias preparadas;
 - consultas de insumos cuando corresponda;
 - compras relacionadas con cocina según permisos;
 - asistencia.
@@ -454,9 +458,9 @@ Esto permite reflejar la operación real aunque el reabastecimiento sea realizad
 
 ---
 
-# 11. Producción y lotes
+# 11. Producción y existencias preparadas
 
-## 11.1. Separación entre ingredientes y platos
+## 11.1. Separación entre ingredientes y preparaciones
 
 El MVP mantendrá separados:
 
@@ -466,40 +470,57 @@ Ingredientes
 Platos / preparaciones producidas
 ```
 
-Los ingredientes representan insumos.
+Los ingredientes representan insumos. Las preparaciones producidas mantienen una disponibilidad propia para evitar consumir dos veces los mismos ingredientes.
 
-Los platos o preparaciones producidas podrán ser representados mediante lotes.
+## 11.2. Composición y unidades
 
-## 11.2. Confirmación de producción
+La composición indicará ingrediente, cantidad y unidad aplicable.
+
+La evidencia de ENT-02 confirma al menos un caso de conversión real:
+
+```text
+carne comprada en kg
+→ utilizada/registrada en g
+```
+
+Los líquidos pueden manejarse en litros. El sistema soportará las conversiones necesarias entre unidades compatibles cuando el flujo real lo requiera; no se crearán conversiones arbitrarias sin un caso de negocio.
+
+## 11.3. Confirmación de producción
 
 Al confirmar una producción:
 
-1. se registra la producción;
-2. se registra el responsable;
-3. se consumen los ingredientes correspondientes según la composición definida;
-4. se genera o registra el lote del plato/preparación producido;
-5. se registra la cantidad obtenida.
+1. se registra la preparación;
+2. se registra **la cantidad final obtenida**;
+3. se registra fecha/hora y responsable;
+4. se consumen los ingredientes correspondientes según la composición y conversiones aplicables;
+5. se incrementa la existencia preparada disponible.
 
-## 11.3. Venta de elementos preparados
+Fratelli no requiere para el MVP registrar una cantidad esperada o fórmula formal de rendimiento.
 
-Cuando un elemento administrado mediante lote sea vendido, la salida deberá afectar el lote o existencia vendible correspondiente.
+## 11.4. Producciones repetidas
 
-No se deberá descontar nuevamente del inventario de ingredientes aquello que ya fue consumido durante la producción.
+Si la misma preparación se produce más de una vez, el MVP podrá sumar las cantidades a la disponibilidad total.
 
-## 11.4. Detalles pendientes
+No es necesario seleccionar una tanda/lote específico durante la venta. Sin embargo, cada evento de producción conservará su trazabilidad individual.
 
-Todavía deben precisarse:
+## 11.5. Bajas, mermas y desperdicios
 
-- unidades;
-- conversiones;
-- rendimiento de producción;
-- mermas;
-- desperdicios;
-- comportamiento de lotes agotados;
-- selección del lote cuando existan varios lotes disponibles;
-- fechas de elaboración o vencimiento si fueran necesarias.
+Una pérdida o baja relevante se registrará como **salida separada de inventario con motivo**.
 
-Estas reglas deberán aclararse antes de declarar Ready las historias que dependan de ellas.
+No se incorporará silenciosamente dentro del consumo normal de producción.
+
+## 11.6. Venta de elementos preparados
+
+Cuando se venda una preparación previamente producida:
+
+- disminuirá su existencia preparada;
+- no se volverán a consumir los ingredientes que ya fueron descontados durante producción.
+
+## 11.7. Vencimiento
+
+La operación actual no utiliza una fecha exacta de vencimiento en el sistema para estas preparaciones; Cocina conoce qué debe utilizar primero.
+
+El control formal de vencimientos/lotes no es requisito del MVP y podrá evaluarse posteriormente si aparece una necesidad validada.
 
 ---
 
@@ -608,19 +629,28 @@ RECIBIDA
 CANCELADA
 ```
 
-## 14.2. Afectación de inventario
+## 14.2. Responsabilidades de compra
 
-Una compra únicamente incrementará las existencias cuando haya sido marcada como:
+Como baseline del MVP:
+
+- `COCINA` puede realizar directamente compras de ingredientes para preparaciones y conserva respaldo mediante recibo para el pago;
+- `ENCARGADO` gestiona principalmente bebidas, limpieza y otros insumos generales;
+- `ADMINISTRADOR` mantiene facultades generales de gestión;
+- un mismo usuario puede acumular roles y, por tanto, responsabilidades.
+
+## 14.3. Afectación de inventario
+
+Una compra únicamente incrementará las existencias cuando haya sido verificada y marcada como:
 
 ```text
 RECIBIDA
 ```
 
-Una compra `PENDIENTE` no incrementará stock.
+Una compra `PENDIENTE` o `CANCELADA` no incrementará stock.
 
-Una compra `CANCELADA` no incrementará stock.
+Para productos de cocina, la verificación puede requerir pesar y/o porcionar antes de registrar la entrada de inventario. Para otros productos, como bebidas, la entrada puede registrarse inmediatamente después de verificar la recepción.
 
-## 14.3. Información mínima
+## 14.4. Información mínima
 
 La compra deberá contemplar:
 
@@ -632,19 +662,27 @@ La compra deberá contemplar:
 - total;
 - responsable;
 - estado;
-- recepción.
+- respaldo cuando corresponda;
+- recepción/verificación.
 
-## 14.4. Reglas avanzadas pendientes
+## 14.5. Compra incompleta o no aceptada
 
-Quedan pendientes:
+Si una compra llega incompleta o no puede aceptarse, se coordina con el proveedor y se realiza la devolución correspondiente. El caso ocurre de forma ocasional.
+
+La compra no se tratará como `RECIBIDA` mientras el flujo básico no haya sido aceptado.
+
+La recepción parcial/rechazo parcial estructurado queda fuera de la baseline del MVP, salvo cambio de alcance posterior.
+
+## 14.6. Reglas avanzadas fuera de esta baseline
+
+No forman parte del MVP básico:
 
 - pagos parciales;
-- vencimientos;
+- vencimientos de deuda;
 - crédito de proveedor;
 - cuotas;
-- recepción parcial;
-- rechazo parcial;
-- conciliación contable.
+- conciliación contable avanzada;
+- automatización de pagos.
 
 ---
 
@@ -702,40 +740,53 @@ El biométrico no modifica la regla de negocio de asistencia; únicamente sería
 
 # 17. Turnos y cierre de caja
 
-## 17.1. Información incluida inicialmente
+## 17.1. Estructura operativa confirmada
 
-Cada turno deberá poder relacionar:
+Fratelli trabaja con **dos turnos**, pero ambos utilizan **la misma caja** y se registra **un único cierre final**.
 
-- ventas;
-- efectivo;
-- QR;
+Las personas conocen el turno al que fueron asignadas y comienzan a operar sin requerir dos cajas independientes.
+
+## 17.2. Continuidad entre turnos
+
+El encargado deja un monto inicial/fondo que sirve como punto de partida para el turno siguiente.
+
+El turno de la mañana deja registrado el estado de la caja para que el siguiente turno pueda verificar la continuidad. La evidencia de ENT-02 menciona, según corresponda, **efectivo, QR, crédito y PedidosYa**.
+
+La referencia a crédito se conserva como descripción del proceso actual, pero **no se transforma en una capacidad del MVP**: las ventas a crédito y cuentas por cobrar permanecen fuera de alcance. Para esta entrega, el sistema no deberá generar ni administrar saldos de crédito como parte del cierre.
+
+Esta transferencia de información no equivale a un cierre independiente del primer turno.
+
+## 17.3. Información para el cierre
+
+El sistema deberá disponer de información suficiente para presentar el cierre operativo, diferenciando al menos:
+
+- monto inicial/fondo;
+- ventas en efectivo;
+- ventas por QR;
 - otros medios registrados;
-- gastos asociados;
-- usuario o usuarios correspondientes;
-- cierre.
+- gastos;
+- caja chica como fondo/movimiento separado cuando corresponda;
+- PedidosYa como canal/control separado;
+- efectivo esperado y efectivo declarado/real cuando se disponga del dato;
+- diferencia y observación cuando exista discrepancia.
 
-## 17.2. Cálculo base
+PedidosYa no se mezcla automáticamente con efectivo o QR porque su dinero no ingresa de la misma forma a caja. Esto **no implica una integración técnica con PedidosYa**.
 
-El sistema deberá disponer de información suficiente para obtener el **total esperado** del turno según las operaciones registradas.
+## 17.4. Diferencias
 
-## 17.3. Registro de cierre
+Si el dinero disponible no coincide con lo esperado, deberá poder conservarse una observación y trazabilidad suficiente para contrastar la diferencia con el turno anterior.
 
-Un usuario autorizado podrá registrar el cierre correspondiente.
+El MVP no inventará procedimientos contables adicionales.
 
-## 17.4. Reglas todavía pendientes
+## 17.5. Registro y revisión del cierre
 
-Antes de implementar el flujo definitivo deberán confirmarse:
+El `ENCARGADO` realiza operativamente el cierre.
 
-- monto inicial de caja;
-- tratamiento de diferencias;
-- sobrantes;
-- faltantes;
-- reglas exactas del cierre total entre ambos turnos;
-- tratamiento exacto de PedidosYa dentro del cierre.
+El `ADMINISTRADOR` conserva permiso de cierre por la matriz aprobada.
 
-Estas reglas deberán obtenerse mediante una consulta puntual canalizada por la Product Owner.
+La `CONTADORA` puede revisar posteriormente la información, pero su aprobación no es necesaria para que el cierre quede registrado.
 
-No se inventarán valores ni reglas faltantes.
+Un usuario que posea varios roles obtiene la unión de sus permisos; por ello, un MESERO que también posea `ENCARGADO` puede cerrar por este último rol.
 
 ---
 
@@ -803,8 +854,8 @@ docs/requirements/requisitos-funcionales.md
 | `RF-020` | Advertir stock insuficiente sin bloquear la venta |
 | `RF-021` | Registrar producción                              |
 | `RF-022` | Consumir ingredientes al confirmar producción     |
-| `RF-023` | Registrar lote producido                          |
-| `RF-024` | Consultar lotes/producciones                      |
+| `RF-023` | Actualizar existencia preparada al confirmar producción     |
+| `RF-024` | Consultar registros de producción                           |
 | `RF-025` | Registrar pedido                                  |
 | `RF-026` | Gestionar estado del pedido                       |
 | `RF-027` | Cancelar pedido antes de estado listo             |
@@ -834,7 +885,7 @@ docs/requirements/requisitos-funcionales.md
 | `RF-051` | Consultar asistencia administrativamente          |
 | `RF-052` | Gestionar turnos                                  |
 | `RF-053` | Asociar operaciones al turno                      |
-| `RF-054` | Calcular información esperada de cierre           |
+| `RF-054` | Preparar información esperada de cierre                    |
 | `RF-055` | Registrar cierre de turno/caja                    |
 | `RF-056` | Consultar cierre                                  |
 | `RF-057` | Generar/consultar reporte de ventas               |
@@ -970,13 +1021,13 @@ El saldo podrá quedar negativo.
 
 La confirmación de una producción consumirá los ingredientes definidos por la composición correspondiente.
 
-## RN-007 — Producción genera lote
+## RN-007 — Producción actualiza existencia preparada
 
-La producción confirmada generará el lote o registro de cantidad preparada correspondiente.
+La producción confirmada registrará el evento y aumentará la existencia preparada disponible con la cantidad final obtenida.
 
 ## RN-008 — No duplicar consumo de ingredientes
 
-La venta de una unidad proveniente de un lote no volverá a consumir los ingredientes que ya fueron descontados durante su producción.
+La venta de una preparación previamente producida no volverá a consumir los ingredientes que ya fueron descontados durante su producción; reducirá la existencia preparada correspondiente.
 
 ## RN-009 — Compra recibida incrementa inventario
 
@@ -1054,11 +1105,11 @@ Producción depende de ingredientes, composición y existencias.
 
 ## DEP-SRS-05
 
-Lotes dependen de una producción confirmada.
+La existencia preparada depende de una producción confirmada y de su composición.
 
 ## DEP-SRS-06
 
-Venta de elementos producidos depende de la disponibilidad lógica del lote correspondiente, aunque una insuficiencia pueda producir saldo negativo según la regla definida.
+La venta de elementos producidos depende de su existencia preparada. La insuficiencia puede producir saldo negativo según la regla definida, sin volver a descontar ingredientes.
 
 ## DEP-SRS-07
 
@@ -1074,7 +1125,7 @@ Cierre de caja depende de las operaciones registradas en el turno.
 
 ## DEP-SRS-10
 
-Los requisitos con reglas pendientes no deberán considerarse Ready hasta su aclaración.
+Los requisitos del MVP deben cumplir la Definition of Ready antes de ser seleccionados para desarrollo. La segunda entrevista ya resolvió los bloqueos informativos principales de `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026` y `HU-027`; esto permite devolverlas a `Backlog`, no marcarlas automáticamente como `Ready`.
 
 ---
 
@@ -1122,7 +1173,7 @@ No existe acceso técnico suficiente al sistema actual para depender de su imple
 
 ## RST-SRS-04 — Relevamiento
 
-Las aclaraciones adicionales se realizarán únicamente mediante Product Owner.
+La baseline se sustenta en tres técnicas: entrevistas semiestructuradas, análisis de antecedentes y benchmarking. Las dos entrevistas pertenecen a la misma técnica. Nuevas ambigüedades deberán resolverse mediante evidencia adecuada y registrarse antes de alterar reglas del dominio.
 
 ## RST-SRS-05 — Hardware
 
@@ -1134,49 +1185,40 @@ No se inventarán valores cuantitativos de rendimiento o impacto sin evidencia.
 
 ---
 
-# 26. Información pendiente
+# 26. Información todavía pendiente o diferida
 
-## 26.1. Producción / lotes
+La segunda entrevista resolvió los vacíos que impedían refinar la composición, producción, compras, turnos y cierre básico. La información que continúa pendiente corresponde principalmente a evoluciones, decisiones técnicas o excepciones que **no bloquean el MVP actual**.
 
-Pendiente de precisar:
+## 26.1. Inventario y unidades
 
-- unidades;
-- conversiones;
-- rendimiento;
-- mermas;
-- desperdicios;
-- uso de múltiples lotes;
-- vencimientos si aplican.
+- pueden aparecer nuevas conversiones de unidades si se incorporan ingredientes con unidades todavía no observadas;
+- los ajustes manuales administrativos podrán requerir una clasificación más amplia en una evolución posterior.
 
-## 26.2. Inventario
+La baseline actual ya contempla bajas/salidas con motivo y la conversión real `kg ↔ g` cuando corresponda.
 
-Pendiente:
+## 26.2. Compras y proveedores
 
-- reglas exactas para ajustes;
-- permisos para cambios manuales;
-- unidades y conversiones.
-
-## 26.3. Compras
-
-Pendiente:
+Fuera del flujo básico confirmado permanecen:
 
 - pagos parciales;
-- crédito;
+- crédito de proveedor;
 - vencimientos;
-- recepción parcial;
-- rechazo parcial.
+- cuotas;
+- cuentas por pagar avanzadas;
+- recepción parcial estructurada;
+- conciliación contable.
 
-## 26.4. Cierre
+## 26.3. Caja y canales
 
-Pendiente:
+La baseline de cierre ya define dos turnos, una caja, un único cierre, monto inicial, traspaso, diferencias y PedidosYa separado.
 
-- monto inicial;
-- diferencias;
-- faltantes/sobrantes;
-- cierre total de los dos turnos;
-- tratamiento exacto de PedidosYa.
+Quedan fuera del MVP:
 
-## 26.5. Roles
+- conciliación bancaria automática;
+- integración directa con PedidosYa;
+- contabilidad/fiscalidad avanzada.
+
+## 26.4. Roles
 
 El catálogo inicial está aprobado:
 
@@ -1189,11 +1231,11 @@ CONTADORA
 EMPLEADO
 ```
 
-pero la matriz definitiva de permisos aún debe refinarse.
+La segunda entrevista confirma además que una misma persona puede cumplir varias responsabilidades; esto es compatible con el modelo de múltiples roles.
 
-## 26.6. Hardware
+## 26.5. Hardware
 
-Pendiente:
+Pendiente para Post-MVP:
 
 - modelo de biométrico;
 - SDK;
@@ -1201,7 +1243,7 @@ Pendiente:
 - protocolo;
 - máquina física que actuará como host del componente.
 
-## 26.7. Facturación
+## 26.6. Facturación
 
 Pendiente para una versión futura:
 
@@ -1221,7 +1263,7 @@ Pendiente para una versión futura:
 | --------- | --------------------------------------------- |
 | `N-001`   | Asistencia                                    |
 | `N-002`   | Asistencia / consulta administrativa          |
-| `N-003`   | Producción / lotes                            |
+| `N-003`   | Producción / existencias preparadas             |
 | `N-004`   | Inventario / producción                       |
 | `N-005`   | Stock mínimo / alertas                        |
 | `N-006`   | Compras                                       |
@@ -1262,7 +1304,7 @@ La baseline actual busca cumplir los siguientes controles:
 - cada capacidad pertenece al alcance aprobado;
 - las necesidades tienen trazabilidad;
 - los estados están definidos cuando existe evidencia/decisión;
-- las reglas faltantes permanecen explícitamente pendientes;
+- los aspectos diferidos permanecen explícitos y no se confunden con bloqueos del MVP;
 - no se inventan reglas contables;
 - no se inventan reglas fiscales;
 - no se obliga una tecnología concreta antes de arquitectura;
@@ -1281,8 +1323,9 @@ La SRS se considera suficientemente definida para continuar cuando:
 - existen categorías RNF;
 - existen reglas de negocio iniciales;
 - las dependencias se conocen;
-- las ambigüedades están señaladas;
-- los requisitos pendientes pueden identificarse antes de entrar a desarrollo.
+- las ambigüedades críticas de la baseline fueron contrastadas;
+- los aspectos diferidos pueden distinguirse de los requisitos del MVP;
+- las historias pueden pasar de `Blocked` a `Backlog` y luego evaluarse con la Definition of Ready.
 
 El siguiente paso será elaborar los requisitos detallados.
 
@@ -1312,3 +1355,4 @@ Estos documentos utilizarán los IDs establecidos en esta SRS.
 | Versión | Fecha      | Descripción                                                                       | Estado                                            |
 | ------- | ---------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |
 | `0.1`   | 20/08/2026 | SRS inicial derivada del alcance aprobado y de las reglas confirmadas para el MVP | Lista para especificación detallada de requisitos |
+| `0.2`   | 21/08/2026 | Refinamiento con ENT-02 y triangulación de tres técnicas; se eliminan bloqueos informativos del flujo básico y se simplifica producción sin lotes operativos | Revalidada |

@@ -2,31 +2,29 @@
 
 ## 1. Identificación general
 
-| Campo                            | Valor                                                        |
-| -------------------------------- | ------------------------------------------------------------ |
-| **Nombre del proyecto**          | Restaurant System                                            |
-| **Nombre corto**                 | Restaurant System                                            |
-| **Organización objetivo**        | Restaurante Fratelli                                         |
-| **Tipo de proyecto**             | Sistema de información para una organización real            |
-| **Asignatura**                   | Sistemas de Información III                                  |
-| **Docente**                      | Ing. Eddy Roger Calderón Caquiva                             |
-| **Carrera / programa**           | Ingeniería de Sistemas                                       |
-| **Metodología de gestión**       | Scrum                                                        |
-| **Enfoque de desarrollo**        | Iterativo e incremental                                      |
-| **Repositorio**                  | https://github.com/Alex-Fernandez-2003/Fratelli-s-System.git |
-| **Espacio documental oficial**   | `docs/`                                                      |
-| **Fecha de inicio documental**   | 18 de agosto de 2026                                         |
-| **Duración estimada disponible** | Aproximadamente 15 días                                      |
-| **Fecha objetivo aproximada**    | 3 de septiembre de 2026                                      |
-| **Baseline documental inicial**  | v0.1                                                         |
+| Campo | Valor |
+|---|---|
+| **Nombre del proyecto** | Restaurant System |
+| **Organización objetivo** | Restaurante Fratelli |
+| **Tipo de proyecto** | Sistema de información para una organización real |
+| **Asignatura** | Sistemas de Información III |
+| **Docente** | Ing. Eddy Roger Calderón Caquiva |
+| **Carrera / programa** | Ingeniería de Sistemas |
+| **Metodología de gestión** | Scrum |
+| **Enfoque de desarrollo** | Iterativo e incremental |
+| **Repositorio** | https://github.com/Alex-Fernandez-2003/Fratelli-s-System.git |
+| **Espacio documental oficial** | `docs/` |
+| **Fecha de inicio documental** | 18 de agosto de 2026 |
+| **Duración estimada disponible** | Aproximadamente 15 días |
+| **Fecha objetivo aproximada** | 3 de septiembre de 2026 |
+| **Versión documental actual** | `0.3` |
+| **Última actualización** | 21 de agosto de 2026 |
 
 ---
 
 ## 2. Equipo del proyecto
 
-El proyecto será desarrollado por un equipo de **cuatro estudiantes**.
-
-### Integrantes confirmados
+El proyecto es desarrollado por cuatro estudiantes:
 
 1. **Alex Saúl Fernandez Valdez**
 2. **Ana Paola Viscarra Chambi**
@@ -37,240 +35,232 @@ El proyecto será desarrollado por un equipo de **cuatro estudiantes**.
 
 ## 3. Organización y contraparte
 
-### Organización objetivo
+**Fratelli** es la organización objetivo.
 
-**Fratelli** es el restaurante sobre el cual se realizará el análisis, diseño y desarrollo del sistema.
+La principal contraparte funcional es **Ana Paola Viscarra Chambi**, trabajadora actual de Fratelli e integrante del equipo. Dentro de Scrum desempeña el rol de **Product Owner**.
 
-El proyecto parte de una situación real del negocio y utilizará evidencia obtenida directamente de una trabajadora con experiencia en sus procesos operativos.
-
-### Contraparte principal
-
-La principal contraparte para el levantamiento, aclaración y validación de necesidades será una **trabajadora con experiencia en el funcionamiento de Fratelli**.
-
-Dentro de la organización Scrum del proyecto, esta contraparte asumirá el rol de:
-
-**Product Owner**
-
-Sus responsabilidades dentro del proyecto serán principalmente:
+Sus responsabilidades principales dentro del proyecto son:
 
 - representar las necesidades operativas del restaurante;
 - aclarar dudas relacionadas con el funcionamiento actual;
 - ayudar a priorizar necesidades y funcionalidades;
 - validar interpretaciones del equipo;
-- revisar incrementos relevantes del producto;
-- aceptar o rechazar resultados cuando corresponda;
-- aportar retroalimentación durante el desarrollo.
+- revisar incrementos relevantes;
+- aceptar o rechazar resultados cuando corresponda.
 
 ---
 
 ## 4. Organización Scrum
 
-El proyecto utilizará **Scrum** como marco de gestión del trabajo, con desarrollo iterativo e incremental.
-
 ### Product Owner
 
-**Trabajadora con experiencia en Fratelli — Ana Paola Viscarra Chambi.**
-
-Representa las necesidades del negocio y será la principal fuente de validación funcional del proyecto.
+**Ana Paola Viscarra Chambi**.
 
 ### Scrum Master
 
-**Alex Saúl Fernández Valdez.**
+**Alex Saúl Fernandez Valdez**.
 
 ### Developers
 
-El equipo de estudiantes participará en el análisis, diseño, implementación, pruebas y documentación del producto.
-
-Integrantes registrados:
-
-- Alex Saúl Fernandez Valdez.
-- Ana Paola Viscarra Chambi.
-- Miguel Angel Colque Calizaya.
+- Alex Saúl Fernandez Valdez;
+- Ana Paola Viscarra Chambi;
+- Miguel Angel Colque Calizaya;
 - Josué Matias Arroyo Reynoso.
 
-La distribución interna de responsabilidades técnicas podrá evolucionar durante el proyecto y no se fija todavía como una división rígida por frontend, backend, base de datos u otras áreas.
+La distribución técnica no se fija de forma rígida por frontend/backend. Las historias de usuario representan valor de extremo a extremo y podrán implicar trabajo en varias capas.
 
 ---
 
-## 5. Objetivo de esta etapa
+## 5. Objetivo de la etapa documental actual
 
-La primera etapa del proyecto estará orientada a **comprender y documentar el funcionamiento actual del restaurante antes de definir definitivamente la solución**.
+La documentación inicial busca dejar al proyecto en condiciones de continuar con refinamiento Scrum y planificación, habiendo completado:
 
-Durante esta etapa se buscará:
+- comprensión del contexto;
+- diagnóstico;
+- relevamiento mediante tres técnicas;
+- hallazgos y necesidades;
+- objetivos y propuesta de valor;
+- alcance y MVP;
+- SRS;
+- requisitos detallados;
+- reglas de negocio;
+- Product Backlog;
+- carga inicial del backlog en GitHub Projects.
 
-- comprender los procesos actuales de Fratelli;
-- identificar stakeholders y usuarios;
-- organizar la evidencia existente;
-- realizar el relevamiento de información faltante;
-- identificar hallazgos y necesidades;
-- formular el problema central;
-- definir los objetivos del proyecto;
-- delimitar el alcance y el MVP;
-- establecer los requisitos iniciales;
-- preparar el Product Backlog;
-- alcanzar un estado suficientemente claro para comenzar el desarrollo sin rehacer el análisis principal.
+La siguiente etapa documental se orientará a formalizar Scrum/refinamiento y Definition of Ready antes de Sprint Planning.
 
 ---
 
-## 6. Evidencia inicial disponible
+# 6. Estrategia de relevamiento
 
-Actualmente se dispone de evidencia documental y de una entrevista formal realizada a Ana Paola Viscarra Chambi, trabajadora actual de Fratelli y Product Owner del proyecto.
+El proyecto aplica **tres técnicas distintas** de obtención y contraste de requerimientos.
 
-### Evidencia documental
+| # | Técnica | Aplicación | Estado |
+|---:|---|---|---|
+| 1 | **Entrevista semiestructurada** | `ENT-01` + `ENT-02` | Completada |
+| 2 | **Análisis de antecedentes (análisis documental)** | Documento previo sobre la forma de trabajo | Completado |
+| 3 | **Análisis de sistemas similares / benchmarking** | Seis soluciones gastronómicas | Completado |
 
-Documento descriptivo del flujo y forma de trabajo actual de Fratelli.
+Las dos entrevistas son dos sesiones de **una misma técnica**, no dos métodos diferentes.
 
-Ubicación:
+Índice de evidencia:
 
 ```text
-docs/evidence/relevamiento/entrevista-01-trabajadora/
-└── detalle-de-la-manera-de-trabajo.pdf
+docs/evidence/relevamiento/
+├── README.md
+├── entrevistas/
+│   ├── README.md
+│   ├── entrevista-01-trabajadora/
+│   └── entrevista-02-trabajadora/
+├── analisis-antecedentes/
+│   ├── README.md
+│   ├── analisis-antecedentes.md
+│   └── detalle-de-la-manera-de-trabajo.pdf
+└── analisis-sistemas-similares/
+    ├── README.md
+    └── analisis-sistemas-similares.md
 ```
 
-### Evidencia de audio
+---
 
-Ubicación:
+## 7. Evidencia principal
 
-```text
-docs/evidence/relevamiento/entrevista-01-trabajadora/
-└── entrevista-1-audio.mp3
-```
-
-### Transcripción
-
-Ubicación:
+### ENT-01
 
 ```text
-docs/evidence/relevamiento/entrevista-01-trabajadora/
+docs/evidence/relevamiento/entrevistas/entrevista-01-trabajadora/
+├── README.md
+├── entrevista-1-audio.mp3
 └── transcripcion.md
 ```
 
-La entrevista fue realizada mediante discord el **19 de agosto de 2026** por **Josué Matias Arroyo Reynoso** y quedó registrada en audio y transcripción.
+Datos confirmados:
 
-Los archivos originales de evidencia no deberán modificarse. Los análisis, interpretaciones, hallazgos y necesidades derivados de ellos se documentarán por separado.
+- fecha: **19 de agosto de 2026**;
+- modalidad: **virtual mediante Discord**;
+- entrevistador: **Josué Matias Arroyo Reynoso**;
+- entrevistada: **Ana Paola Viscarra Chambi**;
+- duración aproximada: **23 min 11 s**.
+
+### ENT-02
+
+```text
+docs/evidence/relevamiento/entrevistas/entrevista-02-trabajadora/
+├── README.md
+├── entrevista-2-audio.mp3
+└── transcripcion.md
+```
+
+La sesión fue utilizada para refinar producción, compras, turnos y cierre. El audio dura aproximadamente **14 min 17 s**. Los metadatos de fecha, modalidad y participantes que no aparecen en la evidencia entregada permanecen explícitamente pendientes; no se completan por inferencia.
+
+### Análisis de antecedentes
+
+```text
+docs/evidence/relevamiento/analisis-antecedentes/
+├── README.md
+├── analisis-antecedentes.md
+└── detalle-de-la-manera-de-trabajo.pdf
+```
+
+### Sistemas similares
+
+```text
+docs/evidence/relevamiento/analisis-sistemas-similares/
+├── README.md
+└── analisis-sistemas-similares.md
+```
 
 ---
 
-## 7. Repositorio y estructura general
-
-El repositorio oficial es:
-
-```text
-https://github.com/Alex-Fernandez-2003/Fratelli-s-System.git
-```
-
-La documentación del proyecto se centralizará dentro de:
-
-```text
-docs/
-```
-
-El código y los componentes ejecutables se organizarán fuera de dicha carpeta.
-
-Estructura general prevista:
+## 8. Repositorio y estructura general
 
 ```text
 Fratelli-s-System/
 ├── README.md
 ├── docs/
-│   ├── documentación general
+│   ├── 00-ficha-proyecto.md
+│   ├── 01-contexto-y-diagnostico.md
+│   ├── 02-relevamiento.md
+│   ├── 03-hallazgos-y-necesidades.md
+│   ├── 04-objetivos-y-propuesta-valor.md
+│   ├── 05-alcance-y-mvp.md
+│   ├── 06-srs.md
 │   ├── requirements/
+│   ├── 07-product-backlog.md
 │   ├── historias/
-│   ├── sprints/
-│   ├── diagrams/
-│   ├── adr/
-│   ├── openspec/
-│   └── evidence/
+│   ├── evidence/
+│   ├── puml/
+│   └── images/
 ├── frontend/
 ├── backend/
-└── otros componentes técnicos según necesidad
+└── otros componentes según necesidad
 ```
 
-La estructura podrá ampliarse a medida que el diseño técnico del producto sea definido.
-
 ---
 
-## 8. Convenciones documentales iniciales
+## 9. Convenciones documentales
 
-### Ubicación
-
-Toda documentación de análisis, requisitos, historias, arquitectura, evidencias, decisiones y especificaciones se almacenará dentro de `docs/`.
-
-### Formato
-
-El formato documental principal será **Markdown (`.md`)**.
-
-Los diagramas editables se conservarán preferentemente en formato **PlantUML (`.puml`)** cuando corresponda.
-
-### Identificadores previstos
-
-Se utilizarán identificadores consistentes para mantener trazabilidad:
-
-| Elemento                   | Convención                |
-| -------------------------- | ------------------------- |
-| Hallazgos                  | `H-001`, `H-002`, ...     |
-| Necesidades                | `N-001`, `N-002`, ...     |
-| Requisitos funcionales     | `RF-001`, `RF-002`, ...   |
-| Requisitos no funcionales  | `RNF-[CAT]-001`           |
-| Reglas de negocio          | `RN-001`, `RN-002`, ...   |
-| Épicas                     | `EP-01`, `EP-02`, ...     |
-| Historias de usuario       | `HU-001`, `HU-002`, ...   |
-| Riesgos                    | `R-001`, `R-002`, ...     |
+| Elemento | Convención |
+|---|---|
+| Hallazgos | `H-001`, `H-002`, ... |
+| Necesidades | `N-001`, `N-002`, ... |
+| Requisitos funcionales | `RF-001`, `RF-002`, ... |
+| Requisitos no funcionales | `RNF-[CAT]-001` |
+| Reglas de negocio | `RN-001`, `RN-002`, ... |
+| Épicas | `EPI-01`, `EPI-02`, ... |
+| Historias de usuario | `HU-001`, `HU-002`, ... |
+| Riesgos | `R-001`, `R-002`, ... |
 | Decisiones arquitectónicas | `ADR-001`, `ADR-002`, ... |
-| Casos de prueba            | `CP-001`, `CP-002`, ...   |
-
-Estas convenciones constituyen una base inicial y podrán ajustarse antes de crear elementos dependientes.
+| Casos de prueba | `CP-001`, `CP-002`, ... |
 
 ---
 
-## 9. Fuentes de verdad
+## 10. Fuentes de verdad
 
-Para evitar duplicación y contradicciones:
-
-- los **requisitos** tendrán su fuente oficial dentro de `docs/requirements/`;
-- el **Product Backlog** tendrá su fuente oficial en `docs/07-product-backlog.md`;
-- las **historias detalladas** tendrán su fuente oficial en `docs/historias/`;
-- las **reglas de negocio** tendrán su fuente oficial en `docs/requirements/reglas-negocio.md`;
-- las **evidencias originales** se conservarán en `docs/evidence/`;
-- los **cambios formales posteriores al baseline**, cuando corresponda, se gestionarán mediante `docs/openspec/changes/`.
-
-Los documentos de síntesis deberán referenciar estas fuentes y evitar duplicarlas innecesariamente.
+- requisitos funcionales: `docs/requirements/requisitos-funcionales.md`;
+- requisitos no funcionales: `docs/requirements/requisitos-no-funcionales.md`;
+- reglas de negocio: `docs/requirements/reglas-negocio.md`;
+- Product Backlog: `docs/07-product-backlog.md`;
+- estado operativo: GitHub Projects;
+- historias ejecutadas y evidencia: `docs/historias/` a medida que se trabajen;
+- evidencia de relevamiento: `docs/evidence/relevamiento/`.
 
 ---
 
-## 10. Estado inicial del proyecto
+# 11. Estado actual del proyecto
 
-| Elemento                     | Estado                                                      |
-| ---------------------------- | ----------------------------------------------------------- |
-| Organización objetivo        | Confirmada                                                  |
-| Product Owner                | Definido                                                    |
-| Equipo de desarrollo         | Equipo de 4                                                 |
-| Repositorio                  | Definido                                                    |
-| Metodología                  | Scrum                                                       |
-| Evidencia documental inicial | Disponible                                                  |
-| Audio de relevamiento        | Disponible                                                  |
-| Contexto del negocio         | Relevamiento inicial completado                             |
-| Problema central             | Diagnóstico listo para consolidar en hallazgos              |
-| Necesidades consolidadas     | Pendientes de formalizar en `03-hallazgos-y-necesidades.md` |
-| Objetivos                    | Pendientes                                                  |
-| Alcance                      | Pendiente                                                   |
-| MVP                          | Pendiente                                                   |
-| SRS                          | Pendiente                                                   |
-| Product Backlog              | Pendiente                                                   |
-| Historias de usuario         | Pendientes                                                  |
-| Arquitectura                 | Pendiente                                                   |
-| Stack tecnológico            | Pendiente de decisión                                       |
-| Modelo de datos              | Pendiente                                                   |
-| Primer Sprint                | Pendiente de planificación                                  |
+| Elemento | Estado al 21/08/2026 |
+|---|---|
+| Organización objetivo | Confirmada |
+| Product Owner | Definida |
+| Scrum Master | Definido |
+| Equipo | 4 integrantes |
+| Repositorio | Definido |
+| Metodología | Scrum |
+| Tres técnicas de relevamiento | Aplicadas |
+| ENT-01 | Completada y transcrita |
+| ENT-02 | Completada y transcrita; metadatos parciales pendientes |
+| Contexto y diagnóstico | Consolidado |
+| Hallazgos y necesidades | Consolidados y actualizados |
+| Objetivos | Definidos |
+| Alcance / MVP | Definido |
+| SRS | Definida y refinada |
+| RF/RNF/RN | Baseline disponible |
+| Product Backlog | Disponible |
+| GitHub Projects | Backlog cargado por el equipo |
+| HU previamente bloqueadas | Refinadas; aptas para volver a `Backlog` |
+| Definition of Ready | Pendiente de formalización en `08-scrum-y-refinamiento.md` |
+| Historias ejecutadas | Aún no documentadas; se crearán al trabajar cada HU |
+| Arquitectura | Pendiente |
+| Modelo de datos | Pendiente |
+| Sprint Planning | Pendiente |
 
 ---
 
-## 11. Control documental
+# 12. Control de cambios
 
-| Campo                | Valor                                       |
-| -------------------- | ------------------------------------------- |
-| Documento            | `00-ficha-proyecto.md`                      |
-| Versión actual       | `0.2`                                       |
-| Estado               | Ficha actualizada tras relevamiento inicial |
-| Última actualización | 20 de agosto de 2026                        |
-| Próxima revisión     | Antes de iniciar Sprint 0                   |
+| Versión | Fecha | Descripción | Estado |
+|---|---|---|---|
+| `0.1` | 18/08/2026 | Ficha inicial | Sustituida |
+| `0.2` | 20/08/2026 | Actualización tras relevamiento inicial | Sustituida |
+| `0.3` | 21/08/2026 | Consolidación de tres técnicas, ENT-02 y estado documental hasta Product Backlog | Vigente |

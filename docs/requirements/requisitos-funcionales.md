@@ -80,7 +80,7 @@ La gestión de cuentas y asignación de roles será exclusiva de `ADMINISTRADOR`
 | Productos/ingredientes/platos | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
 | Inventario | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
 | Stock mínimo/alertas | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
-| Producción/lotes | Gestionar/consultar | Gestionar/consultar | — | Registrar/gestionar | Consultar | — |
+| Producción/preparaciones | Gestionar/consultar | Gestionar/consultar | — | Registrar/gestionar | Consultar | — |
 | Pedidos | Gestionar | Gestionar | Registrar/gestionar | Consultar | — | — |
 | Comandas | Consultar/gestionar | Consultar/gestionar | Consultar | Gestionar estados | — | — |
 | Ventas | Gestionar | Gestionar | Registrar/confirmar | — | Consultar | — |
@@ -451,7 +451,7 @@ El sistema deberá permitir registrar, consultar, actualizar y desactivar ingred
 ### Procesamiento y reglas
 
 - Los ingredientes deberán poder relacionarse con composiciones y movimientos de inventario.
-- Las reglas detalladas de unidades/conversiones se mantienen pendientes cuando sean necesarias.
+- Los ingredientes conservan una unidad; las conversiones compatibles se aplican cuando el caso de negocio lo requiera, conforme a `RF-010`.
 
 ### Resultado esperado
 
@@ -476,7 +476,7 @@ El ingrediente queda disponible para inventario y composición.
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO |
-| **Fuente** | N-011 / decisión de producción por lotes |
+| **Fuente** | N-011 / decisión de separar ingredientes y existencia preparada |
 | **Necesidad relacionada** | N-003, N-011 |
 | **Prioridad** | **CRÍTICA** |
 | **Estado** | **Definido** |
@@ -499,7 +499,7 @@ El sistema deberá permitir registrar, consultar, actualizar y desactivar los pl
 ### Procesamiento y reglas
 
 - Los platos se mantendrán conceptualmente separados del inventario de ingredientes.
-- Un plato podrá vincularse a una composición y a lotes de producción.
+- Un plato podrá vincularse a una composición y, cuando se produzca previamente, a una existencia preparada.
 
 ### Resultado esperado
 
@@ -523,14 +523,14 @@ El plato queda disponible para los flujos autorizados de pedido, producción y v
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO |
-| **Fuente** | SRS §11 |
+| **Fuente** | SRS §11 / ENT-02 |
 | **Necesidad relacionada** | N-003, N-004 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir definir qué ingredientes y cantidades componen un plato o preparación para poder calcular el consumo de ingredientes durante la producción.
+El sistema deberá permitir definir qué ingredientes, cantidades y unidades componen un plato o preparación para calcular el consumo durante producción.
 
 ### Precondiciones
 
@@ -547,22 +547,27 @@ El sistema deberá permitir definir qué ingredientes y cantidades componen un p
 ### Procesamiento y reglas
 
 - Una composición deberá contener al menos un ingrediente cuando se utilice para consumo automático.
-- Las unidades y conversiones deberán ser compatibles según reglas que todavía requieren refinamiento.
+- La unidad utilizada deberá ser compatible con la unidad de inventario del ingrediente.
+- La baseline confirma conversiones entre unidades compatibles cuando sean necesarias; existe al menos el caso `kg ↔ g` para carne.
+- Los líquidos pueden gestionarse en litros según el proceso observado.
+- No se crearán conversiones arbitrarias sin un caso real del catálogo.
 
 ### Resultado esperado
 
-La composición queda disponible para el cálculo de consumo durante producción.
+La composición queda disponible para calcular el consumo durante producción.
 
 ### Excepciones
 
 - Ingrediente inexistente o inactivo.
 - Cantidad inválida.
-- Incompatibilidad de unidades pendiente de reglas.
+- Unidad incompatible o conversión no definida para un caso nuevo.
 
 ### Criterios de aceptación
 
 - Se puede asociar más de un ingrediente a una preparación.
+- Cada componente conserva cantidad y unidad.
 - La composición puede consultarse antes de confirmar producción.
+- Una conversión compatible definida se aplica de forma consistente.
 - No se confirma una composición inválida.
 
 ---
@@ -712,14 +717,14 @@ Las existencias aumentan y queda registrado el movimiento.
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO; sistema mediante procesos autorizados |
-| **Fuente** | N-004 |
+| **Fuente** | N-004 / ENT-02 |
 | **Necesidad relacionada** | N-004 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir registrar salidas o bajas de inventario cuando correspondan.
+El sistema deberá permitir registrar salidas o bajas de inventario separadas de los consumos normales cuando exista una pérdida, devolución interna, plato dado de baja u otro motivo operativo autorizado.
 
 ### Precondiciones
 
@@ -730,7 +735,7 @@ El sistema deberá permitir registrar salidas o bajas de inventario cuando corre
 
 - Elemento.
 - Cantidad.
-- Motivo.
+- Motivo obligatorio.
 - Fecha/hora.
 - Responsable.
 
@@ -738,23 +743,24 @@ El sistema deberá permitir registrar salidas o bajas de inventario cuando corre
 
 - La cantidad deberá ser positiva.
 - La salida generará un movimiento trazable.
-- Las categorías exactas de ajuste, merma o desperdicio quedan pendientes de refinamiento.
+- La evidencia de ENT-02 confirma que las bajas/pérdidas relevantes se registran por separado y con motivo.
+- El catálogo de motivos podrá ampliarse posteriormente, pero el MVP no depende de una taxonomía exhaustiva.
 
 ### Resultado esperado
 
-Las existencias se reducen y queda registrado el movimiento.
+Las existencias se reducen y queda registrado el movimiento, responsable y motivo.
 
 ### Excepciones
 
 - Cantidad inválida.
+- Motivo ausente.
 - Actor sin permiso.
-- Regla de motivo pendiente para determinados casos.
 
 ### Criterios de aceptación
 
 - Una baja válida reduce existencias.
 - El sistema conserva responsable y motivo.
-- Las reglas aún no definidas no se inventan durante implementación.
+- Una baja no se confunde con el consumo automático de una producción o venta.
 
 ---
 
@@ -1037,51 +1043,53 @@ La venta puede completarse y el inventario refleja el saldo real registrado, inc
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO, COCINA |
-| **Fuente** | H-003 / N-003 |
+| **Actor(es)** | COCINA, ENCARGADO, ADMINISTRADOR |
+| **Fuente** | N-003 / ENT-01 / ENT-02 |
 | **Necesidad relacionada** | N-003, N-004 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir registrar una operación de producción directamente en el sistema.
+El sistema deberá permitir registrar directamente una producción de una preparación, utilizando como dato principal la **cantidad final obtenida**.
 
 ### Precondiciones
 
-- Preparación/plato existente.
+- Preparación existente y activa.
+- Composición válida cuando la producción deba consumir ingredientes.
 - Actor autorizado.
-- Composición disponible cuando se requiera consumo automático.
 
 ### Entradas
 
-- Preparación/plato.
-- Cantidad producida.
+- Preparación.
+- Cantidad final producida.
 - Fecha/hora.
-- Información necesaria del lote.
-- Responsable.
+- Responsable autenticado.
 
 ### Procesamiento y reglas
 
-- La producción permanecerá separada conceptualmente del inventario de ingredientes.
-- La confirmación activará las reglas de consumo y lote.
-- Rendimiento, mermas y unidades especiales quedan pendientes.
+- Fratelli no requiere registrar una cantidad esperada ni calcular rendimiento formal para el MVP.
+- La confirmación ejecutará el consumo de ingredientes y la actualización de existencia preparada como una operación consistente.
+- Cada evento de producción conservará su fecha, cantidad y responsable aunque la disponibilidad se acumule.
 
 ### Resultado esperado
 
-La producción queda registrada sin depender de una hoja física como fuente primaria.
+La producción queda registrada y lista para aplicar sus movimientos asociados.
 
 ### Excepciones
 
-- Composición faltante cuando sea necesaria.
-- Cantidad inválida.
-- Regla de unidad no definida.
+- Cantidad final inválida.
+- Preparación/composición inexistente.
+- Actor sin permiso.
+- Error durante la confirmación: no debe dejar movimientos parciales.
 
 ### Criterios de aceptación
 
 - COCINA puede registrar producción.
-- La producción conserva responsable y fecha.
-- Una producción no confirmada no genera consumo definitivo.
+- Se registra la cantidad final obtenida.
+- Se conserva fecha/hora y responsable.
+- No se exige rendimiento esperado.
+- La operación puede auditarse posteriormente.
 
 ---
 
@@ -1089,130 +1097,135 @@ La producción queda registrada sin depender de una hoja física como fuente pri
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | Sistema |
-| **Fuente** | Decisión de producción por lotes |
+| **Actor(es)** | Sistema, iniciado por COCINA/ENCARGADO/ADMINISTRADOR |
+| **Fuente** | SRS §11 / ENT-02 |
 | **Necesidad relacionada** | N-003, N-004 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá descontar los ingredientes definidos por la composición cuando una producción sea confirmada.
+Al confirmar una producción, el sistema deberá descontar los ingredientes definidos por la composición según la cantidad final producida y las unidades compatibles.
 
 ### Precondiciones
 
-- Producción válida pendiente de confirmación.
-- Composición válida.
+- Producción válida.
+- Composición disponible.
+- Ingredientes identificados.
 
 ### Entradas
 
-- Cantidad producida.
+- Cantidad final producida.
 - Composición.
-- Existencias de ingredientes.
+- Existencias actuales.
+- Unidades y conversiones aplicables.
 
 ### Procesamiento y reglas
 
-- El consumo se calculará según composición y cantidad producida.
-- El consumo se registrará como movimientos de inventario.
-- Las reglas de conversión pendientes deberán estar resueltas antes de implementar composiciones que las necesiten.
+- El consumo deriva de la composición.
+- Cuando compra/stock y consumo usen unidades diferentes, se aplicará la conversión compatible definida, como `kg ↔ g`.
+- El consumo y la producción deberán confirmarse de forma consistente para evitar una producción aplicada sin sus movimientos.
 
 ### Resultado esperado
 
-Los ingredientes consumidos reducen sus existencias y quedan trazados como parte de la producción.
+Los ingredientes quedan disminuidos por el consumo correspondiente y el movimiento queda trazable.
 
 ### Excepciones
 
-- Composición incompleta.
-- Unidad incompatible.
-- Falla que impida preservar consistencia.
+- Composición inválida.
+- Conversión necesaria no disponible para un ingrediente nuevo.
+- Error de persistencia.
 
 ### Criterios de aceptación
 
-- Confirmar producción genera los consumos correspondientes.
-- Cancelar/no confirmar no consume ingredientes.
-- Los movimientos quedan relacionados con la producción.
+- Confirmar producción descuenta los ingredientes correspondientes.
+- La conversión definida se aplica antes de modificar existencias.
+- Un error no deja consumos parciales.
 
 ---
 
-## RF-023 — Registrar lote producido
+## RF-023 — Actualizar existencia preparada al confirmar producción
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | Sistema / ADMINISTRADOR, ENCARGADO, COCINA |
-| **Fuente** | Decisión de separar platos e ingredientes |
+| **Actor(es)** | Sistema, iniciado por COCINA/ENCARGADO/ADMINISTRADOR |
+| **Fuente** | SRS §11 / ENT-02 |
 | **Necesidad relacionada** | N-003, N-004 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá registrar un lote o existencia producida al confirmar una producción.
+El sistema deberá aumentar la existencia disponible de la preparación con la cantidad final obtenida al confirmar una producción.
 
 ### Precondiciones
 
-- Producción válida confirmada.
+- Producción válida.
+- Consumo de ingredientes aplicable dentro de la misma operación consistente.
 
 ### Entradas
 
-- Preparación/plato.
-- Cantidad obtenida.
-- Fecha/hora.
-- Responsable.
-- Datos de lote que resulten obligatorios.
+- Preparación.
+- Cantidad final producida.
+- Registro de producción.
 
 ### Procesamiento y reglas
 
-- El lote representará el producto preparado disponible para venta.
-- Las reglas de vencimiento y selección entre múltiples lotes quedan pendientes si fueran necesarias.
+- Producciones repetidas de la misma preparación sumarán su cantidad a la disponibilidad total.
+- Cada evento de producción seguirá conservando fecha, cantidad y responsable.
+- El MVP no requiere seleccionar ni consumir un lote/tanda específico durante la venta.
+- El MVP no requiere fecha exacta de vencimiento por lote.
 
 ### Resultado esperado
 
-Existe un lote con la cantidad producida disponible para el flujo comercial correspondiente.
+La preparación queda disponible para venta con su saldo actualizado y el evento de producción queda trazable.
 
 ### Excepciones
 
-- Cantidad producida inválida.
-- Reglas de lote todavía no definidas para un caso especial.
+- Producción no confirmada.
+- Cantidad inválida.
+- Error de persistencia: no debe existir actualización parcial.
 
 ### Criterios de aceptación
 
-- Una producción confirmada genera un lote.
-- El lote conserva referencia a la producción.
-- La cantidad del lote es independiente del saldo de ingredientes ya consumidos.
+- Una producción confirmada incrementa la existencia preparada.
+- Dos producciones de la misma preparación pueden acumular disponibilidad.
+- Los dos eventos permanecen consultables por separado.
+- No se exige gestión de lotes múltiples para el MVP.
 
 ---
 
-## RF-024 — Consultar lotes y producciones
+## RF-024 — Consultar registros de producción
 
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO, COCINA, CONTADORA |
-| **Fuente** | N-003 / matriz de permisos |
+| **Fuente** | SRS §11 / ENT-02 |
 | **Necesidad relacionada** | N-003, N-004 |
 | **Prioridad** | **ALTA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir a los roles autorizados consultar las producciones y lotes registrados.
+El sistema deberá permitir a los roles autorizados consultar los registros de producción realizados.
 
 ### Precondiciones
 
-- Usuario autenticado con permiso.
+- Usuario autenticado con permiso de consulta.
 
 ### Entradas
 
-- Filtros disponibles.
-- Periodo cuando corresponda.
-- Preparación/plato.
+- Filtros por preparación, periodo o responsable cuando estén disponibles.
 
 ### Procesamiento y reglas
 
-- La consulta deberá permitir distinguir producción, cantidad, fecha, responsable y lote relacionado.
+- La consulta mostrará preparación, cantidad final, fecha/hora y responsable.
+- La disponibilidad consolidada de una preparación no elimina el historial de eventos que la generaron.
+- CONTADORA mantiene acceso de solo lectura según la matriz de permisos.
 
 ### Resultado esperado
 
-El usuario puede revisar la producción registrada y las existencias producidas.
+El usuario obtiene el historial autorizado de producciones.
 
 ### Excepciones
 
@@ -1221,9 +1234,9 @@ El usuario puede revisar la producción registrada y las existencias producidas.
 
 ### Criterios de aceptación
 
-- COCINA puede consultar producciones y lotes.
-- CONTADORA dispone de consulta de solo lectura según la matriz.
-- La consulta no modifica inventario.
+- COCINA puede consultar producciones.
+- Se visualizan fecha, cantidad y responsable.
+- Las producciones repetidas aparecen como eventos trazables aunque el stock preparado esté acumulado.
 
 ---
 
@@ -1615,7 +1628,7 @@ El total de la venta queda calculado y disponible antes de confirmar.
 | **Fuente** | Evidencia de caja / MVP |
 | **Necesidad relacionada** | N-011 |
 | **Prioridad** | **ALTA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
@@ -1632,8 +1645,9 @@ El sistema deberá registrar el medio de pago utilizado en la venta.
 
 ### Procesamiento y reglas
 
-- El catálogo inicial deberá soportar los medios que se definan formalmente durante refinamiento.
-- Efectivo y QR forman parte de la evidencia disponible; otros medios deberán confirmarse antes de ser obligatorios.
+- El catálogo mínimo del MVP soportará `EFECTIVO` y `QR`, confirmados por la evidencia.
+- Nuevos medios podrán incorporarse mediante refinamiento sin alterar esta baseline.
+- PedidosYa se mantiene como canal/control separado en el cierre y no se fuerza como medio de pago equivalente a efectivo/QR.
 
 ### Resultado esperado
 
@@ -1751,47 +1765,50 @@ La venta queda confirmada, trazada y disponible para cierre/reportes.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | Sistema |
-| **Fuente** | SRS §13.2 / decisión de lotes |
+| **Actor(es)** | Sistema, iniciado por MESERO/ENCARGADO/ADMINISTRADOR |
+| **Fuente** | SRS §13.2 / ENT-02 |
 | **Necesidad relacionada** | N-004, N-011 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá registrar la salida de inventario correspondiente cuando una venta sea confirmada.
+Al confirmar una venta, el sistema deberá registrar la salida de inventario correspondiente al elemento vendido.
 
 ### Precondiciones
 
-- Venta válida confirmándose.
-- Elemento vendido identificable.
+- Venta válida y lista para confirmarse.
+- Elementos comercializables identificados.
 
 ### Entradas
 
 - Detalle de venta.
-- Existencias/lotes correspondientes.
+- Cantidades.
+- Existencias correspondientes.
 
 ### Procesamiento y reglas
 
-- Para productos preparados mediante lote, la venta afectará el lote o existencia vendible y no volverá a consumir ingredientes ya descontados en producción.
-- Para otros elementos inventariables se aplicará el movimiento que corresponda.
-- La selección exacta entre múltiples lotes queda pendiente si llega a ser necesaria.
+- La afectación definitiva se produce al confirmar/cobrar la venta.
+- Si el elemento es una preparación producida previamente, se reduce su **existencia preparada** y no se vuelven a consumir los ingredientes ya descontados en producción.
+- Si el elemento se descuenta directamente de inventario, se registra el movimiento correspondiente.
+- El stock insuficiente advierte pero no bloquea según `RF-020`.
 
 ### Resultado esperado
 
-El inventario refleja la venta confirmada sin duplicar consumo.
+La venta y sus movimientos quedan confirmados de forma consistente.
 
 ### Excepciones
 
-- Saldo insuficiente: se permite negativo con advertencia previa.
-- Reglas de múltiples lotes pendientes.
+- Error de persistencia.
+- Elemento inexistente.
+- Regla de inventario incompatible.
 
 ### Criterios de aceptación
 
-- Una venta confirmada genera movimientos.
-- Una venta no confirmada no genera salida definitiva.
-- Vender desde un lote no descuenta nuevamente sus ingredientes de producción.
-- El saldo puede quedar negativo.
+- Confirmar una venta produce el movimiento correspondiente.
+- Un pedido todavía no confirmado no genera salida definitiva.
+- Vender una preparación producida no descuenta nuevamente sus ingredientes.
+- La disponibilidad preparada puede quedar negativa si la venta continúa tras la advertencia permitida.
 
 ---
 
@@ -1935,52 +1952,55 @@ El catálogo de proveedores queda disponible para compras y consultas.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO; COCINA para compras autorizadas de cocina |
-| **Fuente** | H-007 / decisión MVP |
-| **Necesidad relacionada** | N-006, N-007, N-008 |
-| **Prioridad** | **ALTA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Actor(es)** | ADMINISTRADOR, ENCARGADO, COCINA según el ámbito confirmado |
+| **Fuente** | N-006 / N-007 / ENT-02 |
+| **Necesidad relacionada** | N-006, N-007, N-008, N-014 |
+| **Prioridad** | **CRÍTICA** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir registrar una compra asociada a un proveedor.
+El sistema deberá permitir registrar compras de productos o insumos manteniendo proveedor, detalle, costos, responsable y estado.
 
 ### Precondiciones
 
-- Proveedor existente.
-- Actor autorizado.
+- Actor autenticado con permiso.
+- Proveedor y elementos identificados.
 
 ### Entradas
 
 - Proveedor.
 - Fecha.
-- Detalle.
+- Detalle de elementos.
 - Cantidades.
 - Costos.
-- Responsable.
+- Total.
+- Referencia al respaldo/recibo cuando corresponda, sin imponer todavía un formato digital específico.
 
 ### Procesamiento y reglas
 
-- La compra iniciará en `PENDIENTE`.
-- COCINA solo podrá gestionar compras dentro del alcance autorizado para cocina.
-- La categorización exacta de compras autorizadas deberá refinarse si requiere reglas más específicas.
+- Una compra nueva inicia `PENDIENTE`.
+- `COCINA` puede registrar directamente compras de ingredientes para preparaciones; la operación debe estar respaldada por un recibo, sin que esta baseline imponga todavía cómo se digitaliza o referencia dicho respaldo.
+- `ENCARGADO` gestiona principalmente bebidas, productos de limpieza y otros insumos generales.
+- `ADMINISTRADOR` mantiene gestión general.
+- Registrar una compra no incrementa inventario por sí solo.
 
 ### Resultado esperado
 
-La compra queda registrada y pendiente de recepción o cancelación.
+La compra queda registrada y trazable, pendiente de su recepción o cancelación.
 
 ### Excepciones
 
-- Proveedor inválido.
-- Datos incompletos.
-- Actor fuera del alcance permitido.
+- Actor sin permiso.
+- Proveedor inexistente.
+- Datos o cantidades inválidas.
 
 ### Criterios de aceptación
 
-- ADMINISTRADOR y ENCARGADO pueden registrar compras.
-- COCINA puede registrar una compra autorizada de cocina.
-- La compra nueva queda PENDIENTE.
-- Registrar la compra no incrementa stock.
+- COCINA puede registrar una compra de ingredientes de cocina.
+- ENCARGADO puede registrar compras generales.
+- Se conserva responsable y, para las compras directas de Cocina, la existencia del recibo de respaldo según el mecanismo que se defina en diseño.
+- La compra `PENDIENTE` no modifica stock.
 
 ---
 
@@ -1988,15 +2008,15 @@ La compra queda registrada y pendiente de recepción o cancelación.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO; COCINA en compras autorizadas |
-| **Fuente** | Decisión confirmada |
-| **Necesidad relacionada** | N-006, N-007 |
-| **Prioridad** | **ALTA** |
+| **Actor(es)** | ADMINISTRADOR, ENCARGADO, COCINA según el ámbito confirmado |
+| **Fuente** | SRS §14 / ENT-02 |
+| **Necesidad relacionada** | N-006, N-007, N-008 |
+| **Prioridad** | **CRÍTICA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá manejar los estados `PENDIENTE`, `RECIBIDA` y `CANCELADA` para compras.
+El sistema deberá gestionar el estado de una compra utilizando `PENDIENTE`, `RECIBIDA` o `CANCELADA`.
 
 ### Precondiciones
 
@@ -2006,17 +2026,18 @@ El sistema deberá manejar los estados `PENDIENTE`, `RECIBIDA` y `CANCELADA` par
 ### Entradas
 
 - Compra.
-- Nuevo estado.
+- Nuevo estado permitido.
 
 ### Procesamiento y reglas
 
-- Una compra `RECIBIDA` representa una recepción confirmada.
-- Una compra `CANCELADA` no deberá incrementar inventario.
-- No se permitirán estados fuera del catálogo aprobado.
+- `PENDIENTE` no incrementa inventario.
+- `RECIBIDA` solo se establece después de verificar/aceptar la recepción.
+- `CANCELADA` no incrementa inventario.
+- Una compra incompleta/no aceptada no se marcará `RECIBIDA`; se coordina devolución con el proveedor.
 
 ### Resultado esperado
 
-La compra refleja su estado operativo.
+La compra refleja un estado coherente con su situación operativa.
 
 ### Excepciones
 
@@ -2025,10 +2046,9 @@ La compra refleja su estado operativo.
 
 ### Criterios de aceptación
 
-- Una compra inicia PENDIENTE.
-- Puede marcarse RECIBIDA.
-- Puede marcarse CANCELADA cuando corresponda.
-- Estados no válidos son rechazados.
+- Una compra puede permanecer pendiente hasta ser aceptada.
+- Una compra devuelta/no aceptada no genera entrada de stock.
+- Solo `RECIBIDA` habilita la entrada definitiva.
 
 ---
 
@@ -2036,47 +2056,50 @@ La compra refleja su estado operativo.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO; COCINA en compras autorizadas |
-| **Fuente** | H-007 / decisión MVP |
-| **Necesidad relacionada** | N-006, N-007, N-008 |
-| **Prioridad** | **ALTA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Actor(es)** | ADMINISTRADOR, ENCARGADO, COCINA según el ámbito de la compra |
+| **Fuente** | SRS §14 / ENT-02 |
+| **Necesidad relacionada** | N-006, N-007, N-008, N-014 |
+| **Prioridad** | **CRÍTICA** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir confirmar la recepción básica de una compra.
+El sistema deberá permitir registrar que una compra fue verificada y aceptada antes de considerarla recibida.
 
 ### Precondiciones
 
-- Compra existente en estado compatible.
-- Actor autorizado.
+- Compra `PENDIENTE`.
+- Actor autorizado para su ámbito.
 
 ### Entradas
 
 - Compra.
-- Confirmación de recepción.
-- Información básica de recepción que resulte necesaria.
+- Confirmación de recepción/verificación.
+- Fecha/hora.
+- Responsable.
 
 ### Procesamiento y reglas
 
-- La recepción completa del MVP llevará la compra a `RECIBIDA`.
-- La recepción parcial y rechazo parcial quedan fuera de esta baseline hasta contar con reglas.
+- Para bebidas u otros insumos generales, la entrada puede realizarse después de verificar el producto recibido.
+- Para insumos de cocina que requieren control, Cocina podrá verificar peso/cantidad y realizar el porcionado operativo antes de registrar la entrada.
+- Si el pedido llega incompleto o no puede aceptarse, se coordina devolución y no se confirma `RECIBIDA`.
+- El MVP no requiere recepción parcial estructurada; este caso queda diferido salvo cambio de alcance.
 
 ### Resultado esperado
 
-La compra queda recibida y habilita el incremento correspondiente de inventario.
+La compra queda aceptada como `RECIBIDA` y disponible para generar la entrada de inventario.
 
 ### Excepciones
 
-- Compra cancelada.
-- Recepción parcial no soportada por la baseline.
+- Compra no pendiente.
+- Producto no aceptado.
 - Actor sin permiso.
 
 ### Criterios de aceptación
 
-- Confirmar la recepción cambia el estado a RECIBIDA.
-- La recepción queda trazada.
-- No se simula una recepción parcial sin reglas aprobadas.
+- La recepción conserva fecha y responsable.
+- Una compra incompleta devuelta no se marca recibida.
+- La recepción parcial no es obligatoria en el MVP.
 
 ---
 
@@ -2085,46 +2108,45 @@ La compra queda recibida y habilita el incremento correspondiente de inventario.
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | Sistema |
-| **Fuente** | Decisión confirmada |
-| **Necesidad relacionada** | N-004, N-006 |
+| **Fuente** | SRS §14 / ENT-02 |
+| **Necesidad relacionada** | N-004, N-006, N-008 |
 | **Prioridad** | **CRÍTICA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá incrementar el inventario de los elementos recibidos cuando una compra sea confirmada como `RECIBIDA`.
+Al confirmar una compra como `RECIBIDA`, el sistema deberá generar las entradas de inventario correspondientes a los elementos aceptados.
 
 ### Precondiciones
 
-- Compra válida.
-- Detalle con elementos inventariables.
-- Recepción confirmada.
+- Compra verificada y aceptada.
+- Elementos inventariables identificados.
 
 ### Entradas
 
-- Detalle de compra y cantidades recibidas.
+- Detalle de compra recibida.
+- Cantidades aceptadas.
 
 ### Procesamiento y reglas
 
-- Una compra `PENDIENTE` no modificará inventario.
-- Una compra `CANCELADA` no modificará inventario.
-- La entrada deberá generar movimientos trazables.
+- `PENDIENTE` y `CANCELADA` no modifican inventario.
+- La entrada ocurre después de la verificación operativa aplicable.
+- Los movimientos conservan referencia a la compra y responsable de recepción.
 
 ### Resultado esperado
 
-Las existencias aumentan de acuerdo con la compra recibida.
+Las existencias aumentan y existe trazabilidad entre compra, recepción y movimiento.
 
 ### Excepciones
 
-- Elemento inválido.
-- Falla que impida preservar consistencia.
+- Elemento no inventariable/inexistente.
+- Error de persistencia: no debe dejar una recepción parcialmente aplicada.
 
 ### Criterios de aceptación
 
-- RECIBIDA incrementa stock.
-- PENDIENTE no incrementa stock.
-- CANCELADA no incrementa stock.
-- Los movimientos quedan relacionados con la compra.
+- `RECIBIDA` incrementa stock una sola vez.
+- La entrada puede rastrearse hasta la compra.
+- Una compra pendiente no altera existencias.
 
 ---
 
@@ -2132,15 +2154,15 @@ Las existencias aumentan de acuerdo con la compra recibida.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO, CONTADORA; COCINA en alcance autorizado |
-| **Fuente** | N-006 / N-008 |
+| **Actor(es)** | ADMINISTRADOR, ENCARGADO, CONTADORA; COCINA dentro de su alcance |
+| **Fuente** | N-006 / N-008 / ENT-02 |
 | **Necesidad relacionada** | N-006, N-008 |
 | **Prioridad** | **ALTA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir consultar las compras registradas según permisos.
+El sistema deberá permitir consultar las compras registradas, sus estados, proveedor, responsable y recepción.
 
 ### Precondiciones
 
@@ -2148,16 +2170,17 @@ El sistema deberá permitir consultar las compras registradas según permisos.
 
 ### Entradas
 
-- Periodo, proveedor, estado u otros filtros definidos.
+- Filtros disponibles: periodo, proveedor, estado u otros que se definan.
 
 ### Procesamiento y reglas
 
-- COCINA deberá limitarse al alcance autorizado de compras de cocina cuando sea necesario.
-- CONTADORA tendrá consulta sin gestión.
+- CONTADORA puede consultar sin modificar.
+- COCINA consulta las compras correspondientes a su ámbito operativo.
+- El historial conserva compras pendientes, recibidas y canceladas.
 
 ### Resultado esperado
 
-Los usuarios autorizados pueden revisar el historial de compras.
+El usuario obtiene el historial autorizado de compras.
 
 ### Excepciones
 
@@ -2166,9 +2189,9 @@ Los usuarios autorizados pueden revisar el historial de compras.
 
 ### Criterios de aceptación
 
-- Se pueden distinguir compras pendientes, recibidas y canceladas.
-- CONTADORA puede consultar.
-- COCINA no obtiene permisos superiores a su alcance salvo que posea otro rol.
+- Se distingue el estado de cada compra.
+- Se muestra proveedor y responsable.
+- La recepción puede rastrearse desde la compra.
 
 ---
 
@@ -2493,45 +2516,49 @@ El usuario autorizado puede obtener la asistencia necesaria para control adminis
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | ADMINISTRADOR, ENCARGADO; MESERO opera su turno; CONTADORA consulta |
-| **Fuente** | MVP / evidencia de dos turnos |
-| **Necesidad relacionada** | N-011 |
+| **Actor(es)** | ADMINISTRADOR, ENCARGADO; MESERO opera dentro de su turno |
+| **Fuente** | SRS §17 / ENT-02 |
+| **Necesidad relacionada** | N-009, N-011, N-014 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir representar los turnos necesarios para agrupar operaciones y realizar cierres.
+El sistema deberá representar los dos turnos operativos de Fratelli y la continuidad entre ellos dentro de una **misma caja** y un **único cierre final**.
 
 ### Precondiciones
 
-- Usuario autenticado con permiso.
+- Usuarios/roles disponibles.
 
 ### Entradas
 
-- Información del turno definida para la operación.
+- Identificación del turno.
+- Usuarios asignados cuando corresponda.
+- Monto inicial/fondo dejado para continuidad.
+- Información de traspaso entre turnos.
 
 ### Procesamiento y reglas
 
-- ADMINISTRADOR y ENCARGADO gestionarán turnos.
-- MESERO podrá operar dentro de su turno pero no administrar todos los turnos.
-- CONTADORA tendrá consulta.
-- Las reglas exactas de apertura y cierre total de dos turnos siguen pendientes.
+- Las personas conocen el turno al que están asignadas.
+- Los dos turnos comparten la misma caja.
+- El primer turno no realiza un cierre independiente; deja información para que el siguiente verifique continuidad.
+- La evidencia de ENT-02 indica que el traspaso actual puede mencionar efectivo, QR, crédito y PedidosYa.
+- El crédito se conserva únicamente como antecedente del proceso actual: **las ventas a crédito y cuentas por cobrar están fuera del MVP**, por lo que este requisito no deberá generar ni administrar saldos de crédito.
 
 ### Resultado esperado
 
-Las operaciones pueden asociarse al turno correspondiente.
+Las operaciones pueden asociarse al turno que las originó sin crear dos cajas o cierres independientes.
 
 ### Excepciones
 
-- Reglas de apertura aún no definidas.
-- Actor sin permiso.
+- Turno inexistente.
+- Usuario sin permiso para gestionar la configuración del turno.
 
 ### Criterios de aceptación
 
-- Un MESERO puede operar dentro de su turno.
-- Un MESERO no gestiona otros turnos por ese rol.
-- ADMINISTRADOR y ENCARGADO pueden gestionar el flujo autorizado.
+- Se pueden distinguir operaciones del turno mañana y noche.
+- Ambos turnos pertenecen a la misma continuidad de caja.
+- Existe un único cierre final para el flujo confirmado.
 
 ---
 
@@ -2539,90 +2566,103 @@ Las operaciones pueden asociarse al turno correspondiente.
 
 | Campo | Valor |
 |---|---|
-| **Actor(es)** | Sistema / actores operativos |
-| **Fuente** | N-009 / N-011 |
+| **Actor(es)** | Sistema / usuarios operativos |
+| **Fuente** | SRS §17 / ENT-02 |
 | **Necesidad relacionada** | N-009, N-011, N-014 |
 | **Prioridad** | **CRÍTICA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá asociar al turno correspondiente las operaciones que formen parte de su cierre.
+El sistema deberá asociar las operaciones relevantes al turno en que se realizaron para permitir consulta, traspaso y cierre.
 
 ### Precondiciones
 
-- Existe un turno válido/activo según las reglas disponibles.
+- Turno identificado.
+- Operación válida.
 
 ### Entradas
 
 - Venta, gasto u otra operación aplicable.
 - Turno.
+- Responsable.
+- Medio/canal cuando corresponda.
 
 ### Procesamiento y reglas
 
-- Las ventas deberán quedar asociadas al turno.
-- Los gastos deberán asociarse cuando correspondan al cierre.
-- La asociación deberá preservar responsable y medio de pago cuando aplique.
+- Una venta conserva su turno y responsable.
+- Los gastos aplicables pueden asociarse al turno.
+- El registro mantiene el medio de pago/canal necesario para el cierre.
+- El traspaso entre turnos no cambia retroactivamente el turno de origen de una operación.
 
 ### Resultado esperado
 
-El turno dispone de la información necesaria para construir su resumen y cierre.
+Existe información suficiente para obtener resúmenes por turno y el cierre único.
 
 ### Excepciones
 
-- Turno inexistente o incompatible.
-- Operación no aplicable al cierre.
+- Turno inexistente.
+- Operación incompatible.
 
 ### Criterios de aceptación
 
-- Una venta del turno aparece en su resumen.
-- Un gasto asociado aparece en el turno.
-- Una operación de otro turno no se mezcla indebidamente.
+- Las operaciones pueden filtrarse por turno.
+- Un gasto asociado aparece en el contexto correspondiente.
+- No se mezclan indebidamente los orígenes al realizar el traspaso.
 
 ---
 
-## RF-054 — Calcular información esperada de cierre
+## RF-054 — Preparar información esperada de cierre
 
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | Sistema |
-| **Fuente** | SRS §17 |
+| **Fuente** | SRS §17 / ENT-02 |
 | **Necesidad relacionada** | N-009, N-011 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá calcular la información esperada del cierre utilizando las operaciones registradas en el turno.
+El sistema deberá preparar el resumen operativo necesario para el único cierre de caja utilizando la información registrada durante ambos turnos.
 
 ### Precondiciones
 
-- Turno existente con operaciones registradas.
+- Continuidad de caja existente.
+- Operaciones registradas.
 
 ### Entradas
 
+- Monto inicial/fondo.
 - Ventas por medio de pago.
 - Gastos asociados.
-- Otros movimientos definidos.
+- Información de caja chica cuando corresponda.
+- PedidosYa como canal separado.
+- Efectivo declarado/real cuando sea registrado.
 
 ### Procesamiento y reglas
 
-- El cálculo deberá distinguir al menos efectivo, QR y otros medios que finalmente se formalicen.
-- El tratamiento de monto inicial, diferencias y PedidosYa permanece pendiente hasta consulta a Product Owner.
+- Se distinguen al menos efectivo y QR.
+- PedidosYa se muestra/controla por separado y no se mezcla automáticamente con efectivo o QR.
+- Los gastos se presentan como parte de la conciliación operativa definida.
+- Si se dispone de efectivo real/declarado, puede determinarse la diferencia frente a lo esperado.
+- La caja chica se mantiene diferenciada cuando actúe como fondo separado.
+- No se inventan reglas de contabilidad o facturación no relevadas.
 
 ### Resultado esperado
 
-El usuario autorizado obtiene un resumen esperado del turno.
+El usuario autorizado dispone de un resumen verificable para realizar el cierre final.
 
 ### Excepciones
 
-- Reglas pendientes impiden completar un cálculo definitivo para algún componente; deberá señalarse y no inventarse.
+- Datos operativos inconsistentes: el sistema deberá mostrarlos o impedir una confirmación corrupta, sin inventar valores.
 
 ### Criterios de aceptación
 
-- El resumen incluye ventas registradas del turno.
-- Los gastos asociados se consideran según la regla aprobada.
-- Los medios de pago se presentan de forma diferenciada cuando corresponda.
+- El resumen distingue efectivo, QR y PedidosYa cuando existan.
+- Incluye los gastos registrados aplicables.
+- Conserva el monto inicial/fondo.
+- Permite identificar una diferencia cuando se registra el efectivo real.
 
 ---
 
@@ -2631,51 +2671,53 @@ El usuario autorizado obtiene un resumen esperado del turno.
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO |
-| **Fuente** | Decisión confirmada de permisos |
+| **Fuente** | Permisos aprobados / ENT-02 |
 | **Necesidad relacionada** | N-009, N-011, N-014 |
 | **Prioridad** | **CRÍTICA** |
-| **Estado** | **Definido con reglas pendientes** |
+| **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir registrar el cierre de un turno/caja únicamente a usuarios con rol `ADMINISTRADOR` o `ENCARGADO`.
+El sistema deberá permitir registrar el **único cierre final** de la caja compartida por los dos turnos, únicamente a usuarios con rol `ADMINISTRADOR` o `ENCARGADO`.
 
 ### Precondiciones
 
 - Usuario con permiso.
-- Turno susceptible de cierre.
-- Información esperada calculable con las reglas disponibles.
+- Información del cierre disponible.
 
 ### Entradas
 
-- Turno.
-- Información de cierre requerida.
+- Resumen de cierre.
+- Valores declarados que correspondan.
+- Diferencia y observación cuando exista.
 - Responsable.
 
 ### Procesamiento y reglas
 
-- MESERO no podrá cerrar por el rol MESERO.
-- Un usuario MESERO que también posea ENCARGADO podrá cerrar gracias al segundo rol.
-- El cierre conservará trazabilidad.
-- Las reglas de monto inicial, diferencias y cierre total de dos turnos deberán confirmarse antes de completar su especificación definitiva.
+- Operativamente el `ENCARGADO` realiza el cierre.
+- `ADMINISTRADOR` conserva permiso general.
+- MESERO no puede cerrar por el rol MESERO; si el mismo usuario posee `ENCARGADO`, puede hacerlo por dicho rol.
+- Si falta o sobra dinero, se conserva una observación/trazabilidad de la diferencia.
+- `CONTADORA` revisa posteriormente el cierre, pero su aprobación no es condición para registrarlo.
+- El cierre conserva responsable y no se duplica por turno.
 
 ### Resultado esperado
 
-El cierre queda registrado por un usuario autorizado.
+El cierre único queda persistido con sus datos y responsable.
 
 ### Excepciones
 
 - Actor sin permiso.
-- Turno inválido.
-- Regla necesaria pendiente.
+- Datos de cierre inconsistentes.
+- Intento de registrar un segundo cierre sobre la misma continuidad sin una regla autorizada.
 
 ### Criterios de aceptación
 
-- ADMINISTRADOR puede cerrar.
-- ENCARGADO puede cerrar.
+- ENCARGADO y ADMINISTRADOR pueden cerrar.
 - MESERO sin ENCARGADO no puede cerrar.
-- MESERO + ENCARGADO sí puede cerrar.
-- El cierre conserva responsable.
+- Se registra un único cierre final.
+- Una diferencia puede conservar observación.
+- El cierre no requiere aprobación posterior de CONTADORA.
 
 ---
 
@@ -2684,31 +2726,32 @@ El cierre queda registrado por un usuario autorizado.
 | Campo | Valor |
 |---|---|
 | **Actor(es)** | ADMINISTRADOR, ENCARGADO, CONTADORA |
-| **Fuente** | MVP / matriz de permisos |
+| **Fuente** | MVP / matriz de permisos / ENT-02 |
 | **Necesidad relacionada** | N-010, N-011 |
 | **Prioridad** | **ALTA** |
 | **Estado** | **Definido** |
 
 ### Descripción
 
-El sistema deberá permitir consultar los cierres registrados según permisos.
+El sistema deberá permitir consultar los cierres registrados y la información utilizada para su revisión.
 
 ### Precondiciones
 
-- Existe al menos un cierre o usuario autorizado para consultar.
+- Usuario autorizado.
 
 ### Entradas
 
-- Periodo, turno u otros filtros.
+- Periodo u otros filtros disponibles.
 
 ### Procesamiento y reglas
 
-- CONTADORA tendrá acceso de consulta.
-- La consulta no otorgará permiso de modificación por sí sola.
+- CONTADORA tendrá acceso de consulta y revisión, no una aprobación obligatoria del cierre.
+- La consulta no concede permiso de modificación por sí sola.
+- El responsable, diferencias/observaciones y componentes principales del cierre deberán permanecer visibles según permisos.
 
 ### Resultado esperado
 
-El usuario puede revisar el resumen y datos persistidos del cierre.
+El usuario puede revisar el cierre y sus datos persistidos.
 
 ### Excepciones
 
@@ -2719,6 +2762,7 @@ El usuario puede revisar el resumen y datos persistidos del cierre.
 
 - CONTADORA puede consultar cierres.
 - El responsable del cierre es visible.
+- Las diferencias registradas pueden revisarse.
 - Un usuario no autorizado no obtiene la información.
 
 ---
@@ -2867,7 +2911,7 @@ El usuario obtiene la información de asistencia correspondiente a su alcance.
 | `RF-001`–`RF-006` | Autenticación, usuarios, roles, permisos y trazabilidad |
 | `RF-007`–`RF-012` | Catálogo |
 | `RF-013`–`RF-020` | Inventario y alertas |
-| `RF-021`–`RF-024` | Producción y lotes |
+| `RF-021`–`RF-024` | Producción y existencias preparadas |
 | `RF-025`–`RF-030` | Pedidos y comandas |
 | `RF-031`–`RF-037` | Ventas |
 | `RF-038` | Clientes |
@@ -2879,24 +2923,21 @@ El usuario obtiene la información de asistencia correspondiente a su alcance.
 
 ---
 
-# 6. Requisitos con reglas pendientes
+# 6. Requisitos con aspectos diferidos o condicionales
 
-Los siguientes requisitos están suficientemente definidos para existir en el catálogo, pero **no deberán considerarse completamente Ready** hasta resolver las reglas indicadas:
+La entrevista de refinamiento resolvió las reglas que mantenían bloqueadas las historias `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026` y `HU-027`. Por tanto, **ninguno de sus RF conserva un bloqueo informativo crítico para volver a Backlog**.
 
-| RF | Pendiente principal |
+Los aspectos siguientes permanecen abiertos porque dependen de nuevos casos, decisiones Post-MVP o ampliaciones de alcance:
+
+| RF | Aspecto diferido/condicional |
 |---|---|
-| `RF-010` | Unidades y conversiones de composición |
-| `RF-014` | Clasificación/reglas exactas de bajas, mermas y desperdicios |
-| `RF-021` | Rendimiento, unidades, mermas y desperdicios de producción |
-| `RF-022` | Conversiones de unidades cuando sean necesarias |
-| `RF-023` | Reglas de lotes múltiples y vencimientos si aplican |
-| `RF-033` | Catálogo definitivo de medios de pago adicionales |
-| `RF-036` | Selección entre múltiples lotes, si el caso se utiliza |
-| `RF-040` | Delimitación formal de las categorías de compra autorizadas a COCINA |
-| `RF-042` | Recepción parcial/rechazo parcial, fuera de la baseline actual |
-| `RF-052` | Apertura y relación exacta de los dos turnos |
-| `RF-054` | Monto inicial, diferencias, PedidosYa y cierre total |
-| `RF-055` | Reglas definitivas del cierre |
+| `RF-010`, `RF-022` | Nuevas conversiones de unidades si aparecen ingredientes con unidades no cubiertas por la baseline |
+| `RF-014` | Taxonomía más amplia de motivos de baja, si el negocio la necesita |
+| `RF-033` | Catálogo de medios de pago adicionales; `EFECTIVO` y `QR` están confirmados, mientras PedidosYa se trata como canal separado en cierre |
+| `RF-040`–`RF-043` | Cuentas por pagar, pagos parciales y recepción parcial estructurada quedan fuera del flujo básico MVP |
+| `RF-054`–`RF-056` | Conciliación bancaria/contable avanzada e integración directa con PedidosYa quedan fuera del MVP |
+
+Estos puntos **no deben utilizarse para mantener las seis HU en `Blocked`**. El paso `Backlog → Ready` será decidido aplicando la Definition of Ready en el refinamiento Scrum.
 
 ---
 
@@ -2938,7 +2979,7 @@ Para esta baseline se verificó que cada RF:
 - contempla excepciones;
 - contiene criterios de aceptación observables;
 - evita imponer una tecnología concreta cuando no es necesaria;
-- conserva explícitas las reglas todavía pendientes.
+- distingue los aspectos diferidos de los bloqueos reales de la baseline.
 
 ---
 
@@ -2963,3 +3004,4 @@ docs/requirements/reglas-negocio.md
 | Versión | Fecha | Descripción | Estado |
 |---|---|---|---|
 | `0.1` | 20/08/2026 | Especificación detallada inicial de `RF-001` a `RF-059` según SRS, MVP y matriz de permisos aprobada | Lista para RNF y refinamiento posterior |
+| `0.2` | 21/08/2026 | Refinamiento con ENT-02: unidades, producción, compras, turnos y cierre definidos; se elimina gestión de lotes múltiples del MVP | Revalidada para Backlog |

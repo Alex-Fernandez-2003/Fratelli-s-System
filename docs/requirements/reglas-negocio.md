@@ -32,9 +32,9 @@ Este documento también distingue:
 | **Documento** | `requirements/reglas-negocio.md` |
 | **Proyecto** | Restaurant System |
 | **Organización objetivo** | Restaurante Fratelli |
-| **Versión inicial** | `0.1` |
-| **Estado** | Baseline inicial de reglas de negocio |
-| **Fecha** | 20 de agosto de 2026 |
+| **Versión actual** | `0.2` |
+| **Estado** | Baseline revalidada tras ENT-02 |
+| **Fecha** | 21 de agosto de 2026 |
 | **Product Owner** | Ana Paola Viscarra Chambi |
 | **Scrum Master** | Alex Saúl Fernandez Valdez |
 | **SRS relacionado** | `docs/06-srs.md` |
@@ -78,7 +78,7 @@ RN-005 — Stock negativo permitido
 |---|---|
 | **Usuarios y autorización** | Identidad, roles y permisos |
 | **Inventario** | Existencias, stock y movimientos |
-| **Producción** | Consumo de ingredientes y lotes |
+| **Producción** | Consumo de ingredientes y existencias preparadas |
 | **Pedidos/comandas** | Estados y transiciones |
 | **Ventas** | Confirmación, cliente y stock |
 | **Compras** | Estados, recepción e impacto en inventario |
@@ -281,81 +281,49 @@ La operación real puede continuar mientras se gestiona posteriormente el reabas
 
 ---
 
-# 6. Reglas de producción y lotes
+# 6. Reglas de producción y existencias preparadas
 
 ## RN-006 — Producción confirmada consume ingredientes
 
 | Campo | Valor |
 |---|---|
-| **Categoría** | Producción / inventario |
-| **Estado** | **Confirmada con detalle pendiente** |
-| **Fuente** | Decisión de diseño funcional del MVP |
+| **Categoría** | Producción / Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | SRS / ENT-02 |
 | **RF relacionados** | `RF-010`, `RF-021`, `RF-022` |
 
 ### Regla
 
-Al confirmar una producción, el sistema consumirá los ingredientes definidos en la composición correspondiente.
+Al confirmar una producción, el sistema deberá consumir los ingredientes definidos por la composición y por la cantidad final obtenida.
 
-### Flujo
+### Condiciones
 
-```text
-Ingredientes
-    ↓
-Composición
-    ↓
-Producción confirmada
-    ↓
-Movimientos de salida de ingredientes
-```
-
-### Pendiente
-
-Todavía deben definirse, cuando sean necesarias:
-
-- unidades;
-- conversiones;
-- rendimiento;
-- mermas;
-- desperdicios.
+- la composición conserva cantidad y unidad por ingrediente;
+- cuando inventario y consumo usan unidades compatibles distintas, se aplica la conversión definida; la evidencia confirma el caso `kg ↔ g` para carne;
+- no se requiere registrar rendimiento esperado en el MVP;
+- la operación de producción y sus movimientos no deben quedar parcialmente aplicados.
 
 ---
 
-## RN-007 — Producción confirmada genera lote
+## RN-007 — Producción confirmada actualiza la existencia preparada
 
 | Campo | Valor |
 |---|---|
-| **Categoría** | Producción |
-| **Estado** | **Confirmada con detalle pendiente** |
-| **Fuente** | Decisión de separar platos e ingredientes |
+| **Categoría** | Producción / Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
 | **RF relacionados** | `RF-021`, `RF-023`, `RF-024` |
 
 ### Regla
 
-Una producción confirmada deberá generar un lote o registro equivalente de la cantidad preparada.
+Una producción confirmada deberá registrar el evento y aumentar la existencia disponible de la preparación con la **cantidad final obtenida**.
 
-### Flujo
+### Condiciones
 
-```text
-Producción confirmada
-        ↓
-Consumo de ingredientes
-        ↓
-Lote de plato/preparación
-        ↓
-Cantidad disponible para venta
-```
-
-### Implicaciones
-
-Los platos preparados se mantienen separados del inventario de ingredientes.
-
-### Pendiente
-
-- múltiples lotes;
-- selección de lote;
-- fechas de elaboración;
-- vencimientos, si aplican;
-- comportamiento de lote agotado.
+- cada evento conserva fecha, cantidad y responsable;
+- varias producciones del mismo producto pueden acumularse en una disponibilidad total;
+- el MVP no necesita distinguir o seleccionar cada tanda/lote al vender;
+- no se exige fecha exacta de vencimiento por lote en la baseline actual.
 
 ---
 
@@ -363,39 +331,26 @@ Los platos preparados se mantienen separados del inventario de ingredientes.
 
 | Campo | Valor |
 |---|---|
-| **Categoría** | Producción / ventas |
+| **Categoría** | Producción / Ventas / Inventario |
 | **Estado** | **Confirmada** |
-| **Fuente** | Decisión de producción por lotes |
+| **Fuente** | Decisión de producción + ENT-02 |
 | **RF relacionados** | `RF-022`, `RF-023`, `RF-036` |
 
 ### Regla
 
-Si los ingredientes ya fueron descontados al producir un lote, la venta del producto preparado no deberá volver a descontar esos mismos ingredientes.
+Si los ingredientes ya fueron descontados al producir una preparación, la venta posterior deberá reducir la existencia preparada y **no volver a descontar esos ingredientes**.
 
-### Correcto
-
-```text
-Producción
-→ consume ingredientes
-→ genera lote
-
-Venta
-→ consume unidad/cantidad del lote
-```
-
-### Incorrecto
+### Flujo
 
 ```text
-Producción
+Confirmar producción
 → consume ingredientes
+→ aumenta existencia preparada
 
-Venta
-→ vuelve a consumir los mismos ingredientes
+Confirmar venta
+→ reduce existencia preparada
+→ no vuelve a consumir ingredientes
 ```
-
-### Implicación
-
-El sistema deberá evitar doble contabilización de consumo.
 
 ---
 
@@ -806,32 +761,21 @@ Un usuario únicamente `MESERO` no podrá hacerlo.
 
 | Campo | Valor |
 |---|---|
-| **Categoría** | Caja / autorización |
-| **Estado** | **Confirmada con detalle pendiente** |
-| **Fuente** | Decisión explícita |
+| **Categoría** | Caja/turnos / autorización |
+| **Estado** | **Confirmada** |
+| **Fuente** | Matriz de permisos + ENT-02 |
 | **RF relacionados** | `RF-055` |
 
 ### Regla
 
-Solo los roles:
+El cierre podrá ser registrado por usuarios que posean `ADMINISTRADOR` o `ENCARGADO`.
 
-```text
-ADMINISTRADOR
-ENCARGADO
-```
+### Condiciones
 
-podrán registrar un cierre de turno/caja.
-
-### Pendiente
-
-La regla de autorización está confirmada, pero todavía faltan reglas operativas del cierre sobre:
-
-- monto inicial;
-- diferencias;
-- sobrantes;
-- faltantes;
-- cierre total entre los dos turnos;
-- tratamiento exacto de PedidosYa.
+- operativamente el `ENCARGADO` realiza el cierre en Fratelli;
+- `ADMINISTRADOR` conserva permiso general según la matriz aprobada;
+- `CONTADORA` revisa posteriormente, pero su aprobación no es obligatoria;
+- una persona con múltiples roles obtiene la unión de permisos.
 
 ---
 
@@ -919,131 +863,238 @@ La consulta no implica permiso general para modificar existencias.
 
 # 16. Reglas de compras por cocina
 
-## RN-027 — COCINA solo gestiona compras autorizadas de cocina
+## RN-027 — COCINA gestiona compras de ingredientes de cocina
 
 | Campo | Valor |
 |---|---|
 | **Categoría** | Compras / autorización |
-| **Estado** | **Confirmada con detalle pendiente** |
-| **Fuente** | Hallazgo sobre responsabilidades de compra + decisión de permisos |
-| **RF relacionados** | `RF-039`, `RF-040`, `RF-041`, `RF-042`, `RF-044` |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-040`, `RF-041`, `RF-042`, `RF-044` |
 
 ### Regla
 
-El rol `COCINA` podrá gestionar únicamente las compras que correspondan al ámbito de cocina.
+`COCINA` podrá registrar y gestionar directamente compras de **ingredientes destinados a preparaciones** dentro de su ámbito operativo.
 
-### Contexto conocido
+### Condiciones
 
-El relevamiento identificó una separación general:
-
-```text
-Cocina
-→ insumos relacionados con cocina
-
-Encargado
-→ bebidas, limpieza y otros productos de atención
-```
-
-### Pendiente
-
-Todavía debe definirse con precisión:
-
-- categorías concretas;
-- autorizaciones específicas;
-- excepciones;
-- si una compra necesita aprobación adicional.
-
-Por tanto, esta regla no deberá implementarse mediante categorías inventadas antes de su refinamiento.
+- `COCINA` gestiona compras de ingredientes destinados a preparaciones dentro de su ámbito operativo;
+- `ENCARGADO` gestiona principalmente bebidas, productos de limpieza y otros insumos generales;
+- `ADMINISTRADOR` conserva gestión general;
+- el alcance se determina por el tipo real de insumo y no por categorías artificiales no utilizadas por Fratelli.
 
 ---
 
-# 17. Reglas pendientes de definir
+# 17. Reglas confirmadas por la entrevista de refinamiento
 
-Las siguientes áreas requieren información adicional antes de convertirse en reglas definitivas.
+Las siguientes reglas se incorporan a partir de ENT-02. Continúan la numeración sin alterar los IDs existentes.
 
-## 17.1. Producción y lotes
+## RN-028 — Las composiciones conservan unidades y permiten conversiones compatibles
 
-Pendiente:
+| Campo | Valor |
+|---|---|
+| **Categoría** | Producción / Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-010`, `RF-022` |
 
-```text
-unidades
-conversiones
-rendimiento
-mermas
-desperdicios
-múltiples lotes
-selección del lote
-vencimientos si aplican
-```
+### Regla
 
-### Control
-
-No se deberán crear reglas numéricas o fórmulas sin validación.
+Una composición deberá indicar cantidad y unidad. Cuando un ingrediente se adquiera/mantenga en una unidad y se consuma en otra compatible, el sistema aplicará la conversión definida. La evidencia confirma `kg ↔ g` para carne; los líquidos se manejan en litros en el flujo observado.
 
 ---
 
-## 17.2. Ajustes de inventario
+## RN-029 — Producción registra cantidad final obtenida
 
-Pendiente:
+| Campo | Valor |
+|---|---|
+| **Categoría** | Producción |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-021` |
 
-- tipos de ajuste manual;
-- permisos exactos;
-- motivos obligatorios;
-- tratamiento de merma;
-- tratamiento de desperdicio.
+### Regla
 
----
-
-## 17.3. Compras y proveedores
-
-Pendiente:
-
-- recepción parcial;
-- rechazo parcial;
-- crédito de proveedor;
-- pagos parciales;
-- fechas de vencimiento;
-- cuotas;
-- estados de cuentas por pagar;
-- reglas de aprobación detalladas.
+Para el MVP se registra la **cantidad final producida**; no se exige una cantidad esperada ni cálculo formal de rendimiento.
 
 ---
 
-## 17.4. Turnos y cierre
+## RN-030 — Producciones repetidas acumulan disponibilidad
 
-Pendiente:
+| Campo | Valor |
+|---|---|
+| **Categoría** | Producción / Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-023`, `RF-024` |
 
-- apertura;
-- monto inicial;
-- diferencias;
-- faltantes;
-- sobrantes;
-- relación entre los dos turnos;
-- cierre total;
-- tratamiento de PedidosYa.
+### Regla
 
-Estas reglas deberán consultarse mediante Product Owner antes de implementar las historias que dependan de ellas.
+Cuando la misma preparación se produzca varias veces, Fratelli necesita conocer la cantidad total disponible. Cada evento conserva fecha, cantidad y responsable, pero el MVP no requiere seleccionar lotes independientes durante la venta.
 
 ---
 
-## 17.5. Medios de pago
+## RN-031 — Bajas y pérdidas relevantes se registran por separado y con motivo
 
-Confirmado actualmente:
+| Campo | Valor |
+|---|---|
+| **Categoría** | Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-014`, `RF-018`, `RF-019` |
 
-```text
-EFECTIVO
-QR
-```
+### Regla
 
-La existencia de otros medios puede contemplarse en el diseño, pero el catálogo definitivo debe validarse antes de formalizar reglas adicionales.
+Una pérdida, merma o plato dado de baja que deba afectar inventario se registra como una salida separada y conserva un motivo.
 
 ---
 
-# 18. Elementos que NO se consideran reglas de negocio
+## RN-032 — Las compras directas de Cocina conservan recibo como respaldo
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Compras / trazabilidad documental |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-040` |
+
+### Regla
+
+Cuando `COCINA` realice directamente una compra dentro de su ámbito, la operación deberá quedar **respaldada por un recibo**, tal como fue descrito en ENT-02.
+
+### Alcance
+
+Esta regla no define todavía que el recibo deba cargarse como archivo, imagen o documento digital. El mecanismo concreto para relacionar ese respaldo con la compra se decidirá durante diseño y no constituye un bloqueo informativo de la historia.
+
+---
+
+## RN-033 — Una compra se recibe después de verificar el producto
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Compras / Inventario |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-042`, `RF-043` |
+
+### Regla
+
+Una compra no deberá producir una entrada definitiva hasta verificar/aceptar lo recibido. En insumos de cocina puede ser necesario pesar o porcionar antes de registrar la entrada.
+
+---
+
+## RN-034 — Una compra incompleta o no aceptada no se marca recibida
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Compras |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-041`, `RF-042`, `RF-043` |
+
+### Regla
+
+Si una compra llega incompleta o no puede aceptarse, se coordina con el proveedor y se devuelve. No se marcará `RECIBIDA` mientras el flujo básico no esté aceptado. La recepción parcial estructurada no es requisito del MVP.
+
+---
+
+## RN-035 — Dos turnos comparten una caja y existe un único cierre
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Caja/turnos |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-01 + ENT-02 |
+| **RF relacionados** | `RF-052`–`RF-056` |
+
+### Regla
+
+Fratelli opera con dos turnos que utilizan la misma caja. El primer turno realiza traspaso de información y el cierre se registra una sola vez al final.
+
+---
+
+## RN-036 — La continuidad de caja conserva monto inicial y traspaso
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Caja/turnos |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-052`, `RF-053`, `RF-054` |
+
+### Regla
+
+El Encargado deja un monto/fondo para el inicio siguiente y el turno saliente deja información suficiente para que el turno entrante verifique el estado de caja.
+
+---
+
+## RN-037 — PedidosYa se controla separado de efectivo y QR
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Caja/turnos |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-054`, `RF-055`, `RF-056` |
+
+### Regla
+
+PedidosYa se representa de forma separada en el cierre porque el dinero no ingresa igual que una venta pagada directamente en caja. Esta regla no implica integración técnica con PedidosYa.
+
+---
+
+## RN-038 — Diferencias de caja conservan observación
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Caja/turnos / Trazabilidad |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-054`, `RF-055`, `RF-056` |
+
+### Regla
+
+Cuando exista faltante o sobrante frente a lo esperado, se deberá poder conservar la diferencia y una observación/trazabilidad para su revisión.
+
+---
+
+## RN-039 — El Encargado cierra y la Contadora revisa sin aprobación obligatoria
+
+| Campo | Valor |
+|---|---|
+| **Categoría** | Caja/turnos / autorización |
+| **Estado** | **Confirmada** |
+| **Fuente** | ENT-02 |
+| **RF relacionados** | `RF-055`, `RF-056` |
+
+### Regla
+
+El Encargado realiza el cierre. La Contadora revisa posteriormente la información, pero no debe aprobarla para que el cierre quede registrado.
+
+---
+
+# 18. Aspectos pendientes que no bloquean el MVP
+
+La segunda entrevista resolvió los vacíos que mantenían bloqueadas las seis historias de refinamiento. Permanecen como evolución o Post-MVP:
+
+- nuevas conversiones de unidades si aparecen ingredientes no cubiertos;
+- vencimientos/lotes físicos si el negocio decide necesitarlos posteriormente;
+- recepción parcial estructurada;
+- cuentas por pagar, crédito de proveedor, cuotas y pagos parciales;
+- integración directa con PedidosYa;
+- conciliación contable/bancaria avanzada;
+- hardware biométrico e impresión;
+- facturación fiscal.
+
+Ninguno de estos puntos justifica mantener `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026` o `HU-027` en `Blocked`.
+
+---
+
+# 19. Elementos que NO se consideran reglas de negocio
 
 Para evitar mezclar conceptos, los siguientes elementos no se documentan como reglas de negocio puras:
 
-## 18.1. Arquitectura
+## 19.1. Arquitectura
 
 Ejemplos:
 
@@ -1057,7 +1108,7 @@ Son decisiones de arquitectura y deberán documentarse posteriormente.
 
 ---
 
-## 18.2. Requisitos no funcionales
+## 19.2. Requisitos no funcionales
 
 Ejemplos:
 
@@ -1076,7 +1127,7 @@ requirements/requisitos-no-funcionales.md
 
 ---
 
-## 18.3. Restricciones de alcance
+## 19.3. Restricciones de alcance
 
 Ejemplos:
 
@@ -1090,7 +1141,7 @@ Se conservan por trazabilidad, pero están etiquetadas correctamente como restri
 
 ---
 
-# 19. Matriz regla → requisitos funcionales
+# 20. Matriz regla → requisitos funcionales
 
 | Regla | RF relacionados principales |
 |---|---|
@@ -1121,10 +1172,22 @@ Se conservan por trazabilidad, pero están etiquetadas correctamente como restri
 | `RN-025` | `RF-037`, `RF-057` |
 | `RN-026` | `RF-012`, `RF-015`, `RF-017`, `RF-058` |
 | `RN-027` | `RF-039`, `RF-040`, `RF-041`, `RF-042`, `RF-044` |
+| `RN-028` | `RF-010`, `RF-022` |
+| `RN-029` | `RF-021` |
+| `RN-030` | `RF-023`, `RF-024` |
+| `RN-031` | `RF-014`, `RF-018`, `RF-019` |
+| `RN-032` | `RF-040` |
+| `RN-033` | `RF-042`, `RF-043` |
+| `RN-034` | `RF-041`, `RF-042`, `RF-043` |
+| `RN-035` | `RF-052`–`RF-056` |
+| `RN-036` | `RF-052`, `RF-053`, `RF-054` |
+| `RN-037` | `RF-054`, `RF-055`, `RF-056` |
+| `RN-038` | `RF-054`, `RF-055`, `RF-056` |
+| `RN-039` | `RF-055`, `RF-056` |
 
 ---
 
-# 20. Matriz regla → necesidad
+# 21. Matriz regla → necesidad
 
 | Regla | Necesidad relacionada |
 |---|---|
@@ -1146,10 +1209,13 @@ Se conservan por trazabilidad, pero están etiquetadas correctamente como restri
 | `RN-025` | `N-010`, `N-013` |
 | `RN-026` | `N-004`, `N-005`, `N-013` |
 | `RN-027` | `N-006`, `N-007`, `N-013` |
+| `RN-028`–`RN-031` | `N-003`, `N-004` |
+| `RN-032`–`RN-034` | `N-006`, `N-007`, `N-008` |
+| `RN-035`–`RN-039` | `N-009`, `N-011`, `N-013`, `N-014` |
 
 ---
 
-# 21. Relación con diagramas existentes
+# 22. Relación con diagramas existentes
 
 Este documento no introduce un nuevo diagrama.
 
@@ -1176,25 +1242,25 @@ Cualquier modificación futura en los estados deberá actualizar:
 
 ---
 
-# 22. Control de consistencia
+# 23. Control de consistencia
 
 Antes de considerar esta baseline estable se verificó que:
 
 - los IDs `RN-001` a `RN-018` se conservan;
 - `RN-014`, `RN-015` y `RN-018` no se presentan incorrectamente como reglas puras;
-- las nuevas reglas continúan desde `RN-019`;
+- las reglas posteriores continúan la numeración sin reutilizar IDs y alcanzan `RN-039`;
 - no se inventan reglas contables;
-- no se inventan reglas de mermas;
-- no se inventan reglas de múltiples lotes;
-- no se inventan categorías exactas de compras de cocina;
-- no se inventan reglas de cierre;
+- las bajas/pérdidas confirmadas se registran separadamente con motivo;
+- no se incorpora gestión de lotes múltiples sin una necesidad validada;
+- el ámbito básico de compras de Cocina y Encargado proviene de ENT-02;
+- las reglas de dos turnos, caja compartida, cierre único, diferencias y PedidosYa provienen de ENT-02;
 - cada regla confirmada se relaciona con al menos un RF;
 - las restricciones de alcance se distinguen de las reglas del dominio;
 - los requisitos no funcionales permanecen separados.
 
 ---
 
-# 23. Estado de salida
+# 24. Estado de salida
 
 Con este documento queda consolidado el bloque:
 
@@ -1211,11 +1277,11 @@ A partir de este punto ya existe una baseline suficientemente estructurada para 
 07-product-backlog.md
 ```
 
-Antes de ingresar funcionalidades a desarrollo deberán verificarse las reglas pendientes que afecten a sus historias correspondientes.
+Antes de ingresar funcionalidades a desarrollo deberá aplicarse la Definition of Ready. Las reglas básicas de las historias anteriormente bloqueadas ya se encuentran confirmadas; los puntos Post-MVP no se utilizarán como bloqueos del MVP.
 
 ---
 
-# 24. Próximo documento
+# 25. Próximo documento
 
 El siguiente artefacto será:
 
@@ -1241,8 +1307,9 @@ Product Backlog
 
 ---
 
-# 25. Control de cambios
+# 26. Control de cambios
 
 | Versión | Fecha | Descripción | Estado |
 |---|---|---|---|
 | `0.1` | 20/08/2026 | Consolidación de reglas `RN-001` a `RN-027`; reclasificación de `RN-014`, `RN-015` y `RN-018` por compatibilidad documental | Lista para Product Backlog |
+| `0.2` | 21/08/2026 | ENT-02 confirma `RN-028`–`RN-039`, refina producción/compras/caja y elimina bloqueos informativos del MVP | Revalidada |

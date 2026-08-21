@@ -334,55 +334,40 @@ Historia que no puede avanzar por una dependencia, decisión o regla pendiente.
 
 ---
 
-# 11. Regla inicial para poblar el tablero
+# 11. Regla actual para poblar el tablero
 
-El Product Backlog actual distingue:
+El Product Backlog actualizado distingue:
 
 ```text
 CANDIDATA A READY
-REFINAMIENTO REQUERIDO
 POST-MVP
 ```
 
-Para no afirmar prematuramente que una historia cumple la Definition of Ready antes de formalizar `08-scrum-y-refinamiento.md`, la carga inicial utilizará:
+La segunda entrevista resolvió los bloqueos informativos que afectaban a seis HU. Por tanto, la carga/actualización del tablero utilizará:
 
 ```text
 CANDIDATA A READY
 → Backlog
 
-REFINAMIENTO REQUERIDO
-→ Blocked
-
 POST-MVP
 → Backlog
 ```
 
-Por tanto, inicialmente no es obligatorio colocar historias en `Ready`.
-
-Después del refinamiento y revisión DoR, las historias elegibles podrán moverse:
+`Ready` continúa siendo un estado posterior al refinamiento y a la Definition of Ready.
 
 ```text
 Backlog
+→ revisión DoR
 → Ready
 ```
 
-Esta regla evita confundir:
-
-```text
-prioridad MUST
-```
-
-con:
-
-```text
-historia READY
-```
+La columna `Blocked` permanece disponible para cualquier impedimento real que aparezca posteriormente, pero **no contiene ya las seis HU desbloqueadas por ENT-02**.
 
 ---
 
-# 12. Historias bloqueadas inicialmente
+# 12. Historias desbloqueadas tras ENT-02
 
-Según el Product Backlog actual, requieren refinamiento obligatorio:
+Las historias:
 
 ```text
 HU-004
@@ -393,13 +378,15 @@ HU-026
 HU-027
 ```
 
-Estas historias deberán comenzar en:
+pasan de:
 
 ```text
-Blocked
+Blocked → Backlog
 ```
 
-hasta resolver sus reglas pendientes.
+porque la segunda entrevista aclaró las reglas mínimas de unidades/producción, compras, turnos y cierre.
+
+No se mueven automáticamente a `Ready`; deberán superar la revisión DoR definida en `docs/08-scrum-y-refinamiento.md`.
 
 ---
 

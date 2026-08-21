@@ -44,9 +44,9 @@ Product Backlog
 | **Documento**                     | `05-alcance-y-mvp.md`                |
 | **Proyecto**                      | Restaurant System                    |
 | **Organización objetivo**         | Restaurante Fratelli                 |
-| **Versión inicial**               | `0.1`                                |
-| **Estado**                        | Alcance y MVP definidos inicialmente |
-| **Fecha**                         | 20 de agosto de 2026                 |
+| **Versión actual**                | `0.2`                                |
+| **Estado**                        | Alcance y MVP revalidados tras relevamiento complementario |
+| **Fecha**                         | 21 de agosto de 2026                 |
 | **Product Owner**                 | Ana Paola Viscarra Chambi            |
 | **Scrum Master**                  | Alex Saúl Fernandez Valdez           |
 | **Enfoque aprobado**              | MVP operacional de reemplazo         |
@@ -135,9 +135,9 @@ El MVP incluirá:
 - `N-013`
 - `N-014`
 
-### Pendiente de SRS
+### Baseline posterior
 
-El catálogo definitivo de permisos por rol.
+El catálogo inicial de roles y permisos fue consolidado posteriormente en la SRS y en los requisitos detallados. Los usuarios podrán poseer múltiples roles y sus permisos efectivos se acumularán.
 
 ---
 
@@ -227,25 +227,30 @@ sistema
 
 Se contempla:
 
-- registrar una producción;
-- identificar productos o preparaciones producidas;
-- indicar cantidades;
-- registrar fecha y responsable;
-- reflejar los movimientos de inventario que correspondan según las reglas definidas posteriormente;
-- consultar registros de producción.
+- registrar directamente una producción;
+- identificar la preparación producida;
+- registrar **la cantidad final obtenida**, sin exigir un rendimiento esperado que Fratelli no utiliza actualmente;
+- registrar fecha y usuario responsable;
+- consumir los ingredientes definidos por la composición;
+- soportar la conversión entre unidades cuando el negocio realmente la requiera —por ejemplo, compra de carne en kilogramos y consumo/venta en gramos—;
+- incrementar la existencia disponible de la preparación producida;
+- acumular en una misma existencia disponible las producciones repetidas de una preparación, manteniendo cada evento de producción trazable;
+- consultar los registros de producción.
+
+### Bajas, mermas y desperdicios
+
+Cuando exista una pérdida o baja relevante, Fratelli la maneja como una **salida separada de almacén con motivo**. Por tanto, el MVP no mezclará automáticamente una baja con el consumo normal de una producción.
+
+### Lotes y vencimientos
+
+La entrevista de refinamiento confirmó que, para esta primera versión, Fratelli **no necesita seleccionar ni operar lotes independientes cuando una misma preparación se produce varias veces**; interesa conocer la cantidad total disponible. Tampoco se requiere una fecha exacta de vencimiento en el sistema para las preparaciones del MVP.
+
+Esto no impide que cada registro de producción conserve fecha, cantidad y responsable para trazabilidad.
 
 ### Relación con necesidades
 
 - `N-003`
 - `N-004`
-
-### Pendiente de SRS
-
-- reglas exactas de consumo durante producción;
-- mermas;
-- desperdicios;
-- excepciones;
-- unidades y conversiones.
 
 ---
 
@@ -368,13 +373,32 @@ El MVP incluirá, como mínimo:
 - costos;
 - total;
 - usuario responsable;
+- respaldo de compra cuando corresponda;
 - registro de recepción;
 - consulta del historial de compras;
-- actualización de inventario cuando la compra recibida corresponda a productos inventariables.
+- actualización de inventario únicamente después de verificar la recepción.
+
+### Responsabilidades confirmadas
+
+La segunda entrevista precisó el reparto operativo utilizado como baseline del MVP:
+
+- `COCINA` puede realizar directamente compras de ingredientes destinados a preparaciones y debe conservar respaldo mediante recibo para el pago;
+- `ENCARGADO` gestiona principalmente bebidas, productos de limpieza y otros insumos generales;
+- `ADMINISTRADOR` conserva capacidad de gestión por su rol general.
+
+Estas responsabilidades no impiden que una misma persona posea varios roles.
+
+### Recepción e inventario
+
+La recepción no se considera equivalente a crear la compra.
+
+- si llega una bebida u otro producto general y se verifica correctamente, puede ingresarse al inventario al recibirlo;
+- si llega un insumo de cocina que requiere control previo —por ejemplo, pescado—, Cocina lo recibe, comprueba/pesa, realiza la preparación operativa necesaria como porcionar y **recién después** se registra la entrada correspondiente;
+- una compra incompleta o no aceptada se coordina con el proveedor y se devuelve; no se marcará `RECIBIDA` hasta que el flujo básico esté aceptado.
+
+La evidencia indica que las recepciones incompletas ocurren solo ocasionalmente. Por ello, **recepción parcial/rechazo parcial estructurado no es requisito del MVP**; puede evaluarse en una evolución posterior.
 
 ### Alcance limitado dentro del MVP
-
-Las reglas avanzadas que todavía no fueron suficientemente relevadas quedarán sujetas a refinamiento.
 
 No se consideran obligatorias en esta primera versión:
 
@@ -464,28 +488,40 @@ Durante el MVP, el registro de entrada y salida podrá demostrarse sin disponer 
 
 ## 6.14. Turnos y cierre de caja
 
-El MVP incluirá:
+El MVP incluirá el soporte necesario para representar el funcionamiento confirmado de Fratelli:
 
-- identificación del turno;
-- asociación de ventas con el turno correspondiente;
-- registro de los medios de pago utilizados;
-- consulta de operaciones del turno;
-- registro del cierre;
-- resumen del turno;
-- información necesaria para obtener un cierre general según las reglas que se definan;
-- consideración de los gastos registrados que correspondan al cierre.
+- existen **dos turnos** de trabajo;
+- ambos turnos utilizan **la misma caja**;
+- se realiza **un único cierre** al final, no un cierre independiente por cada turno;
+- las personas conocen el turno al que fueron asignadas;
+- el encargado deja un monto inicial/fondo que sirve como inicio del turno siguiente;
+- el turno de la mañana deja una anotación o traspaso con los valores disponibles para que el turno siguiente verifique la continuidad;
+- la evidencia de ENT-02 indica que el traspaso actual puede mencionar efectivo, QR, crédito y PedidosYa; **sin embargo, el crédito a clientes permanece fuera del MVP**, por lo que Restaurant System no deberá implementar ni calcular crédito como parte obligatoria del cierre de esta entrega;
+- el cierre distingue efectivo y QR, considera gastos y conserva el tratamiento separado de la caja chica;
+- PedidosYa se controla por separado porque el dinero no ingresa de la misma forma que una venta pagada directamente en caja;
+- cuando existe una diferencia entre lo esperado y lo real, se registra una observación y se contrasta con el turno anterior;
+- el `ENCARGADO` realiza el cierre;
+- la `CONTADORA` revisa posteriormente la información, pero su aprobación no es requisito para que el cierre quede registrado.
 
-La evidencia disponible indica que Fratelli trabaja con dos turnos y realiza un cierre total considerando ambos.
+El MVP deberá permitir:
 
-### Pendiente de SRS
+- identificar el turno de las operaciones;
+- asociar ventas y gastos al turno correspondiente;
+- registrar los medios/canales necesarios para el resumen;
+- registrar el monto inicial utilizado para continuidad de caja;
+- registrar la información de traspaso entre turnos;
+- preparar el resumen necesario para el cierre único;
+- registrar el cierre y su responsable;
+- consultar el cierre posteriormente según permisos;
+- registrar/mostrar diferencias y una observación cuando corresponda.
 
-Deben precisarse:
+### Precisión de alcance
 
-- reglas exactas de apertura;
-- responsables;
-- diferencias de caja;
-- tratamiento de cada medio de pago;
-- secuencia exacta entre cierre de turno y cierre total.
+El sistema **no requiere integración técnica con PedidosYa** en el MVP. Únicamente deberá poder representar su importe/canal por separado cuando forme parte del cierre.
+
+La mención de **crédito** en el traspaso entre turnos describe el funcionamiento actual observado, pero no amplía el alcance: las ventas a crédito y cuentas por cobrar continúan en Post-MVP. El cierre del MVP no generará ni administrará saldos de crédito.
+
+Tampoco se implementará una contabilidad completa: el cierre operativo utilizará los datos confirmados del negocio sin inventar reglas fiscales o contables adicionales.
 
 ---
 
@@ -599,7 +635,7 @@ Participará principalmente en:
 - gastos;
 - cierres.
 
-La identidad exacta y permisos de este rol deberán confirmarse durante SRS.
+La SRS y los requisitos detallados consolidan este perfil bajo el rol `ADMINISTRADOR` para las capacidades de administración general. La persona concreta que asuma ese rol en operación dependerá de la asignación interna de Fratelli.
 
 ## 7.6. Trabajador
 
@@ -800,7 +836,7 @@ Se establecen las siguientes capacidades de producto antes de convertirlas en re
 | `MVP-04` | Relacionar platos con ingredientes                                             |
 | `MVP-05` | Gestionar existencias y movimientos                                            |
 | `MVP-06` | Configurar y detectar stock bajo                                               |
-| `MVP-07` | Registrar producción                                                           |
+| `MVP-07` | Registrar producción y actualizar existencia preparada                             |
 | `MVP-08` | Registrar pedidos                                                              |
 | `MVP-09` | Generar y consultar comandas                                                   |
 | `MVP-10` | Registrar ventas                                                               |
@@ -973,11 +1009,11 @@ El proyecto cuenta con **cuatro integrantes**.
 
 No existe acceso técnico suficiente para depender de su arquitectura, API o base de datos.
 
-## RST-MVP-04 — Relevamiento adicional
+## RST-MVP-04 — Relevamiento y control de evidencia
 
-No se realizarán nuevas entrevistas directas.
+La baseline actual ya fue contrastada mediante tres técnicas: entrevistas semiestructuradas, análisis de antecedentes y benchmarking. Las dos entrevistas constituyen aplicaciones de una misma técnica.
 
-Las aclaraciones se canalizarán mediante la Product Owner.
+Si aparece una nueva ambigüedad durante refinamiento, deberá registrarse y aclararse mediante evidencia pertinente —preferentemente consulta puntual al rol que conoce el proceso, canalizada por la Product Owner cuando corresponda—, sin inventar reglas.
 
 ## RST-MVP-05 — Hardware
 
@@ -987,9 +1023,9 @@ El hardware real no debe convertirse en dependencia crítica de la primera entre
 
 No existen métricas históricas suficientes para prometer mejoras cuantitativas específicas.
 
-## RST-MVP-07 — Reglas pendientes
+## RST-MVP-07 — Refinamiento antes de Ready
 
-Algunos detalles del dominio deberán resolverse antes de implementar las historias correspondientes.
+La segunda entrevista resolvió los bloqueos informativos principales de producción, compras, turnos y cierre. Las historias correspondientes pueden volver a `Backlog`, pero deberán cumplir la Definition of Ready antes de pasar a `Ready`. Los detalles Post-MVP o excepciones avanzadas no bloquean la baseline actual.
 
 ---
 
@@ -1019,9 +1055,9 @@ Una compra requiere disponer previamente del proveedor correspondiente.
 
 El cierre requiere disponer de información de ventas, medios de pago y movimientos incluidos durante el turno.
 
-## DEP-07 — Reglas de negocio
+## DEP-07 — Reglas de negocio y DoR
 
-Las historias con reglas todavía pendientes no podrán considerarse Ready hasta aclararlas.
+Las historias anteriormente bloqueadas ya cuentan con una baseline suficiente de reglas para volver a `Backlog`. Su paso a `Ready` dependerá de verificar criterios de aceptación, datos, dependencias y demás condiciones de la Definition of Ready.
 
 ---
 
@@ -1030,9 +1066,9 @@ Las historias con reglas todavía pendientes no podrán considerarse Ready hasta
 | ID         | Riesgo                                                                                 | Impacto    | Respuesta inicial                                                                 |
 | ---------- | -------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------- |
 | `R-MVP-01` | El alcance sigue siendo amplio para aproximadamente 15 días                            | Alto       | Refinar y ordenar por valor/dependencias; proteger los flujos críticos            |
-| `R-MVP-02` | Reglas incompletas de cierre de caja                                                   | Alto       | Aclarar antes de llevar sus historias a Ready                                     |
-| `R-MVP-03` | Reglas incompletas de compras/pagos                                                    | Medio/Alto | Implementar primero flujo básico confirmado y no inventar reglas avanzadas        |
-| `R-MVP-04` | Roles y permisos todavía no están totalmente definidos                                 | Alto       | Consolidarlos durante SRS/refinamiento                                            |
+| `R-MVP-02` | Interpretar incorrectamente la continuidad/cierre entre los dos turnos                          | Medio      | Usar la baseline confirmada en ENT-02 y validar criterios durante refinamiento     |
+| `R-MVP-03` | Ampliar compras hacia cuentas por pagar o recepciones parciales no requeridas en el MVP          | Medio      | Mantener el flujo básico confirmado y diferir reglas avanzadas                     |
+| `R-MVP-04` | Una persona puede acumular responsabilidades operativas y producir errores de autorización       | Alto       | Mantener usuarios con múltiples roles y verificar permisos efectivos               |
 | `R-MVP-05` | Integración biométrica puede depender del fabricante                                   | Medio      | Mantenerla fuera del MVP físico y desacoplada                                     |
 | `R-MVP-06` | No existe migración conocida desde el sistema actual                                   | Medio/Alto | Trabajar con sistema independiente y datos controlados                            |
 | `R-MVP-07` | Intentar replicar todas las capacidades del sistema anterior puede expandir el alcance | Alto       | Mantener baseline funcional, pero exigir justificación para cada historia del MVP |
@@ -1185,9 +1221,7 @@ docs/puml/flujo-valor-mvp.puml
 docs/images/flujo-valor-mvp.png
 ```
 
-No se crean todavía diagramas UML exhaustivos de casos de uso, clases o secuencias.
-
-Estos se elaborarán después de consolidar SRS, requisitos y alcance funcional.
+Este documento no incorpora diagramas UML exhaustivos de casos de uso, clases o secuencias. Dichos modelos pertenecen a las etapas posteriores de modelado y diseño, utilizando como entrada el alcance, la SRS y los requisitos ya consolidados.
 
 ---
 
@@ -1235,3 +1269,4 @@ El SRS deberá convertir este alcance en una especificación formal del producto
 | Versión | Fecha      | Descripción                                                                            | Estado         |
 | ------- | ---------- | -------------------------------------------------------------------------------------- | -------------- |
 | `0.1`   | 20/08/2026 | Definición del alcance y MVP operacional de reemplazo aprobado para la primera entrega | Listo para SRS |
+| `0.2`   | 21/08/2026 | Revalidación del MVP con tres técnicas; reglas de producción, compras, turnos y cierre precisadas sin ampliar alcance | Revalidado |

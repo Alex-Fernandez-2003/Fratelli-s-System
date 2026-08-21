@@ -40,13 +40,17 @@ El Product Backlog incluye:
 - trazabilidad hacia necesidades, RF, RNF y reglas de negocio;
 - criterios de aceptación iniciales.
 
-Las historias individuales se desarrollarán posteriormente en:
+La especificación de las HU vive en este Product Backlog y su estado operativo se gestiona en **GitHub Projects**.
+
+Los archivos individuales en:
 
 ```text
 docs/historias/
 ```
 
-Este documento funciona como **catálogo maestro** y no sustituye el refinamiento detallado de cada historia crítica.
+se crearán únicamente cuando una historia sea tomada por un integrante y necesite documentar implementación, pruebas y evidencias.
+
+Este documento funciona como **catálogo maestro** y no sustituye el refinamiento ni la evidencia de ejecución.
 
 ---
 
@@ -57,9 +61,9 @@ Este documento funciona como **catálogo maestro** y no sustituye el refinamient
 | **Documento**              | `07-product-backlog.md`       |
 | **Proyecto**               | Restaurant System             |
 | **Organización objetivo**  | Restaurante Fratelli          |
-| **Versión inicial**        | `0.1`                         |
-| **Estado**                 | Product Backlog inicial       |
-| **Fecha**                  | 20 de agosto de 2026          |
+| **Versión actual**         | `0.2`                         |
+| **Estado**                 | Product Backlog revalidado    |
+| **Fecha**                  | 21 de agosto de 2026          |
 | **Product Owner**          | Ana Paola Viscarra Chambi     |
 | **Scrum Master**           | Alex Saúl Fernandez Valdez    |
 | **Baseline de requisitos** | `06-srs.md` + `requirements/` |
@@ -225,11 +229,11 @@ Mantener productos, ingredientes, platos y existencias en una fuente central, co
 
 ---
 
-## EPI-03 — Producción y lotes
+## EPI-03 — Producción y existencias preparadas
 
 ### Valor
 
-Registrar directamente la producción, consumir ingredientes y mantener los platos/preparaciones producidos separados mediante lotes.
+Registrar directamente la producción, consumir ingredientes y mantener una existencia preparada disponible sin duplicar el consumo de insumos.
 
 ### Necesidades relacionadas
 
@@ -478,35 +482,35 @@ Disponer de una fuente central para ventas, inventario y producción.
 
 ## HU-004 — Definir composición de platos y preparaciones
 
-| Campo            | Valor                                          |
-| ---------------- | ---------------------------------------------- |
-| **Épica**        | `EPI-02`, `EPI-03`                             |
-| **Rol**          | ADMINISTRADOR / ENCARGADO                      |
-| **Prioridad**    | **MUST**                                       |
-| **Story Points** | `5`                                            |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                     |
-| **RF**           | `RF-010`                                       |
-| **RNF**          | `RNF-INT-002`                                  |
-| **RN**           | `RN-006`, `RN-008`                             |
-| **Necesidades**  | `N-003`, `N-004`                               |
-| **Dependencias** | `HU-003`                                       |
-| **Bloqueo**      | Unidades y conversiones cuando sean necesarias |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-02`, `EPI-03` |
+| **Rol** | ADMINISTRADOR / ENCARGADO |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-010` |
+| **RNF** | `RNF-INT-002` |
+| **RN** | `RN-006`, `RN-008`, `RN-028` |
+| **Necesidades** | `N-003`, `N-004` |
+| **Dependencias** | `HU-003` |
 
 ### Historia
 
-> **Como encargado, quiero definir los ingredientes y cantidades que componen una preparación para que la producción pueda calcular el consumo de insumos.**
+> **Como encargado, quiero definir los ingredientes, cantidades y unidades que componen una preparación para que la producción pueda calcular correctamente el consumo de insumos.**
 
 ### Beneficio
 
-Relacionar producción con inventario sin transcripción manual posterior.
+Relacionar producción con inventario sin transcripción manual posterior y soportar las unidades realmente utilizadas por Fratelli.
 
 ### Criterios de aceptación iniciales
 
-- una composición identifica preparación, ingredientes y cantidades;
-- no puede utilizar ingredientes inexistentes;
-- la composición puede consultarse antes de producir;
-- no se inventarán conversiones de unidades no validadas;
-- las historias dependientes no serán Ready mientras una conversión necesaria siga sin definir.
+- una composición identifica preparación, ingredientes, cantidades y unidades;
+- puede contener más de un ingrediente;
+- soporta conversiones compatibles cuando sean necesarias, incluyendo el caso confirmado `kg ↔ g`;
+- los líquidos pueden manejarse en litros según el flujo observado;
+- no se utilizan ingredientes inexistentes/inactivos;
+- una conversión no definida para un caso nuevo debe validarse antes de utilizarse.
 
 ---
 
@@ -576,70 +580,71 @@ Facilitar la detección oportuna de necesidades de reposición.
 
 ---
 
-## HU-007 — Registrar producción y generar lote
+## HU-007 — Registrar producción y actualizar existencia preparada
 
-| Campo            | Valor                                                                   |
-| ---------------- | ----------------------------------------------------------------------- |
-| **Épica**        | `EPI-03`                                                                |
-| **Rol**          | COCINA / ENCARGADO / ADMINISTRADOR                                      |
-| **Prioridad**    | **MUST**                                                                |
-| **Story Points** | `8`                                                                     |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                                              |
-| **RF**           | `RF-021`, `RF-022`, `RF-023`                                            |
-| **RNF**          | `RNF-INT-001`, `RNF-INT-002`, `RNF-INT-003`                             |
-| **RN**           | `RN-006`, `RN-007`, `RN-008`                                            |
-| **Necesidades**  | `N-003`, `N-004`                                                        |
-| **Dependencias** | `HU-004`, `HU-005`                                                      |
-| **Bloqueo**      | Rendimiento, unidades, mermas/desperdicios y reglas de lotes aplicables |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-03` |
+| **Rol** | COCINA / ENCARGADO / ADMINISTRADOR |
+| **Prioridad** | **MUST** |
+| **Story Points** | `8` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-021`, `RF-022`, `RF-023` |
+| **RNF** | `RNF-INT-001`, `RNF-INT-002`, `RNF-INT-003` |
+| **RN** | `RN-006`, `RN-007`, `RN-008`, `RN-029`, `RN-030`, `RN-031` |
+| **Necesidades** | `N-003`, `N-004` |
+| **Dependencias** | `HU-004`, `HU-005` |
 
 ### Historia
 
-> **Como personal de cocina, quiero registrar directamente una producción para descontar los ingredientes correspondientes y generar el lote preparado.**
+> **Como personal de cocina, quiero registrar directamente la cantidad final producida para descontar los ingredientes correspondientes y actualizar la disponibilidad de la preparación.**
 
 ### Beneficio
 
-Eliminar la secuencia hoja manual → transcripción posterior y mantener separados ingredientes y platos producidos.
+Eliminar la secuencia hoja manual → transcripción posterior y mantener inventario y producción coordinados.
 
 ### Criterios de aceptación iniciales
 
 - COCINA puede registrar una producción;
-- confirmar producción consume los ingredientes definidos;
-- se genera un lote con la cantidad producida;
-- la operación conserva responsable y fecha;
-- si ocurre un error, no queda una producción parcialmente aplicada;
-- no se duplica el consumo de ingredientes durante la venta posterior.
+- se registra la **cantidad final obtenida**, sin exigir rendimiento esperado;
+- confirmar producción consume los ingredientes de la composición, aplicando conversiones compatibles;
+- la cantidad producida incrementa la existencia preparada;
+- producciones repetidas pueden acumular disponibilidad total, conservando cada evento con fecha, cantidad y responsable;
+- no se requiere selección de lotes múltiples ni vencimiento exacto para el MVP;
+- una baja/pérdida relevante se registra como salida separada con motivo;
+- un error no deja consumo o disponibilidad parcialmente aplicados.
 
 ---
 
-## HU-008 — Consultar producción y lotes
+## HU-008 — Consultar registros de producción
 
-| Campo            | Valor                                          |
-| ---------------- | ---------------------------------------------- |
-| **Épica**        | `EPI-03`                                       |
-| **Rol**          | COCINA / ENCARGADO / ADMINISTRADOR / CONTADORA |
-| **Prioridad**    | **SHOULD**                                     |
-| **Story Points** | `3`                                            |
-| **Estado**       | **CANDIDATA A READY**                          |
-| **RF**           | `RF-024`                                       |
-| **RNF**          | `RNF-AUD-001`, `RNF-AUD-002`                   |
-| **RN**           | `RN-007`                                       |
-| **Necesidades**  | `N-003`, `N-004`                               |
-| **Dependencias** | `HU-007`                                       |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-03` |
+| **Rol** | COCINA / ENCARGADO / ADMINISTRADOR / CONTADORA |
+| **Prioridad** | **SHOULD** |
+| **Story Points** | `3` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-024` |
+| **RNF** | `RNF-AUD-001`, `RNF-AUD-002` |
+| **RN** | `RN-007`, `RN-030` |
+| **Necesidades** | `N-003`, `N-004` |
+| **Dependencias** | `HU-007` |
 
 ### Historia
 
-> **Como usuario autorizado, quiero consultar las producciones y lotes registrados para revisar qué se produjo, cuánto y quién realizó la operación.**
+> **Como usuario autorizado, quiero consultar las producciones registradas para revisar qué se produjo, cuánto, cuándo y quién realizó la operación.**
 
 ### Beneficio
 
-Dar visibilidad a la producción registrada.
+Dar visibilidad y trazabilidad a la producción registrada.
 
 ### Criterios de aceptación iniciales
 
-- se visualizan fecha, cantidad, preparación y responsable;
-- se distingue producción de lote;
+- se visualizan preparación, fecha, cantidad y responsable;
 - COCINA puede consultar sus procesos;
 - CONTADORA mantiene acceso de solo lectura;
+- producciones repetidas permanecen visibles como eventos aunque la existencia preparada se consolide;
 - la consulta no modifica inventario.
 
 ---
@@ -756,7 +761,7 @@ Evitar operaciones inválidas y mantener coherencia con cocina.
 | **RNF**          | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001`                               |
 | **RN**           | `RN-004`, `RN-005`, `RN-008`, `RN-015`                                    |
 | **Necesidades**  | `N-004`, `N-011`, `N-014`                                                 |
-| **Dependencias** | `HU-003`, `HU-005`, `HU-009`; `HU-007` para elementos producidos por lote |
+| **Dependencias** | `HU-003`, `HU-005`, `HU-009`; `HU-007` para elementos con existencia preparada |
 
 ### Historia
 
@@ -909,68 +914,70 @@ Reducir la dispersión de información de proveedores.
 
 ## HU-017 — Registrar una compra
 
-| Campo            | Valor                                                                  |
-| ---------------- | ---------------------------------------------------------------------- |
-| **Épica**        | `EPI-06`                                                               |
-| **Rol**          | ENCARGADO / ADMINISTRADOR / COCINA autorizada                          |
-| **Prioridad**    | **MUST**                                                               |
-| **Story Points** | `5`                                                                    |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                                             |
-| **RF**           | `RF-040`, `RF-041`                                                     |
-| **RNF**          | `RNF-AUD-001`, `RNF-USA-003`                                           |
-| **RN**           | `RN-009`, `RN-010`, `RN-027`                                           |
-| **Necesidades**  | `N-006`, `N-007`, `N-008`, `N-014`                                     |
-| **Dependencias** | `HU-003`, `HU-016`                                                     |
-| **Bloqueo**      | Delimitación exacta de categorías/autorizaciones de compra para COCINA |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-06` |
+| **Rol** | ENCARGADO / ADMINISTRADOR / COCINA según ámbito |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-040`, `RF-041` |
+| **RNF** | `RNF-AUD-001`, `RNF-USA-003` |
+| **RN** | `RN-009`, `RN-010`, `RN-027`, `RN-032` |
+| **Necesidades** | `N-006`, `N-007`, `N-008`, `N-014` |
+| **Dependencias** | `HU-003`, `HU-016` |
 
 ### Historia
 
-> **Como responsable autorizado, quiero registrar una compra asociada a un proveedor para centralizar su seguimiento desde que queda pendiente.**
+> **Como responsable de compras, quiero registrar una compra asociada a un proveedor para centralizar su seguimiento desde que queda pendiente hasta su recepción o cancelación.**
 
 ### Beneficio
 
-Sustituir parte del manejo distribuido de compras.
+Sustituir parte del manejo distribuido de compras y conservar responsable/respaldo.
 
 ### Criterios de aceptación iniciales
 
 - una compra nueva queda `PENDIENTE`;
 - registra proveedor, detalle, cantidades, costos y responsable;
 - una compra pendiente no incrementa inventario;
-- COCINA solo gestiona compras de su ámbito autorizado;
-- no se inventan categorías de autorización pendientes de validar.
+- COCINA puede registrar directamente compras de ingredientes para preparaciones y la operación queda respaldada por un recibo, sin imponer todavía el formato de digitalización;
+- ENCARGADO gestiona principalmente bebidas, productos de limpieza y otros insumos generales;
+- ADMINISTRADOR conserva gestión general.
 
 ---
 
 ## HU-018 — Recibir una compra e incrementar inventario
 
-| Campo            | Valor                                         |
-| ---------------- | --------------------------------------------- |
-| **Épica**        | `EPI-06`                                      |
-| **Rol**          | ENCARGADO / ADMINISTRADOR / COCINA autorizada |
-| **Prioridad**    | **MUST**                                      |
-| **Story Points** | `5`                                           |
-| **Estado**       | **CANDIDATA A READY**                         |
-| **RF**           | `RF-042`, `RF-043`                            |
-| **RNF**          | `RNF-INT-001`, `RNF-INT-002`                  |
-| **RN**           | `RN-009`, `RN-010`, `RN-027`                  |
-| **Necesidades**  | `N-004`, `N-006`, `N-008`                     |
-| **Dependencias** | `HU-005`, `HU-017`                            |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-06` |
+| **Rol** | ENCARGADO / ADMINISTRADOR / COCINA según ámbito |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-042`, `RF-043` |
+| **RNF** | `RNF-INT-001`, `RNF-INT-002` |
+| **RN** | `RN-009`, `RN-010`, `RN-027`, `RN-033`, `RN-034` |
+| **Necesidades** | `N-004`, `N-006`, `N-008` |
+| **Dependencias** | `HU-005`, `HU-017` |
 
 ### Historia
 
-> **Como responsable de compras, quiero confirmar la recepción de una compra para incorporar los insumos recibidos al inventario.**
+> **Como responsable de compras, quiero confirmar la recepción verificada de una compra para incorporar los insumos aceptados al inventario.**
 
 ### Beneficio
 
-Relacionar compras reales con existencias.
+Relacionar compras realmente recibidas con existencias y evitar entradas prematuras.
 
 ### Criterios de aceptación iniciales
 
 - solo `RECIBIDA` incrementa stock;
-- `PENDIENTE` no incrementa;
-- `CANCELADA` no incrementa;
-- se generan movimientos trazables;
-- recepción parcial no forma parte de esta baseline.
+- `PENDIENTE` y `CANCELADA` no incrementan;
+- antes de recibir se verifica el producto;
+- un insumo de cocina puede requerir pesar/porcionar antes del ingreso;
+- una compra incompleta/no aceptada se coordina para devolución y no se marca recibida;
+- recepción parcial estructurada no es requisito del MVP;
+- los movimientos quedan trazables a la compra y responsable.
 
 ---
 
@@ -1170,103 +1177,107 @@ Reducir la transcripción desde planillas físicas.
 
 ## HU-025 — Gestionar y operar turnos
 
-| Campo            | Valor                                                      |
-| ---------------- | ---------------------------------------------------------- |
-| **Épica**        | `EPI-09`                                                   |
-| **Rol**          | ENCARGADO / ADMINISTRADOR / MESERO                         |
-| **Prioridad**    | **MUST**                                                   |
-| **Story Points** | `5`                                                        |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                                 |
-| **RF**           | `RF-052`, `RF-053`                                         |
-| **RNF**          | `RNF-AUD-001`, `RNF-INT-001`                               |
-| **RN**           | `RN-020`, `RN-025`                                         |
-| **Necesidades**  | `N-009`, `N-011`, `N-014`                                  |
-| **Dependencias** | `HU-012`, `HU-020`                                         |
-| **Bloqueo**      | Reglas exactas de apertura y relación entre los dos turnos |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-09` |
+| **Rol** | ENCARGADO / ADMINISTRADOR / MESERO |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-052`, `RF-053` |
+| **RNF** | `RNF-AUD-001`, `RNF-INT-001` |
+| **RN** | `RN-020`, `RN-025`, `RN-035`, `RN-036` |
+| **Necesidades** | `N-009`, `N-011`, `N-014` |
+| **Dependencias** | `HU-012`, `HU-020` |
 
 ### Historia
 
-> **Como encargado, quiero gestionar los turnos y asociarles las operaciones correspondientes para disponer de la base necesaria para el cierre.**
+> **Como encargado, quiero gestionar los dos turnos y su traspaso dentro de una misma caja para mantener continuidad de las operaciones hasta el cierre único.**
 
 ### Beneficio
 
-Agrupar ventas y gastos por contexto operativo.
+Agrupar operaciones por turno sin modelar incorrectamente dos cajas o dos cierres independientes.
 
 ### Criterios de aceptación iniciales
 
-- las ventas quedan asociadas a un turno;
-- los gastos aplicables pueden asociarse al turno;
-- MESERO opera dentro de su turno;
-- MESERO no administra otros turnos por ese rol;
-- no se inventarán reglas de apertura pendientes.
+- se distinguen los dos turnos y las operaciones de cada uno;
+- ambos turnos comparten la misma caja;
+- las ventas y gastos aplicables conservan su turno de origen;
+- se puede registrar el monto inicial/fondo utilizado para continuidad;
+- el turno saliente puede dejar información de traspaso para verificación del siguiente;
+- el traspaso no constituye un cierre separado;
+- MESERO opera dentro de su turno y no administra otros turnos únicamente por ese rol.
 
 ---
 
-## HU-026 — Calcular información esperada del cierre
+## HU-026 — Preparar información esperada del cierre
 
-| Campo            | Valor                                                                     |
-| ---------------- | ------------------------------------------------------------------------- |
-| **Épica**        | `EPI-09`                                                                  |
-| **Rol**          | ENCARGADO / ADMINISTRADOR                                                 |
-| **Prioridad**    | **MUST**                                                                  |
-| **Story Points** | `5`                                                                       |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                                                |
-| **RF**           | `RF-054`                                                                  |
-| **RNF**          | `RNF-INT-001`, `RNF-REC-001`                                              |
-| **RN**           | `RN-016`, `RN-023`                                                        |
-| **Necesidades**  | `N-009`, `N-011`                                                          |
-| **Dependencias** | `HU-025`                                                                  |
-| **Bloqueo**      | Monto inicial, diferencias, faltantes/sobrantes, PedidosYa y cierre total |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-09` |
+| **Rol** | ENCARGADO / ADMINISTRADOR |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-054` |
+| **RNF** | `RNF-INT-001`, `RNF-REC-001` |
+| **RN** | `RN-016`, `RN-023`, `RN-035`–`RN-038` |
+| **Necesidades** | `N-009`, `N-011` |
+| **Dependencias** | `HU-025` |
 
 ### Historia
 
-> **Como encargado, quiero consultar el resumen esperado del turno para disponer de la información necesaria antes de registrar el cierre.**
+> **Como encargado, quiero consultar el resumen esperado de la caja compartida para verificar la información antes de registrar el único cierre final.**
 
 ### Beneficio
 
-Centralizar el cálculo del cierre a partir de operaciones registradas.
+Centralizar el cierre a partir de las operaciones de ambos turnos y mostrar por separado los componentes que se controlan de forma distinta.
 
 ### Criterios de aceptación iniciales
 
-- incluye ventas registradas del turno;
-- distingue medios de pago definidos;
-- considera gastos asociados según la regla aprobada;
-- no utiliza fórmulas inventadas para componentes pendientes;
-- el cálculo debe quedar consistente con las operaciones del turno.
+- conserva el monto inicial/fondo;
+- distingue ventas en efectivo y QR;
+- considera los gastos registrados aplicables;
+- permite mantener caja chica diferenciada cuando corresponda;
+- PedidosYa aparece como canal/control separado y no se mezcla automáticamente con efectivo/QR;
+- si se registra efectivo real/declarado, puede obtenerse una diferencia frente a lo esperado;
+- no requiere integración técnica con PedidosYa ni reglas contables no relevadas.
 
 ---
 
 ## HU-027 — Registrar cierre de turno/caja
 
-| Campo            | Valor                                       |
-| ---------------- | ------------------------------------------- |
-| **Épica**        | `EPI-09`                                    |
-| **Rol**          | ENCARGADO / ADMINISTRADOR                   |
-| **Prioridad**    | **MUST**                                    |
-| **Story Points** | `5`                                         |
-| **Estado**       | **REFINAMIENTO REQUERIDO**                  |
-| **RF**           | `RF-055`                                    |
-| **RNF**          | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001` |
-| **RN**           | `RN-016`, `RN-020`, `RN-023`, `RN-024`      |
-| **Necesidades**  | `N-009`, `N-011`, `N-013`, `N-014`          |
-| **Dependencias** | `HU-026`                                    |
-| **Bloqueo**      | Reglas operativas de cierre aún pendientes  |
+| Campo | Valor |
+|---|---|
+| **Épica** | `EPI-09` |
+| **Rol** | ENCARGADO / ADMINISTRADOR |
+| **Prioridad** | **MUST** |
+| **Story Points** | `5` |
+| **Estado** | **CANDIDATA A READY** |
+| **RF** | `RF-055` |
+| **RNF** | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001` |
+| **RN** | `RN-016`, `RN-020`, `RN-023`, `RN-024`, `RN-035`, `RN-038`, `RN-039` |
+| **Necesidades** | `N-009`, `N-011`, `N-013`, `N-014` |
+| **Dependencias** | `HU-026` |
 
 ### Historia
 
-> **Como encargado, quiero registrar el cierre del turno/caja para consolidar las operaciones bajo responsabilidad de un usuario autorizado.**
+> **Como encargado, quiero registrar el único cierre final de la caja para consolidar las operaciones y dejar trazabilidad de su resultado.**
 
 ### Beneficio
 
-Preservar una capacidad crítica del sistema actual y centralizar el cierre.
+Preservar una capacidad operativa crítica y representar correctamente el flujo confirmado de Fratelli.
 
 ### Criterios de aceptación iniciales
 
-- ADMINISTRADOR puede cerrar;
 - ENCARGADO puede cerrar;
+- ADMINISTRADOR puede cerrar por su permiso general;
 - MESERO sin ENCARGADO no puede cerrar;
-- MESERO + ENCARGADO sí puede cerrar;
-- conserva usuario responsable;
+- MESERO + ENCARGADO sí puede cerrar por el segundo rol;
+- se registra un único cierre final para la caja compartida;
+- si existe faltante/sobrante puede conservarse diferencia y observación;
+- el cierre conserva responsable;
+- CONTADORA puede revisarlo después, pero no debe aprobarlo para que quede cerrado;
 - un error no deja el cierre parcialmente aplicado.
 
 ---
@@ -1604,9 +1615,9 @@ No es criterio de aceptación del MVP actual.
 |     3 | `HU-003` | Gestionar productos, ingredientes y platos    | EPI-02        | MUST   |   5 | Candidata a Ready      |
 |     4 | `HU-005` | Registrar movimientos y consultar existencias | EPI-02        | MUST   |   5 | Candidata a Ready      |
 |     5 | `HU-006` | Configurar y visualizar stock bajo            | EPI-02        | MUST   |   3 | Candidata a Ready      |
-|     6 | `HU-004` | Definir composición de platos/preparaciones   | EPI-02/EPI-03 | MUST   |   5 | Refinamiento requerido |
-|     7 | `HU-007` | Registrar producción y generar lote           | EPI-03        | MUST   |   8 | Refinamiento requerido |
-|     8 | `HU-008` | Consultar producción y lotes                  | EPI-03        | SHOULD |   3 | Candidata a Ready      |
+|     6 | `HU-004` | Definir composición de platos/preparaciones   | EPI-02/EPI-03 | MUST   |   5 | Candidata a Ready      |
+|     7 | `HU-007` | Registrar producción y actualizar existencia  | EPI-03        | MUST   |   8 | Candidata a Ready      |
+|     8 | `HU-008` | Consultar registros de producción             | EPI-03        | SHOULD |   3 | Candidata a Ready      |
 |     9 | `HU-009` | Registrar y gestionar pedidos                 | EPI-04        | MUST   |   5 | Candidata a Ready      |
 |    10 | `HU-010` | Generar y gestionar comandas                  | EPI-04        | MUST   |   5 | Candidata a Ready      |
 |    11 | `HU-011` | Cancelar pedido antes de listo                | EPI-04        | MUST   |   2 | Candidata a Ready      |
@@ -1615,7 +1626,7 @@ No es criterio de aceptación del MVP actual.
 |    14 | `HU-014` | Gestionar clientes básicos                    | EPI-05        | SHOULD |   3 | Candidata a Ready      |
 |    15 | `HU-015` | Consultar historial de ventas                 | EPI-05        | SHOULD |   3 | Candidata a Ready      |
 |    16 | `HU-016` | Gestionar proveedores                         | EPI-06        | MUST   |   3 | Candidata a Ready      |
-|    17 | `HU-017` | Registrar compra                              | EPI-06        | MUST   |   5 | Refinamiento requerido |
+|    17 | `HU-017` | Registrar compra                              | EPI-06        | MUST   |   5 | Candidata a Ready      |
 |    18 | `HU-018` | Recibir compra e incrementar inventario       | EPI-06        | MUST   |   5 | Candidata a Ready      |
 |    19 | `HU-019` | Consultar historial de compras                | EPI-06        | SHOULD |   3 | Candidata a Ready      |
 |    20 | `HU-020` | Registrar gastos diarios                      | EPI-07        | MUST   |   3 | Candidata a Ready      |
@@ -1623,9 +1634,9 @@ No es criterio de aceptación del MVP actual.
 |    22 | `HU-022` | Registrar entrada y salida                    | EPI-08        | MUST   |   5 | Candidata a Ready      |
 |    23 | `HU-023` | Consultar mi asistencia                       | EPI-08        | SHOULD |   2 | Candidata a Ready      |
 |    24 | `HU-024` | Consultar asistencia de trabajadores          | EPI-08        | MUST   |   3 | Candidata a Ready      |
-|    25 | `HU-025` | Gestionar y operar turnos                     | EPI-09        | MUST   |   5 | Refinamiento requerido |
-|    26 | `HU-026` | Calcular información esperada de cierre       | EPI-09        | MUST   |   5 | Refinamiento requerido |
-|    27 | `HU-027` | Registrar cierre de turno/caja                | EPI-09        | MUST   |   5 | Refinamiento requerido |
+|    25 | `HU-025` | Gestionar y operar turnos                     | EPI-09        | MUST   |   5 | Candidata a Ready      |
+|    26 | `HU-026` | Preparar información esperada de cierre       | EPI-09        | MUST   |   5 | Candidata a Ready      |
+|    27 | `HU-027` | Registrar cierre de turno/caja                | EPI-09        | MUST   |   5 | Candidata a Ready      |
 |    28 | `HU-028` | Consultar cierres                             | EPI-09        | SHOULD |   2 | Candidata a Ready      |
 |    29 | `HU-029` | Reporte de ventas                             | EPI-10        | SHOULD |   3 | Candidata a Ready      |
 |    30 | `HU-030` | Reporte de inventario                         | EPI-10        | SHOULD |   3 | Candidata a Ready      |
@@ -1665,7 +1676,7 @@ HU-005 Inventario
    ├── HU-006 Alertas
    ├── HU-004 Composición
    │      ↓
-   │   HU-007 Producción / lote
+   │   HU-007 Producción / existencia preparada
    │
    └── HU-012 Venta
 ```
@@ -1694,7 +1705,7 @@ HU-020 Gastos
       ↓
 HU-025 Turnos
       ↓
-HU-026 Cálculo cierre
+HU-026 Resumen de cierre
       ↓
 HU-027 Cierre
 ```
@@ -1708,20 +1719,34 @@ HU-022 Asistencia
 
 ---
 
-# 13. Historias actualmente bloqueadas o con refinamiento obligatorio
+# 13. Historias refinadas por ENT-02 y movimiento de tablero
 
-| HU       | Motivo                                               | Acción necesaria                             |
-| -------- | ---------------------------------------------------- | -------------------------------------------- |
-| `HU-004` | Unidades/conversiones                                | Refinar reglas que realmente sean utilizadas |
-| `HU-007` | Rendimiento, mermas, unidades y lotes                | Consulta y definición antes de Ready         |
-| `HU-017` | Alcance exacto de compras autorizadas a COCINA       | Precisar categorías/responsabilidades        |
-| `HU-025` | Apertura y relación de los dos turnos                | Consulta mediante Product Owner              |
-| `HU-026` | Monto inicial, diferencias, PedidosYa y cierre total | Consulta mediante Product Owner              |
-| `HU-027` | Depende de reglas definitivas de cierre              | Resolver `HU-026` y reglas relacionadas      |
+Las seis historias que inicialmente estaban en `Blocked` contaban con bloqueos informativos explícitos. La segunda entrevista proporcionó evidencia suficiente para definir su baseline funcional:
 
-Estas historias permanecen dentro del MVP.
+| HU | Información aclarada | Estado documental actual | Movimiento en GitHub Projects |
+|---|---|---|---|
+| `HU-004` | unidades y conversión real `kg ↔ g` | CANDIDATA A READY | `Blocked → Backlog` |
+| `HU-007` | cantidad final, bajas con motivo, disponibilidad consolidada y sin lotes múltiples obligatorios | CANDIDATA A READY | `Blocked → Backlog` |
+| `HU-017` | compras directas de Cocina, compras generales del Encargado y respaldo por recibo | CANDIDATA A READY | `Blocked → Backlog` |
+| `HU-025` | dos turnos, una caja, monto inicial y traspaso | CANDIDATA A READY | `Blocked → Backlog` |
+| `HU-026` | efectivo, QR, gastos, caja chica, diferencias y PedidosYa separado | CANDIDATA A READY | `Blocked → Backlog` |
+| `HU-027` | cierre único por Encargado y revisión posterior de Contadora sin aprobación | CANDIDATA A READY | `Blocked → Backlog` |
 
-El estado `REFINAMIENTO REQUERIDO` evita tratarlas como listas para desarrollo antes de tiempo.
+### Estado del bloqueo
+
+En la baseline documental actual **no queda ninguna de estas seis HU bloqueada por falta de información de negocio**.
+
+Esto no significa que pasen automáticamente a `Ready`.
+
+```text
+Blocked
+   ↓ evidencia ENT-02
+Backlog
+   ↓ refinamiento + Definition of Ready
+Ready
+```
+
+Las excepciones Post-MVP o casos avanzados —por ejemplo recepción parcial estructurada, cuentas por pagar o lotes/vencimientos— no deben utilizarse para bloquear el flujo básico aprobado.
 
 ---
 
@@ -1743,7 +1768,7 @@ Se consideran inicialmente críticas por valor, dependencia o riesgo:
 | `HU-018` | Integración compra/inventario                |
 | `HU-022` | Necesidad prioritaria de asistencia          |
 | `HU-025` | Habilita cierre                              |
-| `HU-026` | Alto riesgo por reglas pendientes            |
+| `HU-026` | Alto impacto sobre conciliación/cierre            |
 | `HU-027` | Capacidad operativa crítica existente        |
 
 Estas historias deberán recibir refinamiento especialmente cuidadoso antes de Sprint Planning.
@@ -1776,7 +1801,7 @@ Cada historia del MVP se relaciona con:
 
 Las historias del MVP reciben Story Points iniciales.
 
-Las historias con reglas pendientes siguen siendo estimables de manera aproximada, pero su estimación deberá revisarse después del refinamiento.
+Las estimaciones siguen siendo relativas y podrán revisarse durante refinamiento si la comprensión técnica demuestra un tamaño distinto.
 
 ## Small
 
@@ -1887,13 +1912,13 @@ No deberá incorporarse una historia únicamente porque:
 
 # 20. Criterio para historias individuales
 
-Los futuros archivos en:
+Cuando una historia sea tomada por un integrante y comience su ejecución, el archivo correspondiente en:
 
 ```text
 docs/historias/
 ```
 
-deberán desarrollar como mínimo:
+deberá documentar como mínimo:
 
 - ID;
 - título;
@@ -1934,46 +1959,64 @@ MUST
 READY
 ```
 
-Una historia puede ser:
+Una historia puede ser `MUST` y permanecer en `Backlog` hasta demostrar que cumple DoR.
 
-```text
-MUST
-+
-REFINAMIENTO REQUERIDO
-```
-
-como ocurre actualmente con varias historias de producción, compras y caja.
+Tras ENT-02, las seis historias que estaban `REFINAMIENTO REQUERIDO` pasan a `CANDIDATA A READY`; por tanto, ya pueden moverse de `Blocked` a `Backlog`, pero **no se marcarán `Ready` por anticipado**.
 
 ---
 
 # 22. Próximo bloque documental
 
-Después del Product Backlog se desarrollarán las historias individuales en:
+El Product Backlog ya se encuentra preparado para su gestión operativa en **GitHub Projects**.
+
+Las seis HU refinadas deberán moverse:
 
 ```text
-docs/historias/
+Blocked → Backlog
 ```
 
-y posteriormente:
+El siguiente documento principal es:
 
 ```text
 docs/08-scrum-y-refinamiento.md
 ```
 
-El orden específico deberá preservar la relación entre:
+Allí se formalizarán, entre otros aspectos:
+
+- Definition of Ready;
+- Definition of Done;
+- política de estados del tablero;
+- refinamiento de historias críticas;
+- criterios para seleccionar historias en Sprint Planning.
+
+La carpeta:
 
 ```text
-Backlog
-↓
-Historias
-↓
-Criterios
-↓
-DoR
-↓
-Refinamiento
-↓
+docs/historias/
+```
+
+mantendrá por ahora únicamente su `README.md`. Cada archivo `HU-XXX-*.md` será creado por el integrante responsable **cuando la historia se trabaje**, para registrar implementación, pruebas y evidencias.
+
+El flujo correcto será:
+
+```text
+Product Backlog
+      ↓
+GitHub Projects — Backlog
+      ↓
+Refinamiento / DoR
+      ↓
+Ready
+      ↓
 Sprint Planning
+      ↓
+In Progress
+      ↓
+Documentación de ejecución en docs/historias/
+      ↓
+Review
+      ↓
+Done
 ```
 
 ---
@@ -1982,4 +2025,5 @@ Sprint Planning
 
 | Versión | Fecha      | Descripción                                                                                                           | Estado                                           |
 | ------- | ---------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `0.1`   | 20/08/2026 | Product Backlog inicial con 31 historias MVP y 8 historias Post-MVP, priorización MoSCoW, Story Points y trazabilidad | Listo para historias individuales y refinamiento |
+| `0.1`   | 20/08/2026 | Product Backlog inicial con 31 historias MVP y 8 historias Post-MVP, priorización MoSCoW, Story Points y trazabilidad | Listo para refinamiento |
+| `0.2`   | 21/08/2026 | ENT-02 resuelve las seis HU bloqueadas; se actualizan producción, compras y caja y se habilita movimiento `Blocked → Backlog` | Revalidado para GitHub Projects |

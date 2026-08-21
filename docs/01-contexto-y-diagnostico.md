@@ -2,21 +2,25 @@
 
 ## 1. Propósito del documento
 
-Este documento describe el contexto actual del restaurante **Fratelli**, su funcionamiento, participantes, herramientas, procesos y dificultades conocidas antes de definir formalmente la solución de software.
+Este documento describe el contexto actual de **Fratelli**, consolida el diagnóstico que da origen a **Restaurant System** y registra el estado del conocimiento después de aplicar las tres técnicas de relevamiento definidas para el proyecto.
 
-La versión actual incorpora tanto el documento descriptivo elaborado por la Product Owner como los resultados de la entrevista semiestructurada realizada el 19 de agosto de 2026.
+La versión actual utiliza:
 
-Su función es servir como base para:
+- análisis de antecedentes;
+- dos entrevistas semiestructuradas (`ENT-01` y `ENT-02`), pertenecientes a una misma técnica;
+- análisis de sistemas similares / benchmarking.
 
-- consolidar hallazgos y necesidades;
-- formular el problema del proyecto;
-- definir objetivos;
-- delimitar alcance y MVP;
-- redactar requisitos;
-- construir el Product Backlog;
-- preparar posteriormente Sprint 0.
+Su objetivo es separar claramente:
 
-Este documento **describe y diagnostica**. Las funcionalidades sugeridas durante el relevamiento no se consideran todavía requisitos formales.
+```text
+situación actual
+problemas observados
+reglas conocidas
+limitaciones
+referencias externas
+```
+
+antes de convertir la información en necesidades y requisitos.
 
 ---
 
@@ -26,10 +30,10 @@ Este documento **describe y diagnostica**. Las funcionalidades sugeridas durante
 |---|---|
 | **Documento** | `01-contexto-y-diagnostico.md` |
 | **Proyecto** | Restaurant System |
-| **Organización objetivo** | Restaurante Fratelli |
-| **Versión actual** | `0.2` |
-| **Estado** | Diagnóstico actualizado y validado inicialmente |
-| **Última actualización** | 20 de agosto de 2026 |
+| **Organización** | Restaurante Fratelli |
+| **Versión actual** | `0.3` |
+| **Fecha de actualización** | 21 de agosto de 2026 |
+| **Estado** | Diagnóstico consolidado tras tres técnicas de relevamiento |
 | **Product Owner** | Ana Paola Viscarra Chambi |
 | **Scrum Master** | Alex Saúl Fernandez Valdez |
 
@@ -37,157 +41,224 @@ Este documento **describe y diagnostica**. Las funcionalidades sugeridas durante
 
 # 3. Base de evidencia
 
-## 3.1. Documento descriptivo
+## 3.1. Análisis de antecedentes
 
-Ana Paola Viscarra Chambi, trabajadora actual de Fratelli y Product Owner del proyecto, redactó antes de la entrevista un documento sobre la forma de trabajo del restaurante.
+La fuente antecedente principal es:
 
 ```text
-docs/evidence/relevamiento/entrevista-01-trabajadora/
+docs/evidence/relevamiento/analisis-antecedentes/
+├── README.md
+├── analisis-antecedentes.md
 └── detalle-de-la-manera-de-trabajo.pdf
 ```
 
-Este documento aportó la primera visión sobre personal, ventas, cocina, producción, inventario, compras, proveedores, clientes, créditos, planillas y caja.
+El documento fue redactado por Ana Paola Viscarra Chambi antes de `ENT-01` y describe:
 
-## 3.2. Entrevista semiestructurada
+- estructura del personal;
+- atención y ventas;
+- pedidos y comandas;
+- cocina y producción;
+- inventario;
+- compras y proveedores;
+- clientes;
+- planillas;
+- pagos;
+- caja;
+- coexistencia del sistema actual con medios manuales.
 
-La descripción inicial fue validada y ampliada mediante una entrevista presencial.
+---
+
+## 3.2. Entrevistas semiestructuradas
+
+### ENT-01 — Diagnóstico general
+
+```text
+docs/evidence/relevamiento/entrevistas/entrevista-01-trabajadora/
+```
 
 | Campo | Valor |
 |---|---|
 | **Fecha** | 19 de agosto de 2026 |
-| **Entrevistador** | Miguel Angel Colque Calizaya |
+| **Modalidad** | Virtual mediante Discord |
+| **Entrevistador** | Josué Matias Arroyo Reynoso |
 | **Entrevistada** | Ana Paola Viscarra Chambi |
-| **Modalidad** | Presencial |
-| **Registro** | Audio |
 | **Duración** | Aproximadamente 23 min 11 s |
 
-Evidencia:
+Permitió ampliar prioridades, inventario, compras, asistencia, gastos, producción y limitaciones del sistema actual.
+
+### ENT-02 — Refinamiento operativo
 
 ```text
-docs/evidence/relevamiento/entrevista-01-trabajadora/
-├── README.md
-├── detalle-de-la-manera-de-trabajo.pdf
-├── entrevista-1-audio.mp3
-└── transcripcion.md
+docs/evidence/relevamiento/entrevistas/entrevista-02-trabajadora/
 ```
 
-## 3.3. Criterio de interpretación
+Duración aproximada del audio: **14 min 17 s**.
 
-Se distinguen cuatro niveles:
+Los metadatos de fecha, modalidad y participantes no aparecen completos en la evidencia entregada y se mantienen como pendientes de consignar. La sesión se utiliza para el contenido operativo que sí está registrado en audio/transcripción.
 
-- **confirmado:** afirmado por la evidencia disponible;
-- **ampliado:** la entrevista agregó detalle a información previa;
-- **interpretación:** conclusión razonable del análisis, pero no declaración textual de la fuente;
-- **pendiente:** información aún no determinada.
+Permitió precisar:
+
+- unidades y conversiones;
+- producción y bajas;
+- tratamiento de cantidades producidas;
+- compras por rol;
+- recepción;
+- dos turnos y una caja compartida;
+- monto inicial y traspaso;
+- cierre;
+- diferencias;
+- PedidosYa;
+- revisión contable;
+- múltiples responsabilidades por persona.
+
+---
+
+## 3.3. Análisis de sistemas similares / benchmarking
+
+Ubicación:
+
+```text
+docs/evidence/relevamiento/analisis-sistemas-similares/
+├── README.md
+└── analisis-sistemas-similares.md
+```
+
+Se analizaron Fudo, Odoo Restaurant, Square for Restaurants, Lightspeed Restaurant, Toast y SINCPRO.
+
+El benchmarking aporta patrones del dominio, por ejemplo:
+
+- pedido → cocina → venta;
+- inventario relacionado con composición/recetas;
+- compra separada de recepción;
+- roles/permisos;
+- turnos/caja/reportes;
+- asistencia sin necesidad de implementar inmediatamente nómina;
+- integración modular con hardware.
+
+**No se utiliza para inventar reglas de Fratelli.** Una función externa solo se convierte en requisito cuando existe evidencia o decisión de alcance propia del proyecto.
+
+---
+
+## 3.4. Criterio de interpretación
+
+Se emplean las siguientes categorías:
+
+- **Confirmado:** afirmado por evidencia interna o decisión explícita;
+- **Ampliado:** una fuente añade detalle a otra;
+- **Referencia externa:** patrón encontrado mediante benchmarking;
+- **Inferencia controlada:** interpretación razonable que debe quedar señalada y no convertirse silenciosamente en regla;
+- **Pendiente:** información no suficientemente respaldada.
 
 ---
 
 # 4. Descripción general de Fratelli
 
-Fratelli es un restaurante de comida a la carta de estilo italiano. Su oferta incluye pizzas, pastas, entradas, carnes, pescados, sándwiches, bebidas, postres y vinos.
+Fratelli es un restaurante de comida a la carta de estilo italiano. El antecedente documental menciona pizzas, pastas, entradas, carnes, pescados, sándwiches, bebidas, postres y vinos.
 
-El documento inicial señala aproximadamente nueve trabajadores y menciona, entre los roles conocidos:
+El negocio trabaja aproximadamente con nueve personas y combina funciones operativas y administrativas.
 
-- cuatro meseros;
-- cocineros;
-- un encargado;
-- una contadora.
+La operación actual utiliza un sistema de gestión para varias actividades, pero mantiene procesos paralelos en:
 
-El restaurante ya utiliza un sistema de información para una parte importante de su operación, por lo que el problema del proyecto **no consiste en una ausencia total de digitalización**.
+- planillas físicas;
+- hojas de producción;
+- cuadernos;
+- recibos;
+- WhatsApp;
+- Excel;
+- otros registros externos.
 
-La situación actual combina:
-
-```text
-Sistema existente
-+
-Planillas en papel
-+
-Hojas de producción
-+
-Cuadernos
-+
-Recibos
-+
-Excel
-+
-WhatsApp
-```
-
-Esta combinación permite operar, pero fragmenta determinados procesos y genera descoordinación entre información manual y digital.
+La necesidad del proyecto no surge de una ausencia total de software, sino de la **fragmentación entre sistema y registros externos**.
 
 ---
 
 # 5. Stakeholders y participantes conocidos
 
-## 5.1. Meseros
+## 5.1. Meseros / personal de atención
 
-Los meseros atienden a los clientes, toman pedidos, registran ventas, realizan cobros, manejan medios de pago, apoyan actividades de barismo y entregan bebidas.
+Los meseros:
 
-Cada mesero dispone de un usuario individual en el sistema actual, lo que permite asociar operaciones y ventas a una persona.
+- atienden al cliente;
+- registran pedidos;
+- registran ventas;
+- cobran;
+- manejan medios de pago;
+- pueden realizar tareas de barismo y bebidas;
+- utilizan usuarios individuales en el sistema actual.
 
-La entrevista también confirmó que el personal de atención utiliza planillas físicas para registrar datos como:
+`ENT-02` refuerza que una misma persona puede acumular responsabilidades: un mesero puede actuar también como barista y manejar caja.
 
-- nombre;
-- función realizada;
-- fecha;
-- hora de entrada;
-- hora de salida;
-- firma.
+---
 
-## 5.2. Cocineros y encargadas de cocina
+## 5.2. Cocina
 
-Cocina trabaja a partir de las comandas generadas por los pedidos.
+Cocina:
 
-Además, el personal de cocina participa directamente en:
+- recibe comandas;
+- prepara platos;
+- participa en jornadas de producción;
+- maneja ingredientes;
+- controla qué preparaciones deben consumirse primero;
+- compra directamente ingredientes relacionados con las preparaciones;
+- verifica insumos recibidos y, en ciertos casos, pesa/porciona antes del ingreso a inventario.
 
-- producción;
-- registro manual de cantidades producidas;
-- preparación de listas de compra;
-- autorización de determinadas compras de cocina.
+---
 
 ## 5.3. Encargado
 
 El encargado participa en:
 
 - productos;
-- movimientos de almacén;
 - inventario;
-- ingresos y bajas;
+- ingresos/bajas;
 - reportes;
-- transcripción al sistema de las hojas de producción;
-- determinadas compras, como bebidas, limpieza y otros productos;
-- control de información de asistencia junto con la contadora;
-- traspaso de anotaciones de gastos a registros administrativos.
+- compras de bebidas, limpieza y otros insumos generales;
+- operación de caja;
+- monto fijo que queda para el siguiente inicio;
+- cierre final de caja.
+
+`ENT-02` confirma además que el encargado puede cubrir funciones de mesero.
+
+---
 
 ## 5.4. Contadora
 
-La contadora controla información relacionada con:
+La contadora utiliza información de asistencia para procesos administrativos y calcula pagos mediante Excel.
 
-- planillas;
-- horas trabajadas;
-- descuentos;
-- pagos al personal;
-- revisión semanal de inventario junto con el encargado.
+También:
 
-Para calcular pagos utiliza una hoja de cálculo de Excel en la que ingresa las horas de entrada y salida. Según la entrevista, el archivo ya calcula automáticamente el importe diario y posteriormente el total semanal según la tarifa de cada trabajador.
+- participa en revisiones de inventario;
+- consulta información administrativa;
+- revisa posteriormente los cierres de caja.
+
+Según `ENT-02`, su revisión **no constituye una aprobación obligatoria** para que el cierre quede registrado como cerrado.
+
+---
 
 ## 5.5. Clientes
 
-El sistema actual registra clientes y permite manejar clientes frecuentes, ventas al contado, ventas a crédito, cuentas pendientes, promociones y descuentos.
+El sistema actual maneja clientes y existe un proceso de ventas a crédito.
 
-La entrevista realizada no profundizó las reglas específicas de crédito, descuentos y promociones, por lo que esos detalles permanecen pendientes.
+Las reglas completas de crédito, mora, vencimientos, pagos parciales, promociones y descuentos no fueron profundizadas porque el crédito quedó fuera del MVP actual.
+
+---
 
 ## 5.6. Proveedores
 
-El documento inicial indica aproximadamente veinte proveedores de verduras, carnes, hongos, leche, pescados, mariscos y otros productos.
+El antecedente menciona aproximadamente veinte proveedores de distintos tipos de insumos.
 
-La entrevista confirmó que las compras se gestionan de manera diferenciada según el tipo de producto y que gran parte de la evidencia se conserva mediante recibos y comunicación por WhatsApp.
+La operación utiliza:
+
+- recibos;
+- listas;
+- mensajes/WhatsApp;
+- QR;
+- coordinación directa cuando una compra llega incompleta.
+
+---
 
 ## 5.7. Product Owner
 
-**Ana Paola Viscarra Chambi** es trabajadora actual de Fratelli, integrante del equipo y Product Owner.
-
-Su participación permite validar el conocimiento operativo y priorizar necesidades. Debido a esta combinación de roles, el proyecto reconoce como limitación que gran parte del relevamiento depende de una fuente principal.
+Ana Paola Viscarra Chambi representa la principal perspectiva de negocio y validación funcional dentro del equipo Scrum.
 
 ---
 
@@ -195,225 +266,247 @@ Su participación permite validar el conocimiento operativo y priorizar necesida
 
 ## 6.1. Atención, pedidos y ventas
 
-Flujo general conocido:
+El flujo base identificado es:
 
 ```text
 Cliente
   ↓
-Mesero toma el pedido
+Pedido
   ↓
-Pedido registrado en el sistema
+Comanda
   ↓
-Se genera comanda
-  ↓
-Cocina recibe comanda
+Cocina
   ↓
 Preparación
   ↓
-Cobro / cierre de venta
+Entrega
+  ↓
+Venta / cobro
 ```
 
-Las ventas están cubiertas por el sistema actual y la Product Owner indicó que **los ingresos provenientes de ventas sí quedan registrados**.
+Los ingresos de venta forman parte del sistema actual.
 
-No se identificó durante el relevamiento una necesidad de eliminar las capacidades de venta existentes; por el contrario, se desea conservar su cobertura funcional dentro del sistema futuro.
+El benchmarking muestra que esta separación entre pedido, preparación y cobro es un patrón habitual en sistemas gastronómicos, lo que sirve como referencia adicional, no como fuente de una regla interna.
+
+---
 
 ## 6.2. Cocina y comandas
 
-Las comandas trasladan los pedidos registrados hacia cocina. Los cocineros preparan los platos en función de esas comandas.
+Las comandas trasladan a cocina la información necesaria para preparar pedidos.
 
-No se obtuvo evidencia suficiente de problemas relevantes en el flujo de comandas como tal.
+Los sistemas similares analizados muestran el mismo patrón mediante comandas impresas o KDS, reforzando la utilidad de una vista especializada para cocina.
+
+---
 
 ## 6.3. Producción
 
-La producción se realiza normalmente dos veces por semana:
+La producción normalmente ocurre en días definidos y puede realizarse adicionalmente cuando hace falta reponer preparaciones.
 
-- **lunes:** principalmente preparaciones relacionadas con salsas;
-- **martes:** armado de preparaciones, pastas y rellenos.
+### Registro actual
 
-Cuando existe necesidad extraordinaria puede realizarse producción adicional otros días, por ejemplo jueves o viernes, para evitar quedarse sin algún plato disponible.
+`ENT-01` confirmó un flujo de doble captura:
 
-### Registro de producción
+```text
+Producción real
+   ↓
+Hoja manual
+   ↓
+Encargado
+   ↓
+Sistema
+```
 
-Las cocineras registran manualmente las cantidades en **hojas de producción**.
+Este flujo puede producir diferencias entre lo realmente preparado y lo registrado.
 
-Posteriormente el encargado transcribe esos datos al sistema.
+### Reglas refinadas en ENT-02
 
-La entrevista identifica esta doble intervención como una fuente de descoordinación: el valor escrito en las hojas puede no coincidir con lo que finalmente se introduce en el sistema.
+Se confirmó que:
 
-### Consumo de ingredientes
+- para la producción interesa principalmente la **cantidad final obtenida**;
+- no se requiere un cálculo formal de rendimiento esperado para el MVP;
+- si una preparación se produce varias veces, al negocio le basta conocer la **cantidad total disponible**;
+- cada registro de producción debe conservar al menos **fecha, cantidad y responsable**;
+- no existe una fecha de vencimiento exacta registrada actualmente; cocina conoce qué preparación debe usarse primero;
+- una pérdida/baja se registra separadamente como salida de almacén y se conserva el motivo.
 
-Cuando se vende un plato, el sistema actual descuenta automáticamente los ingredientes asociados.
+### Unidades
 
-La entrevista también indica que las pérdidas o desperdicios pueden registrarse, aunque la entrevistada no pudo precisar completamente el mecanismo utilizado. Ese detalle permanece pendiente.
+Se confirmó al menos el caso:
+
+```text
+carne comprada en kg
+→ utilizada/registrada en g
+```
+
+También se indicó manejo de líquidos en litros.
+
+El sistema deberá soportar las unidades realmente utilizadas; no se incorporarán conversiones adicionales sin necesidad real.
+
+---
 
 ## 6.4. Inventario y stock
 
-El inventario incluye productos para venta directa y productos o ingredientes utilizados en cocina.
+El negocio controla productos, bebidas, ingredientes y otras existencias.
 
-### Revisión actual
+### Problemas actuales
 
-No existe una alerta automática de stock bajo.
+- no existe alerta automática de stock bajo;
+- se realizan revisiones periódicas;
+- existen faltantes frecuentes;
+- también existen sobrantes;
+- hay descoordinación entre hojas de producción y sistema.
 
-Según la entrevista, aproximadamente una vez por semana el encargado y la contadora revisan las existencias para determinar qué se tiene disponible.
+### Bajas y mermas
 
-Para decidir reposición o producción se generan reportes y se comparan con otros registros disponibles.
+`ENT-02` aclara que una salida/baja relevante debe quedar separada del consumo ordinario y conservar un **motivo**.
 
-### Problema de consistencia
+Esto permite evitar inventar un catálogo complejo de mermas en el MVP: el dato mínimo requerido es la salida trazable con causa.
 
-La información puede diferir entre:
-
-```text
-Hojas manuales de producción
-        ↕
-Información ingresada posteriormente al sistema
-```
-
-La Product Owner señaló que los faltantes son **frecuentes**, no solamente ocasionales, y que también pueden existir sobrantes.
-
-La causa descrita durante la entrevista se relaciona con el registro manual de producción y la posterior transcripción al sistema, donde pueden introducirse cantidades mayores o menores a las reales.
-
-### Falta de ingredientes
-
-Cuando falta un ingrediente importante se realiza un pedido al proveedor correspondiente mediante una lista y se debe esperar su abastecimiento.
+---
 
 ## 6.5. Compras y proveedores
 
-Las compras no están centralizadas en el sistema actual.
+### Responsabilidades
 
-### Inicio de compra
+`ENT-02` precisa:
 
-Para distintos grupos de productos se generan listas que se envían al proveedor o persona responsable.
+```text
+COCINA
+→ ingredientes/preparaciones
 
-Ejemplos mencionados:
+ENCARGADO
+→ bebidas, limpieza y otros insumos generales
+```
 
-- verduras;
-- carnes según peso requerido;
-- pescado;
-- mariscos.
+Cocina puede realizar compras directas de su ámbito. Se indicó que estas compras deben contar con respaldo mediante recibo para el pago.
 
-### Autorización
+### Recepción
 
-La responsabilidad depende del tipo de compra:
+La recepción depende del tipo de producto:
 
-- las encargadas de cocina autorizan compras relacionadas con cocina;
-- el encargado gestiona otras compras, como bebidas, limpieza u otros elementos vinculados a atención.
+- una bebida puede ingresarse al inventario tras recibirse/verificarse;
+- un insumo de cocina puede requerir pesaje y porcionado antes del ingreso al inventario.
 
-### Registro
+Por tanto, el concepto importante no es solo “llegó físicamente”, sino **recepción verificada**.
 
-La recepción de compras **no se registra en el sistema actual**.
+### Compra incompleta
 
-Los recibos funcionan como comprobante principal.
+Si una compra llega incompleta se coordina con el proveedor y se realiza devolución. Se indicó que ocurre de vez en cuando.
 
-### Comunicación y pago
+El MVP no necesita implementar recepción parcial como caso ordinario: una compra no debe marcarse `RECIBIDA` hasta que la recepción aceptada esté resuelta.
 
-Para determinados proveedores se utilizan grupos de WhatsApp. Se envían al responsable correspondiente:
+### Pagos/proveedores
 
-- fotografía del recibo;
-- total a cancelar;
-- QR del proveedor.
+Las reglas avanzadas de cuentas por pagar permanecen fuera o pendientes de versiones posteriores.
 
-### Compras diarias y caja chica
-
-Existe un manejo manual de dinero para compras o gastos diarios.
-
-Según el ejemplo descrito, el encargado del turno noche puede dejar un monto para el día siguiente. Los gastos, incluidos algunos deliveries, se anotan en un cuaderno con su detalle.
-
-Posteriormente el encargado traspasa esas anotaciones a un registro que la entrevistada identifica, con cierta duda, como **libro diario**, y la reposición del monto se gestiona con el responsable del negocio.
+---
 
 ## 6.6. Personal, horarios y asistencia
 
-El control de entrada y salida continúa siendo manual.
+La asistencia actual depende de planillas físicas con información como entrada, salida y firma.
 
-Los trabajadores registran sus datos en planillas físicas.
+La contadora utiliza posteriormente estas horas en Excel para calcular pagos.
 
-La contadora y el encargado utilizan posteriormente esa información para el cálculo de pagos.
+El problema prioritario es la **calidad y centralización del dato de asistencia**, no necesariamente la fórmula de nómina.
 
-### Cálculo de planilla
+El biométrico permanece como integración futura; la lógica de asistencia del MVP debe funcionar sin ese hardware.
 
-La contadora utiliza Excel. Introduce las horas de entrada y salida y la hoja calcula el pago diario y el total semanal de acuerdo con el valor por hora correspondiente.
+---
 
-### Problemas declarados
+## 6.7. Gastos, turnos y cierre de caja
 
-La Product Owner identifica este proceso como uno de los que más errores o pérdida de tiempo genera.
+### Gastos
 
-También relaciona el manejo manual de horarios con problemas posteriores en los pagos.
+Los gastos diarios/caja chica todavía dependen de registros manuales.
 
-### Necesidad expresada durante la entrevista
+`ENT-02` confirma que existe una **caja chica separada** utilizada para gastos.
 
-La entrevistada propuso como prioridad incorporar un mecanismo de mejor control de entrada y salida, mencionando específicamente un **biométrico**.
+### Turnos
 
-Esta propuesta se registra como una necesidad/sugerencia proveniente del relevamiento. Su implementación concreta deberá definirse más adelante en requisitos, arquitectura y alcance.
+Fratelli trabaja con dos turnos.
 
-## 6.7. Gastos, caja y cierres
+Las personas conocen el turno asignado y comienzan a operar. Ambos turnos utilizan **la misma caja**.
 
-### Ventas
+Existe un monto fijo que el encargado deja al terminar la noche para el inicio del turno de la mañana.
 
-Los ingresos correspondientes a ventas se registran en el sistema.
+### Traspaso entre turnos
 
-### Gastos diarios
+El turno de la mañana deja anotada información para el turno siguiente, incluyendo:
 
-Los gastos diarios no están completamente integrados y continúan manejándose manualmente, de manera semejante a una caja chica.
+- efectivo;
+- QR;
+- crédito del proceso actual;
+- PedidosYa cuando corresponde.
 
-### Cierre de caja
+El siguiente turno verifica esa información y continúa la operación.
 
-El restaurante trabaja con dos turnos y realiza un cierre total considerando ambos.
+> El hecho de que el proceso actual mencione crédito no modifica la decisión de alcance: la gestión de crédito sigue fuera del MVP.
 
-El primer turno registra la información correspondiente hasta su finalización y el turno siguiente completa la operación para generar el cierre total.
+### Cierre
 
-Durante la entrevista se mencionaron ventas en efectivo, pagos por QR y operaciones relacionadas con PedidosYa dentro de este proceso.
+Solo se realiza **un cierre total** al final de la jornada compartida por los dos turnos.
+
+El cierre revisa:
+
+- efectivo;
+- QR;
+- gastos;
+- información de caja chica;
+- diferencias de efectivo;
+- PedidosYa de forma separada.
+
+Cuando existe diferencia, se deja observación y se consulta con el personal del turno involucrado.
+
+El encargado realiza el cierre. La contadora lo revisa después, sin necesidad de aprobación adicional para cerrarlo.
+
+---
 
 ## 6.8. Reportes
 
-El sistema actual genera reportes, pero existe una limitación de acceso: se indicó que el responsable/propietario debe solicitar a otro usuario que genere determinados reportes en lugar de poder obtenerlos directamente.
+Se confirmó que determinados usuarios dependen de otra persona para generar reportes del sistema actual.
 
-La necesidad expresada es permitir que el usuario autorizado pueda generar esos reportes sin depender de un intermediario.
+El nuevo sistema debe proporcionar acceso directo según autorización.
+
+El MVP mantiene tres familias mínimas:
+
+- ventas;
+- inventario;
+- asistencia.
 
 ---
 
 # 7. Sistema existente y decisión de reemplazo
 
-Fratelli ya dispone de un sistema que cubre, al menos:
+El sistema actual cubre capacidades importantes como:
 
 - ventas;
+- pedidos/comandas;
 - inventario;
 - clientes;
 - cuentas por cobrar;
-- cierres de caja;
-- descuentos automáticos de ingredientes vinculados a platos;
-- determinados movimientos de almacén;
-- reportes.
+- cierres;
+- reportes;
+- usuarios.
 
-La Product Owner manifestó que **no existe un problema particular con la funcionalidad general que ya ofrece**, por lo que dichas capacidades representan un baseline funcional que debería conservarse cuando corresponda.
+La Product Owner indicó que desea preservar las capacidades útiles pero **reemplazar la plataforma actual**.
 
-Sin embargo, también manifestó explícitamente que el objetivo del proyecto es **reemplazar el sistema actual**, no únicamente complementarlo.
-
-Por tanto, la decisión de negocio actualmente expresada puede resumirse así:
-
-> Construir un sistema renovado que sustituya al actual, preserve las capacidades útiles y corrija o incorpore los procesos que hoy permanecen manuales, fragmentados o con acceso insuficiente.
-
-## 7.1. Integración con el sistema actual
-
-No existe acceso técnico al sistema actual que permita conocer su implementación o integrarlo de manera confiable.
-
-La entrevista confirmó que no se dispone de una posibilidad conocida de exportación o integración y que no se tiene acceso interno para determinar cómo funciona.
-
-En consecuencia, **no se planificará una dependencia técnica del sistema nuevo respecto del sistema actual** salvo que posteriormente aparezca nueva evidencia.
+No existe acceso técnico suficiente para depender de su arquitectura, API o base de datos.
 
 ---
 
 # 8. Herramientas y medios actuales
 
-| Herramienta / medio | Uso conocido |
+| Medio | Uso conocido |
 |---|---|
-| Sistema actual | Ventas, inventario, clientes, cuentas por cobrar, cierres, reportes y otros movimientos |
-| Comandas | Comunicación de pedidos hacia cocina |
-| Hojas de producción | Registro manual de cantidades producidas |
-| Planillas físicas | Horarios, entrada, salida, función y firma del personal |
-| Excel | Cálculo de pagos al personal |
-| Cuaderno | Registro de gastos/compras diarias y caja chica |
-| Recibos | Respaldo de compras y pagos a proveedores |
-| WhatsApp | Coordinación con proveedores y envío de recibos, totales y QR |
-| QR | Medio de pago y pago a proveedores |
+| Sistema actual | ventas, inventario, clientes, cierres y otras funciones |
+| Planillas físicas | asistencia/horarios |
+| Excel | cálculo administrativo de pagos |
+| Hojas de producción | registro previo de producción |
+| Cuaderno | gastos diarios/caja chica |
+| Recibos | respaldo de compras/pagos |
+| WhatsApp | coordinación con proveedores |
+| QR | medio de pago |
+| PedidosYa | canal externo controlado separadamente en cierre |
 
 ---
 
@@ -421,246 +514,211 @@ En consecuencia, **no se planificará una dependencia técnica del sistema nuevo
 
 ## D-01 — Control manual de horarios y asistencia
 
-Las entradas y salidas se registran en planillas físicas.
+Fuente de errores/pérdida de tiempo y entrada manual para el cálculo posterior.
 
-**Impacto observado:** la Product Owner identifica este proceso como fuente de errores o pérdida de tiempo y lo relaciona con dificultades posteriores para calcular pagos.
+## D-02 — Doble captura de producción
 
-## D-02 — Descoordinación entre producción real y sistema
+Producción primero en hoja y después en sistema.
 
-Las cantidades producidas se anotan primero en hojas y luego son introducidas por el encargado.
+## D-03 — Diferencias frecuentes de inventario
 
-**Impacto observado:** pueden ingresarse cantidades mayores o menores a las reales, generando diferencias entre registros.
-
-## D-03 — Faltantes y sobrantes frecuentes
-
-La Product Owner indicó que los faltantes ocurren de manera frecuente y que también existen sobrantes.
-
-**Relación observada:** se asocian a la descoordinación del registro de producción e inventario.
+Faltantes y sobrantes asociados, entre otros factores, a registros no sincronizados.
 
 ## D-04 — Ausencia de alertas de stock bajo
 
-El sistema no notifica automáticamente cuando una existencia está llegando a un nivel bajo.
+La detección depende de revisión periódica.
 
-**Impacto observado:** la revisión depende de reportes y verificaciones periódicas, aproximadamente semanales.
+## D-05 — Compras distribuidas en varios medios
 
-## D-05 — Compras fuera del sistema
+Listas, recibos y mensajería dificultan una visión central.
 
-Las compras se administran mediante listas, recibos, WhatsApp y otros medios.
+## D-06 — Gastos diarios/caja chica manuales
 
-**Impacto observado:** la recepción y la información de compra no quedan centralizadas en el sistema actual.
-
-## D-06 — Gastos diarios y caja chica manuales
-
-Determinados gastos se registran en un cuaderno y posteriormente deben trasladarse a otros registros administrativos.
+No se integran de forma completa con la información operacional.
 
 ## D-07 — Control de cuentas con proveedores distribuido
 
-Los montos, recibos, QR y comunicaciones de pago se manejan mediante documentos y WhatsApp, en lugar de un flujo centralizado.
+No existe una gestión completa centralizada.
 
 ## D-08 — Acceso indirecto a determinados reportes
 
-Se reportó que un usuario responsable debe depender de otro usuario para generar determinados reportes.
+Usuarios autorizables dependen de otro usuario.
 
 ## D-09 — Sin integración conocida con el sistema actual
 
-El equipo no dispone de acceso técnico al sistema existente ni de un mecanismo conocido de exportación o integración.
+El nuevo producto debe ser independiente.
 
 ---
 
-# 10. Priorización expresada por la Product Owner
+# 10. Prioridades expresadas por la Product Owner
 
-Durante la entrevista se identificaron como áreas de mayor prioridad:
+Las prioridades identificadas en `ENT-01` fueron especialmente:
 
-1. **control de horarios, entradas y salidas del personal**;
-2. **mejor control de inventario**;
-3. **avisos o notificaciones de existencias bajas**;
-4. reducción del manejo manual de compras y gastos diarios.
+1. control de horarios/entradas/salidas;
+2. inventario;
+3. alertas de existencias bajas;
+4. reducción de procesos manuales en compras y gastos.
 
-La Product Owner mencionó específicamente el uso de un **biométrico** para registrar entradas y salidas.
-
-Estas prioridades alimentarán `03-hallazgos-y-necesidades.md`, pero todavía no determinan por sí mismas el alcance definitivo del MVP.
+La mención de biométrico se conserva como propuesta de solución futura, no como condición para la lógica del MVP.
 
 ---
 
 # 11. Diagnóstico actualizado
 
-La evidencia permite confirmar que Fratelli opera con una combinación de procesos digitalizados y manuales.
+Fratelli opera con una combinación de sistema digital, registros manuales y medios externos.
 
-El problema no está en que el restaurante carezca de un sistema: el sistema actual cubre varias funciones centrales y es utilizado diariamente.
+El problema no es que el restaurante carezca de sistema, sino que determinadas actividades esenciales permanecen fragmentadas, lo que contribuye a:
 
-La principal dificultad se encuentra en la **fragmentación y doble tratamiento de información** en procesos que todavía dependen de planillas, hojas, recibos, cuadernos, Excel y WhatsApp.
-
-Esta fragmentación se observa especialmente en:
-
-- asistencia y horarios;
-- producción;
-- inventario;
-- compras;
-- gastos diarios;
-- pagos a proveedores;
-- acceso a determinados reportes.
+- inconsistencias de inventario;
+- faltantes/sobrantes;
+- doble captura de producción;
+- dependencia de planillas para asistencia;
+- compras y gastos dispersos;
+- dificultad de conciliación entre turnos/caja;
+- acceso indirecto a información.
 
 ## 11.1. Formulación del problema de trabajo
 
-> **Fratelli presenta fragmentación y descoordinación en determinados procesos operativos y administrativos debido a la coexistencia del sistema actual con registros manuales y medios externos, provocando diferencias de inventario, faltantes o sobrantes frecuentes, dificultades en el control de asistencia y pagos, y ausencia de una gestión centralizada de compras y gastos diarios.**
+> **Fratelli presenta fragmentación y descoordinación en determinados procesos operativos y administrativos debido a la coexistencia del sistema actual con registros manuales y medios externos, lo que contribuye a diferencias frecuentes de inventario, faltantes y sobrantes, dificultades en el control de asistencia y cálculo de pagos, y una gestión distribuida de compras, proveedores, gastos y continuidad de caja entre turnos.**
 
 ### Estado
 
-**Validado como formulación de trabajo para la siguiente etapa documental.**
-
-Su redacción podrá ajustarse durante `03-hallazgos-y-necesidades.md` al separar formalmente evidencia, hallazgos y necesidades.
+**Confirmado como problema de trabajo para esta baseline.**
 
 ---
 
 # 12. Causas confirmadas o sustentadas
 
-| Código temporal | Causa | Estado |
+| ID | Causa | Estado |
 |---|---|---|
-| CP-01 | Registro manual de entradas y salidas | Confirmado |
-| CP-02 | Producción registrada primero en hojas y posteriormente transcrita al sistema | Confirmado |
-| CP-03 | Ausencia de alertas automáticas de stock bajo | Confirmado |
-| CP-04 | Compras no registradas integralmente en el sistema | Confirmado |
-| CP-05 | Gastos diarios registrados manualmente | Confirmado |
-| CP-06 | Uso de recibos, cuadernos, Excel y WhatsApp para procesos complementarios | Confirmado |
-| CP-07 | Dependencia de otro usuario para determinados reportes | Confirmado |
-| CP-08 | Ausencia de acceso técnico al sistema actual para integrarlo | Confirmado |
-
-Los códigos de esta sección son temporales. Los identificadores formales se crearán en el documento de hallazgos y necesidades.
+| `CP-01` | Planillas manuales de asistencia | Confirmada |
+| `CP-02` | Producción registrada primero en hojas y luego transcrita | Confirmada |
+| `CP-03` | Falta de alerta automática de stock bajo | Confirmada |
+| `CP-04` | Compras distribuidas entre listas, recibos y mensajería | Confirmada |
+| `CP-05` | Gastos/caja chica fuera del flujo central | Confirmada |
+| `CP-06` | Información de proveedores/pagos no completamente centralizada | Confirmada |
+| `CP-07` | Determinados reportes dependen de otro usuario | Confirmada |
+| `CP-08` | Ausencia de acceso técnico al sistema actual para integrarlo | Confirmada |
+| `CP-09` | Traspaso entre turnos depende actualmente de anotaciones/verificación manual | Confirmada por ENT-02 |
 
 ---
 
 # 13. Efectos confirmados o sustentados
 
-| Código temporal | Efecto | Estado |
+| ID | Efecto | Estado |
 |---|---|---|
-| EP-01 | Faltantes frecuentes de productos | Confirmado |
-| EP-02 | Sobrantes de determinados productos | Confirmado |
-| EP-03 | Diferencias entre hojas de producción e información del sistema | Confirmado |
-| EP-04 | Problemas o trabajo adicional en el cálculo de pagos por registros manuales | Confirmado cualitativamente |
-| EP-05 | Información de compras distribuida entre distintos medios | Confirmado |
-| EP-06 | Gastos diarios fuera del sistema | Confirmado |
-| EP-07 | Dependencia de un intermediario para determinados reportes | Confirmado |
-
-No existen todavía métricas suficientes para cuantificar frecuencia exacta, costo económico o tiempo perdido.
+| `EF-01` | Errores/pérdida de tiempo en control de asistencia | Confirmado |
+| `EF-02` | Diferencias entre producción real y registro digital | Confirmado |
+| `EF-03` | Faltantes y sobrantes de inventario | Confirmado |
+| `EF-04` | Dependencia del proveedor cuando falta un ingrediente | Confirmado |
+| `EF-05` | Información de compras/gastos dispersa | Confirmado |
+| `EF-06` | Dependencia de intermediario para determinados reportes | Confirmado |
+| `EF-07` | Necesidad de reconciliar manualmente diferencias de efectivo entre turnos | Confirmado por ENT-02 |
 
 ---
 
 # 14. Información aún pendiente
 
-El relevamiento inicial fue suficiente para continuar, pero no resolvió todos los detalles.
+La segunda entrevista resolvió las reglas que impedían continuar las seis HU bloqueadas, pero el dominio completo mantiene áreas deliberadamente pendientes.
 
-## 14.1. Inventario
+## 14.1. Inventario y producción
 
-- reglas exactas para establecer stock mínimo;
-- unidades y conversiones;
-- inventario físico;
-- vencimientos y lotes si resultan necesarios;
-- mecanismo exacto de pérdidas/mermas.
+No son bloqueos del MVP actual, pero deberán refinarse si aparecen nuevos casos:
+
+- conversiones distintas de las ya identificadas;
+- precisión/decimales por tipo de ingrediente;
+- costeo de recetas;
+- vencimientos formales de preparados;
+- gestión avanzada de múltiples lotes.
 
 ## 14.2. Compras y proveedores
 
-- reglas de crédito y vencimientos;
+Permanecen fuera del flujo básico:
+
 - pagos parciales;
-- recepción parcial o rechazo;
-- datos obligatorios de cada compra;
-- reglas exactas para responsables y autorizaciones.
+- cuentas por pagar completas;
+- vencimientos;
+- cuotas;
+- conciliación financiera.
 
 ## 14.3. Personal
 
-- políticas de atrasos;
-- faltas;
-- horas extra;
-- excepciones de turnos;
-- reglas exactas de cálculo de pago.
+Nómina completa, faltas, atrasos, horas extra y reglas salariales avanzadas siguen fuera del MVP.
 
 ## 14.4. Clientes y créditos
 
-La entrevista principal no profundizó esta área. Permanecen pendientes las reglas específicas de crédito, vencimientos, mora, promociones y descuentos.
+Crédito, mora, límites, pagos parciales, promociones y descuentos permanecen Post-MVP/no refinados.
 
-## 14.5. Sistema actual
+## 14.5. Sistema actual y migración
 
-No se conocen:
+No existe acceso técnico conocido para migración/integración automática.
 
-- tecnología;
-- base de datos;
-- proveedor;
-- modelo interno;
-- API;
-- mecanismos de exportación;
-- detalles de permisos existentes.
+## 14.6. Metadatos ENT-02
 
-Dado que la Product Owner desea reemplazarlo, estos datos dejan de ser un bloqueo para diseñar un sistema independiente, aunque siguen siendo útiles como referencia funcional.
+Deben consignarse cuando el equipo disponga del dato real:
+
+- fecha;
+- modalidad;
+- entrevistador/a;
+- nombre/rol exacto de la entrevistada.
 
 ---
 
 # 15. Restricciones y decisiones conocidas
 
-1. El proyecto dispone aproximadamente de **15 días**.
-2. El equipo está compuesto por **cuatro integrantes**.
-3. Se utilizará **Scrum**.
-4. Ana Paola Viscarra Chambi actúa como **Product Owner** y fuente principal del negocio.
-5. Alex Saúl Fernandez Valdez actúa como **Scrum Master**.
-6. La intención declarada es **reemplazar el sistema actual**.
-7. Las funciones útiles actuales deberán evaluarse para conservar su cobertura funcional.
-8. No existe una integración conocida con el sistema existente.
-9. El relevamiento adicional directo queda descartado; solo podrán realizarse **preguntas puntuales a otros trabajadores por medio de la Product Owner** cuando sea necesario aclarar información.
-10. Las propuestas como biométrico o alertas de stock deberán pasar todavía por alcance, requisitos y diseño técnico.
+1. El proyecto dispone aproximadamente de 15 días.
+2. El nuevo sistema pretende reemplazar la plataforma actual.
+3. No existe una integración conocida con el sistema anterior.
+4. Deben preservarse las capacidades incluidas en el alcance aprobado.
+5. Ana Paola Viscarra Chambi actúa como Product Owner.
+6. Alex Saúl Fernandez Valdez actúa como Scrum Master.
+7. El producto objetivo es una aplicación web responsive.
+8. El hardware biométrico y la impresora se mantienen separados del núcleo del MVP.
+9. Se aplicaron tres técnicas de relevamiento: entrevistas, análisis de antecedentes y benchmarking.
+10. Las aclaraciones posteriores se realizarán de manera puntual mediante la Product Owner cuando aparezca una regla realmente no cubierta.
+11. El benchmarking no define por sí solo reglas internas de Fratelli.
 
 ---
 
 # 16. Limitaciones del diagnóstico
 
-## 16.1. Fuente principal única
+## 16.1. Perspectiva interna concentrada
 
-La principal fuente es también trabajadora, integrante del equipo y Product Owner. Esto ofrece conocimiento directo, pero concentra la perspectiva del negocio.
-
-Si una duda requiere conocimiento de otro rol, únicamente se permitirá que la Product Owner consulte preguntas concretas a otros miembros de Fratelli y devuelva la información al equipo.
+La principal fuente de conocimiento interno sigue concentrada en pocas personas. El análisis de antecedentes aporta contexto y el benchmarking añade contraste externo, pero no sustituyen una muestra amplia de trabajadores.
 
 ## 16.2. Información principalmente cualitativa
 
-La entrevista aporta afirmaciones como “faltantes frecuentes” y problemas de manejo manual, pero no ofrece métricas históricas suficientes para cuantificar su impacto.
-
-No se inventarán porcentajes, tiempos ni pérdidas económicas.
+No existen métricas históricas robustas para cuantificar pérdidas, tiempos o tasas de error.
 
 ## 16.3. Sin inspección técnica del sistema existente
 
-No existe acceso al interior del sistema actual. Por ello no se documentarán supuestas tecnologías, APIs o esquemas internos.
+No se conoce su arquitectura, base de datos ni APIs.
+
+## 16.4. Benchmarking basado en información pública
+
+Las funciones de sistemas similares pueden depender de plan, mercado o integración. Se utilizan como referencia, no como descripción de Fratelli.
 
 ---
 
 # 17. Criterio de salida del diagnóstico
 
-El diagnóstico inicial se considera suficientemente completo para avanzar porque ya se puede responder:
+El diagnóstico se considera suficiente para continuar porque:
 
-- qué procesos principales funcionan actualmente;
-- qué procesos permanecen manuales o fragmentados;
-- cuáles son los problemas prioritarios expresados por la Product Owner;
-- qué consecuencias cualitativas se observan;
-- cuál es la intención respecto del sistema actual;
-- qué información continúa pendiente;
-- cómo podrá aclararse información adicional.
+- se aplicaron tres técnicas distintas;
+- se organizó evidencia por método;
+- el problema central permanece coherente;
+- las reglas que bloqueaban `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026` y `HU-027` fueron suficientemente aclaradas para devolverlas a Backlog;
+- las áreas todavía pendientes son Post-MVP, no críticas para esas historias o pueden refinarse durante DoR sin inventar comportamiento.
 
 ---
 
 # 18. Próximo documento
 
-El siguiente artefacto será:
+La evidencia se consolida en:
 
 ```text
 docs/03-hallazgos-y-necesidades.md
 ```
-
-Allí se transformará la evidencia en una cadena trazable:
-
-```text
-Fuente / evidencia
-        ↓
-Hallazgo H-XXX
-        ↓
-Necesidad N-XXX
-```
-
-No se crearán todavía requisitos funcionales hasta consolidar primero estas necesidades.
 
 ---
 
@@ -668,5 +726,6 @@ No se crearán todavía requisitos funcionales hasta consolidar primero estas ne
 
 | Versión | Fecha | Descripción | Estado |
 |---|---|---|---|
-| `0.1` | 19/08/2026 | Diagnóstico inicial basado en el documento descriptivo | Inicial |
-| `0.2` | 20/08/2026 | Actualización completa con resultados de la entrevista, prioridades y decisión de reemplazo del sistema actual | Listo para hallazgos y necesidades |
+| `0.1` | 19/08/2026 | Diagnóstico inicial | Sustituido |
+| `0.2` | 20/08/2026 | Consolidación de ENT-01 | Sustituido |
+| `0.3` | 21/08/2026 | Tres técnicas, ENT-02, nuevas reglas operativas y actualización de pendientes | Vigente |

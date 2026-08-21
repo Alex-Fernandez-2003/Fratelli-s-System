@@ -37,9 +37,9 @@ docs/05-alcance-y-mvp.md
 | **Documento**                      | `04-objetivos-y-propuesta-valor.md`    |
 | **Proyecto**                       | Restaurant System                      |
 | **Organización objetivo**          | Restaurante Fratelli                   |
-| **Versión inicial**                | `0.1`                                  |
-| **Estado**                         | Objetivos y propuesta de valor inicial |
-| **Fecha**                          | 20 de agosto de 2026                   |
+| **Versión actual**                 | `0.2`                                  |
+| **Estado**                         | Revalidado tras relevamiento complementario |
+| **Fecha**                          | 21 de agosto de 2026                   |
 | **Product Owner**                  | Ana Paola Viscarra Chambi              |
 | **Scrum Master**                   | Alex Saúl Fernandez Valdez             |
 | **Documento de entrada principal** | `03-hallazgos-y-necesidades.md`        |
@@ -50,7 +50,7 @@ docs/05-alcance-y-mvp.md
 
 La formulación consolidada proveniente del diagnóstico y los hallazgos es:
 
-> **Fratelli presenta fragmentación y descoordinación en determinados procesos operativos y administrativos debido a la coexistencia del sistema actual con registros manuales y medios externos, lo que contribuye a diferencias frecuentes de inventario, faltantes y sobrantes, dificultades en el control de asistencia y cálculo de pagos, y una gestión distribuida de compras, proveedores y gastos diarios.**
+> **Fratelli presenta fragmentación y descoordinación en determinados procesos operativos y administrativos debido a la coexistencia del sistema actual con registros manuales y medios externos, lo que contribuye a diferencias frecuentes de inventario, faltantes y sobrantes, dificultades en el control de asistencia y cálculo de pagos, y una gestión distribuida de compras, proveedores, gastos y continuidad de caja entre turnos.**
 
 Adicionalmente, la Product Owner expresó la decisión de sustituir el sistema actual, conservando las capacidades que resultan útiles para la operación del restaurante.
 
@@ -73,7 +73,7 @@ El objetivo general responde directamente a:
 - la duplicación o transferencia posterior de información;
 - las diferencias de inventario;
 - el control manual de asistencia;
-- la dispersión de compras, proveedores y gastos;
+- la dispersión de compras, proveedores, gastos y datos utilizados para la continuidad/cierre de caja;
 - la necesidad de reemplazar el sistema actual sin perder capacidades útiles.
 
 El objetivo no se formula simplemente como “crear un sistema”, sino en términos del cambio que el proyecto pretende producir en la gestión del restaurante.
@@ -439,7 +439,7 @@ Este documento no determina todavía:
 - qué necesidades entrarán en el MVP;
 - qué funciones se dejarán para versiones posteriores;
 - el catálogo definitivo de roles;
-- las reglas completas de créditos, promociones, mermas o pagos;
+- las reglas completas de créditos, promociones o pagos, y cualquier tratamiento avanzado de mermas que exceda la baja con motivo confirmada posteriormente;
 - la tecnología de biometría;
 - integración concreta con impresoras;
 - estrategia de migración histórica;
@@ -482,7 +482,7 @@ La visión completa del producto puede ser amplia, pero el desarrollo se dividir
 
 ## P-07 — Validación antes de asumir
 
-Las reglas todavía desconocidas deberán aclararse mediante la Product Owner antes de convertirse en comportamiento definitivo.
+Las reglas todavía desconocidas deberán aclararse mediante evidencia directa del negocio antes de convertirse en comportamiento definitivo. El análisis de antecedentes y el benchmarking pueden aportar contexto o alternativas, pero no sustituyen la validación de una regla específica de Fratelli.
 
 ---
 
@@ -534,6 +534,22 @@ Relacionado con:
 
 - `N-010`
 - `N-013`
+
+---
+
+## 14.1. Revalidación tras las tres técnicas de investigación
+
+Después de formular esta versión inicial de objetivos se completó el contraste mediante tres técnicas distintas:
+
+1. entrevistas semiestructuradas —dos sesiones dentro de la misma técnica—;
+2. análisis de antecedentes del documento previo sobre la forma de trabajo de Fratelli;
+3. análisis de sistemas similares / benchmarking funcional.
+
+La segunda entrevista aclaró reglas que estaban pendientes sobre unidades, producción, bajas, compras, recepción, turnos y cierre de caja. El benchmarking aportó patrones de referencia, pero no se utilizó para convertir automáticamente funciones externas en requisitos.
+
+El resultado de la revisión es que **no se necesita crear nuevos objetivos específicos ni modificar el árbol de soluciones**. La evidencia complementaria precisa cómo se ejecutarán capacidades ya cubiertas por `OE-01`, `OE-03`, `OE-04` y `OE-05`.
+
+Por tanto, el cambio de esta versión es de **precisión y trazabilidad**, no de ampliación de la propuesta de valor.
 
 ---
 
@@ -596,3 +612,4 @@ Allí se definirá formalmente:
 | Versión | Fecha      | Descripción                                                                                                    | Estado                   |
 | ------- | ---------- | -------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | `0.1`   | 20/08/2026 | Definición de objetivos, árbol de soluciones, visión y propuesta de valor a partir de necesidades consolidadas | Listo para alcance y MVP |
+| `0.2`   | 21/08/2026 | Revalidación con entrevistas, análisis de antecedentes y benchmarking; precisión del problema sin ampliar los objetivos | Revalidado |

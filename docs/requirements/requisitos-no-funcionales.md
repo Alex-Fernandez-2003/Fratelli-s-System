@@ -35,9 +35,9 @@ Los requisitos no funcionales describen **cómo debe comportarse y bajo qué con
 | **Documento** | `requirements/requisitos-no-funcionales.md` |
 | **Proyecto** | Restaurant System |
 | **Organización objetivo** | Restaurante Fratelli |
-| **Versión inicial** | `0.1` |
-| **Estado** | Baseline inicial de RNF |
-| **Fecha** | 20 de agosto de 2026 |
+| **Versión actual** | `0.2` |
+| **Estado** | Baseline RNF revalidada |
+| **Fecha** | 21 de agosto de 2026 |
 | **Product Owner** | Ana Paola Viscarra Chambi |
 | **Scrum Master** | Alex Saúl Fernandez Valdez |
 | **SRS relacionado** | `docs/06-srs.md` |
@@ -420,13 +420,13 @@ Una compra recibida, producción confirmada o venta confirmada puede trazarse ha
 | Campo | Valor |
 |---|---|
 | **Categoría** | Integridad de datos |
-| **Fuente** | Decisión de producción por lotes |
+| **Fuente** | Decisión de producción mediante existencias preparadas |
 | **Prioridad** | **CRÍTICA** |
 | **Estado** | **Definido** |
 
 ### Requisito
 
-Cuando los ingredientes ya hayan sido descontados al producir un lote, la venta del producto proveniente de ese lote no deberá descontar nuevamente esos mismos ingredientes.
+Cuando los ingredientes ya hayan sido descontados al producir una existencia preparada, la venta del producto proveniente de esa existencia preparada no deberá descontar nuevamente esos mismos ingredientes.
 
 ### Condición observable
 
@@ -434,7 +434,7 @@ El consumo de ingredientes ocurre una sola vez para el flujo de producción defi
 
 ### Método de verificación
 
-- prueba producción → lote → venta;
+- prueba producción → existencia preparada → venta;
 - comparación de existencias antes y después;
 - revisión de movimientos.
 
@@ -1585,3 +1585,4 @@ Este documento consolidará formalmente las reglas ya identificadas en la SRS y 
 | Versión | Fecha | Descripción | Estado |
 |---|---|---|---|
 | `0.1` | 20/08/2026 | Especificación inicial de requisitos no funcionales; backups fuera del MVP y responsive mínimo de 360 px aprobado | Lista para reglas de negocio |
+| `0.2` | 21/08/2026 | Revalidación terminológica tras ENT-02; integridad de producción alineada con existencia preparada | Revalidada |
