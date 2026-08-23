@@ -1,0 +1,311 @@
+@startuml
+title Restaurant System — Modelo Entidad Relación MVP
+
+hide circle
+skinparam linetype ortho
+
+entity users {
+  * id : uuid <<PK>>
+  --
+  username
+  email
+}
+
+entity roles {
+  * id : uuid <<PK>>
+  --
+  name
+}
+
+entity user_roles {
+  * user_id : uuid <<FK>>
+  * role_id : uuid <<FK>>
+}
+
+entity employees {
+  * id : uuid <<PK>>
+  --
+  user_id : uuid <<FK, UNIQUE, NULL>>
+  full_name
+  is_active
+}
+
+entity categories {
+  * id : uuid <<PK>>
+  --
+  name
+  is_active
+}
+
+entity units {
+  * id : uuid <<PK>>
+  --
+  code
+  dimension
+  factor_to_base
+  is_base
+}
+
+entity products {
+  * id : uuid <<PK>>
+  --
+  category_id : uuid <<FK>>
+  inventory_unit_id : uuid <<FK>>
+  name
+  product_type
+  preparation_area
+  is_sellable
+  sale_price
+  minimum_stock
+  is_active
+}
+
+entity product_compositions {
+  * id : uuid <<PK>>
+  --
+  parent_product_id : uuid <<FK>>
+  component_product_id : uuid <<FK>>
+  unit_id : uuid <<FK>>
+  quantity
+}
+
+entity inventory_balances {
+  * product_id : uuid <<PK, FK>>
+  --
+  quantity
+  updated_at
+}
+
+entity inventory_movements {
+  * id : uuid <<PK>>
+  --
+  product_id : uuid <<FK>>
+  movement_type
+  quantity_delta
+  reason
+  reference_type
+  reference_id
+}
+
+entity productions {
+  * id : uuid <<PK>>
+  --
+  product_id : uuid <<FK>>
+  responsible_employee_id : uuid <<FK>>
+  quantity_produced
+  produced_at
+}
+
+entity production_consumptions {
+  * id : uuid <<PK>>
+  --
+  production_id : uuid <<FK>>
+  component_product_id : uuid <<FK>>
+  quantity_consumed
+}
+
+entity cash_sessions {
+  * id : uuid <<PK>>
+  --
+  business_date : date <<UNIQUE>>
+  opening_amount
+  petty_cash_opening_amount
+  status
+}
+
+entity shifts {
+  * id : uuid <<PK>>
+  --
+  cash_session_id : uuid <<FK>>
+  shift_type
+  status
+  started_at
+  ended_at
+}
+
+entity shift_assignments {
+  * id : uuid <<PK>>
+  --
+  shift_id : uuid <<FK>>
+  employee_id : uuid <<FK>>
+}
+
+entity orders {
+  * id : uuid <<PK>>
+  --
+  shift_id : uuid <<FK>>
+  waiter_employee_id : uuid <<FK, NULL>>
+  table_reference
+  status
+}
+
+entity order_items {
+  * id : uuid <<PK>>
+  --
+  order_id : uuid <<FK>>
+  product_id : uuid <<FK>>
+  quantity
+  unit_price
+}
+
+entity kitchen_commands {
+  * id : uuid <<PK>>
+  --
+  order_id : uuid <<FK, UNIQUE>>
+  status
+}
+
+entity kitchen_command_items {
+  * id : uuid <<PK>>
+  --
+  kitchen_command_id : uuid <<FK>>
+  order_item_id : uuid <<FK>>
+}
+
+entity customers {
+  * id : uuid <<PK>>
+  --
+  name
+  is_active
+}
+
+entity sales {
+  * id : uuid <<PK>>
+  --
+  order_id : uuid <<FK, UNIQUE>>
+  customer_id : uuid <<FK, NULL>>
+  shift_id : uuid <<FK>>
+  sales_channel
+  payment_method
+  total
+}
+
+entity sale_items {
+  * id : uuid <<PK>>
+  --
+  sale_id : uuid <<FK>>
+  order_item_id : uuid <<FK>>
+  product_id : uuid <<FK>>
+  quantity
+  unit_price
+  line_total
+}
+
+entity suppliers {
+  * id : uuid <<PK>>
+  --
+  name
+  is_active
+}
+
+entity purchases {
+  * id : uuid <<PK>>
+  --
+  supplier_id : uuid <<FK>>
+  purchase_area
+  status
+  purchase_date
+  total
+}
+
+entity purchase_items {
+  * id : uuid <<PK>>
+  --
+  purchase_id : uuid <<FK>>
+  product_id : uuid <<FK>>
+  unit_id : uuid <<FK>>
+  quantity
+  unit_cost
+}
+
+entity purchase_receipts {
+  * id : uuid <<PK>>
+  --
+  purchase_id : uuid <<FK, UNIQUE>>
+  received_at
+}
+
+entity expense_categories {
+  * id : uuid <<PK>>
+  --
+  name
+  is_active
+}
+
+entity expenses {
+  * id : uuid <<PK>>
+  --
+  shift_id : uuid <<FK>>
+  expense_category_id : uuid <<FK, NULL>>
+  amount
+  cash_source
+}
+
+entity attendance_records {
+  * id : uuid <<PK>>
+  --
+  employee_id : uuid <<FK>>
+  check_in_at
+  check_out_at
+}
+
+entity cash_closings {
+  * id : uuid <<PK>>
+  --
+  cash_session_id : uuid <<FK, UNIQUE>>
+  expected_cash
+  declared_cash
+  difference
+  closed_at
+}
+
+users ||--o{ user_roles
+roles ||--o{ user_roles
+users |o--o| employees
+
+categories |o--o{ products
+units ||--o{ products
+products ||--o{ product_compositions : parent
+products ||--o{ product_compositions : component
+units ||--o{ product_compositions
+
+products ||--|| inventory_balances
+products ||--o{ inventory_movements
+products ||--o{ productions
+employees ||--o{ productions
+productions ||--o{ production_consumptions
+products ||--o{ production_consumptions
+
+cash_sessions ||--o{ shifts
+shifts ||--o{ shift_assignments
+employees ||--o{ shift_assignments
+
+shifts ||--o{ orders
+employees |o--o{ orders
+orders ||--|{ order_items
+products ||--o{ order_items
+
+orders ||--o| kitchen_commands
+kitchen_commands ||--o{ kitchen_command_items
+order_items ||--o| kitchen_command_items
+
+orders ||--o| sales
+customers |o--o{ sales
+shifts ||--o{ sales
+sales ||--|{ sale_items
+order_items ||--o| sale_items
+products ||--o{ sale_items
+
+suppliers ||--o{ purchases
+purchases ||--|{ purchase_items
+products ||--o{ purchase_items
+units ||--o{ purchase_items
+purchases ||--o| purchase_receipts
+
+expense_categories |o--o{ expenses
+shifts ||--o{ expenses
+
+employees ||--o{ attendance_records
+cash_sessions ||--o| cash_closings
+
+@enduml
