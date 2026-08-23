@@ -1,0 +1,38 @@
+@startuml
+title Restaurant System — Despliegue de pruebas en HomeLab
+
+skinparam componentStyle rectangle
+
+actor "Usuario / navegador" as User
+
+node "HomeLab" {
+  node "Docker / host de demostración" {
+    component "Frontend container\nReact build + reverse proxy" as Front
+    component "Backend container\nASP.NET Core 10" as Back
+  }
+
+  database "PostgreSQL existente\nen HomeLab" as DB
+}
+
+User --> Front : HTTP/HTTPS
+Front --> Back : /api/v1
+Front --> Back : /hubs/kitchen\nWebSocket
+Back --> DB : Npgsql
+
+note right of Front
+/
+→ React SPA
+
+/api/
+→ backend
+
+/hubs/
+→ SignalR
+end note
+
+note bottom of DB
+Credenciales e IP:
+variables de entorno,
+no Git.
+end note
+@enduml

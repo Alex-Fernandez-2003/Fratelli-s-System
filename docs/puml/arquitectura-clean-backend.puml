@@ -1,0 +1,61 @@
+@startuml
+title Restaurant System — Clean Architecture del backend
+
+skinparam componentStyle rectangle
+
+package "RestaurantSystem.Api" as Api {
+  component "Controllers / Endpoints" as Controllers
+  component "Auth / Middleware" as Middleware
+  component "SignalR Hubs" as Hubs
+  component "OpenAPI / ProblemDetails" as ApiSupport
+}
+
+package "RestaurantSystem.Application" as App {
+  component "Features / Use Cases" as UseCases
+  component "DTOs" as DTOs
+  component "Interfaces" as Interfaces
+  component "Mappers" as Mappers
+  component "Repository Contracts" as RepoContracts
+}
+
+package "RestaurantSystem.Domain" as Domain {
+  component "Entities" as Entities
+  component "Value Objects" as ValueObjects
+  component "Business Rules" as Rules
+  component "Enums / States" as Enums
+}
+
+package "RestaurantSystem.Infrastructure" as Infra {
+  component "EF Core / DbContext" as EF
+  component "Repository Implementations" as Repos
+  component "ASP.NET Core Identity" as Identity
+  component "Realtime Implementations" as Realtime
+}
+
+database "PostgreSQL" as DB
+
+Controllers --> UseCases
+Hubs --> UseCases
+Middleware --> UseCases
+
+UseCases --> DTOs
+UseCases --> Interfaces
+UseCases --> RepoContracts
+UseCases --> Entities
+Mappers --> Entities
+Mappers --> DTOs
+
+App --> Domain
+Infra --> App
+Infra --> Domain
+
+Repos --> EF
+EF --> DB
+Identity --> DB
+Realtime --> Hubs
+
+note bottom of Domain
+Domain no depende de
+Infrastructure, Api ni EF Core.
+end note
+@enduml

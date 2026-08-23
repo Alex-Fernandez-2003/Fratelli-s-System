@@ -1,0 +1,34 @@
+@startuml
+title Restaurant System — Arquitectura de contenedores
+
+skinparam componentStyle rectangle
+
+actor "Usuario de Fratelli" as User
+
+rectangle "Browser" as Browser {
+  component "React SPA\nTypeScript + Vite + Tailwind" as Frontend
+}
+
+rectangle "Restaurant System Backend\nASP.NET Core 10" as Backend {
+  component "REST API\n/api/v1" as API
+  component "SignalR Kitchen Hub\n/hubs/kitchen" as Hub
+  component "OpenAPI\n/openapi/v1.json" as OpenAPI
+  component "Application + Domain" as Core
+}
+
+database "PostgreSQL" as DB
+
+User --> Frontend
+Frontend --> API : HTTP/HTTPS + JSON
+Frontend --> Hub : WebSocket / SignalR
+Frontend ..> OpenAPI : generar cliente tipado
+API --> Core
+Hub --> Core
+Core --> DB : EF Core + Npgsql
+
+note right of Backend
+Monolito modular:
+un único backend desplegable
+con módulos internos separados.
+end note
+@enduml

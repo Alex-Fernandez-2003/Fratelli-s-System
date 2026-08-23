@@ -1,0 +1,78 @@
+@startuml
+title Restaurant System — Arquitectura frontend
+
+skinparam componentStyle rectangle
+
+package "src/app" {
+  component "Router" as Router
+  component "Providers" as Providers
+  component "Config" as Config
+}
+
+package "src/components — Atomic Design" {
+  component "Atoms" as Atoms
+  component "Molecules" as Molecules
+  component "Organisms" as Organisms
+  component "Templates" as Templates
+}
+
+package "src/features" {
+  component "Auth" as FAuth
+  component "Orders" as FOrders
+  component "Kitchen" as FKitchen
+  component "Sales" as FSales
+  component "Inventory" as FInventory
+  component "Production" as FProduction
+  component "Purchasing" as FPurchasing
+  component "Attendance" as FAttendance
+  component "Shifts / Cash Closing" as FShifts
+  component "Reports" as FReports
+}
+
+package "src/api" {
+  component "Generated OpenAPI Client" as Generated
+  component "Central API Client" as Client
+}
+
+component "TanStack Query" as Query
+component "SignalR Client" as SignalR
+rectangle "ASP.NET Core Backend" as Backend
+
+Router --> FAuth
+Router --> FOrders
+Router --> FKitchen
+Router --> FSales
+Router --> FInventory
+Router --> FProduction
+Router --> FPurchasing
+Router --> FAttendance
+Router --> FShifts
+Router --> FReports
+
+FOrders --> Atoms
+FOrders --> Molecules
+FKitchen --> Organisms
+FSales --> Templates
+
+FAuth --> Generated
+FOrders --> Generated
+FKitchen --> Generated
+FSales --> Generated
+FInventory --> Generated
+FProduction --> Generated
+FPurchasing --> Generated
+FAttendance --> Generated
+FShifts --> Generated
+FReports --> Generated
+
+Generated --> Client
+Client --> Query
+Client --> Backend : /api/v1
+FKitchen --> SignalR
+SignalR --> Backend : /hubs/kitchen
+
+note bottom of Generated
+Código generado:
+NO editar manualmente.
+end note
+@enduml
