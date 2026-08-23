@@ -2,21 +2,19 @@
 
 ## Datos de la sesión
 
-| Campo | Valor |
-|---|---|
-| **Proyecto** | Restaurant System |
-| **Organización** | Restaurante Fratelli |
-| **Fecha** | Pendiente de consignar en la evidencia disponible |
-| **Modalidad** | Pendiente de consignar en la evidencia disponible |
-| **Entrevistador (E)** | Pendiente de consignar en la evidencia disponible |
-| **Entrevistada (A)** | Pendiente de consignar en la evidencia disponible |
-| **Rol de la entrevistada** | Pendiente de consignar en la evidencia disponible |
-| **Registro original** | `entrevista-2-audio.mp3` |
-| **Duración del audio** | Aproximadamente 14 min 17 s |
-| **Objetivo** | Refinar reglas operativas pendientes relacionadas con producción, compras, turnos y cierre de caja |
-| **Historias relacionadas** | `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026`, `HU-027` |
-
-> **Nota de edición:** esta versión reorganiza y limpia la transcripción para facilitar su lectura. Se corrigieron errores ortográficos evidentes y errores claros de transcripción automática cuando el contexto permitía resolverlos sin cambiar el sentido (por ejemplo, “decepción” → “recepción”, “tusnos” → “turnos” y “varista” → “barista”). No se añadieron respuestas, reglas ni información que no aparezca en la fuente. Los datos de sesión que no están presentes en la evidencia entregada se mantienen explícitamente como **pendientes de consignar**.
+| Campo                      | Valor                                                                                              |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Proyecto**               | Restaurant System                                                                                  |
+| **Organización**           | Restaurante Fratelli                                                                               |
+| **Fecha**                  | 20 de agosto de 2026                                                                               |
+| **Modalidad**              | Virtual (Discord)                                                                                  |
+| **Entrevistador (E)**      | Miguel Angel Colque Calizaya                                                                       |
+| **Entrevistada (A)**       | Ana Paola Viscarra Chambi                                                                          |
+| **Rol de la entrevistada** | Trabajadora actual de Fratelli y Product Owner del proyecto                                        |
+| **Registro original**      | `entrevista-2-audio.mp3`                                                                           |
+| **Duración del audio**     | Aproximadamente 14 min 17 s                                                                        |
+| **Objetivo**               | Refinar reglas operativas pendientes relacionadas con producción, compras, turnos y cierre de caja |
+| **Historias relacionadas** | `HU-004`, `HU-007`, `HU-017`, `HU-025`, `HU-026`, `HU-027`                                         |
 
 ---
 

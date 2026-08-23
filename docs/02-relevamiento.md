@@ -20,15 +20,15 @@ Las sesiones `ENT-01` y `ENT-02` son dos aplicaciones del **mismo método de ent
 
 ## 2. Estado del relevamiento
 
-| Elemento | Estado |
-|---|---|
-| Análisis de antecedentes | **Completado** |
-| Entrevista `ENT-01` | **Completada y transcrita** |
-| Entrevista `ENT-02` | **Completada y transcrita** |
-| Análisis de sistemas similares | **Completado** |
-| Triangulación documental | **Completada para la baseline actual** |
-| Reglas que bloqueaban HU | **Refinadas** |
-| Nuevas entrevistas directas planificadas | **No planificadas** |
+| Elemento                                               | Estado                                    |
+| ------------------------------------------------------ | ----------------------------------------- |
+| Análisis de antecedentes                               | **Completado**                            |
+| Entrevista `ENT-01`                                    | **Completada y transcrita**               |
+| Entrevista `ENT-02`                                    | **Completada y transcrita**               |
+| Análisis de sistemas similares                         | **Completado**                            |
+| Triangulación documental                               | **Completada para la baseline actual**    |
+| Reglas que bloqueaban HU                               | **Refinadas**                             |
+| Nuevas entrevistas directas planificadas               | **No planificadas**                       |
 | Consultas puntuales posteriores mediante Product Owner | **Permitidas si surge una duda concreta** |
 
 ---
@@ -86,16 +86,16 @@ Esta estructura separa las **tres técnicas**, aunque la carpeta de entrevistas 
 
 ## 5.1. ENT-01 — Diagnóstico general
 
-| Campo | Valor |
-|---|---|
-| **Código** | `ENT-01` |
-| **Fecha** | 19 de agosto de 2026 |
-| **Modalidad** | Virtual mediante Discord |
-| **Entrevistador** | Josué Matias Arroyo Reynoso |
-| **Entrevistada** | Ana Paola Viscarra Chambi |
-| **Perfil** | Trabajadora actual de Fratelli y Product Owner |
-| **Duración** | Aproximadamente 23 min 11 s |
-| **Estado** | Completada |
+| Campo             | Valor                                          |
+| ----------------- | ---------------------------------------------- |
+| **Código**        | `ENT-01`                                       |
+| **Fecha**         | 19 de agosto de 2026                           |
+| **Modalidad**     | Virtual mediante Discord                       |
+| **Entrevistador** | Josué Matias Arroyo Reynoso                    |
+| **Entrevistada**  | Ana Paola Viscarra Chambi                      |
+| **Perfil**        | Trabajadora actual de Fratelli y Product Owner |
+| **Duración**      | Aproximadamente 23 min 11 s                    |
+| **Estado**        | Completada                                     |
 
 ### Finalidad
 
@@ -130,16 +130,16 @@ La sesión confirmó, entre otros puntos:
 
 ## 5.2. ENT-02 — Refinamiento de reglas operativas
 
-| Campo | Valor |
-|---|---|
-| **Código** | `ENT-02` |
-| **Fecha** | Pendiente de consignar en la evidencia disponible |
-| **Modalidad** | Pendiente de consignar en la evidencia disponible |
-| **Participantes** | Metadatos personales pendientes de consignar en la evidencia disponible |
-| **Duración** | Aproximadamente 14 min 17 s |
-| **Estado** | Completada y transcrita |
-
-> Los metadatos que no aparecen en la fuente no se inventan. Esta limitación no impide utilizar las respuestas operativas contenidas en audio/transcripción, pero debe corregirse cuando el equipo disponga del dato real.
+| Campo             | Valor                                          |
+| ----------------- | ---------------------------------------------- |
+| **Código**        | `ENT-02`                                       |
+| **Fecha**         | 20 de agosto de 2026                           |
+| **Modalidad**     | Virtual (Discord)                              |
+| **Entrevistador** | Miguel Angel Colque Calizaya                   |
+| **Entrevistada**  | Ana Paola Viscarra Chambi                      |
+| **Perfil**        | Trabajadora actual de Fratelli y Product Owner |
+| **Duración**      | Aproximadamente 14 min 17 s                    |
+| **Estado**        | Completada y transcrita                        |
 
 ### Finalidad
 
@@ -317,19 +317,19 @@ No entra al MVP sin evidencia de Fratelli
 
 # 8. Triangulación de resultados
 
-| Tema | Antecedentes | Entrevistas | Sistemas similares | Resultado para Fratelli |
-|---|:---:|:---:|:---:|---|
-| Pedido/comanda | ✓ | ✓ | ✓ | Patrón y necesidad sustentados |
-| Inventario por ingredientes | ✓ | ✓ | ✓ | Sustentado |
-| Stock bajo | ✓ | ✓ | ✓ | Necesidad validada |
-| Producción separada de venta | ✓ | ✓ | ✓ | Sustentada y refinada en ENT-02 |
-| Compras/proveedores | ✓ | ✓ | ✓ | Sustentadas y refinadas en ENT-02 |
-| Recepción antes de stock | Parcial | ✓ | ✓ | Regla básica validada |
-| Roles/permisos | ✓ | ✓ | ✓ | Sustentados; ENT-02 refuerza múltiples responsabilidades |
-| Asistencia | ✓ | ✓ | ✓ | MVP sustentado; nómina sigue Post-MVP |
-| Turnos/caja | ✓ | ✓ | ✓ | Regla concreta definida por ENT-02 |
-| PedidosYa | — | ✓ | Referencia de canales externos | Se controla separado en el cierre, sin integración automática |
-| Facturación fiscal | Sistema actual/contexto | — | ✓ | Continúa Post-MVP por decisión de alcance |
+| Tema                         |      Antecedentes       | Entrevistas |       Sistemas similares       | Resultado para Fratelli                                       |
+| ---------------------------- | :---------------------: | :---------: | :----------------------------: | ------------------------------------------------------------- |
+| Pedido/comanda               |            ✓            |      ✓      |               ✓                | Patrón y necesidad sustentados                                |
+| Inventario por ingredientes  |            ✓            |      ✓      |               ✓                | Sustentado                                                    |
+| Stock bajo                   |            ✓            |      ✓      |               ✓                | Necesidad validada                                            |
+| Producción separada de venta |            ✓            |      ✓      |               ✓                | Sustentada y refinada en ENT-02                               |
+| Compras/proveedores          |            ✓            |      ✓      |               ✓                | Sustentadas y refinadas en ENT-02                             |
+| Recepción antes de stock     |         Parcial         |      ✓      |               ✓                | Regla básica validada                                         |
+| Roles/permisos               |            ✓            |      ✓      |               ✓                | Sustentados; ENT-02 refuerza múltiples responsabilidades      |
+| Asistencia                   |            ✓            |      ✓      |               ✓                | MVP sustentado; nómina sigue Post-MVP                         |
+| Turnos/caja                  |            ✓            |      ✓      |               ✓                | Regla concreta definida por ENT-02                            |
+| PedidosYa                    |            —            |      ✓      | Referencia de canales externos | Se controla separado en el cierre, sin integración automática |
+| Facturación fiscal           | Sistema actual/contexto |      —      |               ✓                | Continúa Post-MVP por decisión de alcance                     |
 
 ---
 
@@ -337,14 +337,14 @@ No entra al MVP sin evidencia de Fratelli
 
 La segunda entrevista proporciona información suficiente para retirar el **bloqueo crítico** de las siguientes historias:
 
-| HU | Bloqueo anterior | Resolución obtenida | Estado documental resultante |
-|---|---|---|---|
-| `HU-004` | Unidades/conversiones | kg↔g confirmado para carnes; litros confirmados para líquidos; nuevas conversiones se refinan solo si aparecen | `CANDIDATA A READY` |
-| `HU-007` | Rendimiento/merma/lotes/vencimiento | cantidad final; salida con motivo; disponibilidad agregada; sin vencimiento exacto en MVP | `CANDIDATA A READY` |
-| `HU-017` | Compras autorizadas de cocina | Cocina compra ingredientes directamente con recibo; Encargado bebidas/limpieza/general | `CANDIDATA A READY` |
-| `HU-025` | Apertura y relación entre turnos | dos turnos, misma caja, traspaso y monto de inicio | `CANDIDATA A READY` |
-| `HU-026` | Componentes del cierre | efectivo, QR, gastos, caja chica, PedidosYa separado, diferencias | `CANDIDATA A READY` |
-| `HU-027` | Responsable y cierre total | un cierre; Encargado cierra; Contadora revisa sin aprobar | `CANDIDATA A READY` |
+| HU       | Bloqueo anterior                    | Resolución obtenida                                                                                            | Estado documental resultante |
+| -------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `HU-004` | Unidades/conversiones               | kg↔g confirmado para carnes; litros confirmados para líquidos; nuevas conversiones se refinan solo si aparecen | `CANDIDATA A READY`          |
+| `HU-007` | Rendimiento/merma/lotes/vencimiento | cantidad final; salida con motivo; disponibilidad agregada; sin vencimiento exacto en MVP                      | `CANDIDATA A READY`          |
+| `HU-017` | Compras autorizadas de cocina       | Cocina compra ingredientes directamente con recibo; Encargado bebidas/limpieza/general                         | `CANDIDATA A READY`          |
+| `HU-025` | Apertura y relación entre turnos    | dos turnos, misma caja, traspaso y monto de inicio                                                             | `CANDIDATA A READY`          |
+| `HU-026` | Componentes del cierre              | efectivo, QR, gastos, caja chica, PedidosYa separado, diferencias                                              | `CANDIDATA A READY`          |
+| `HU-027` | Responsable y cierre total          | un cierre; Encargado cierra; Contadora revisa sin aprobar                                                      | `CANDIDATA A READY`          |
 
 Por tanto, en GitHub Projects estas historias pueden moverse:
 
@@ -444,8 +444,8 @@ El relevamiento se considera suficientemente consolidado para continuar porque:
 
 # 15. Control de cambios
 
-| Versión | Fecha | Descripción | Estado |
-|---|---|---|---|
-| `0.1` | 19/08/2026 | Plan y entrevista inicial | Sustituido |
-| `0.2` | 20/08/2026 | Consolidación de ENT-01 | Sustituido |
-| `0.3` | 21/08/2026 | Tres técnicas aplicadas, ENT-02, benchmarking y refinamiento de HU bloqueadas | Vigente |
+| Versión | Fecha      | Descripción                                                                   | Estado     |
+| ------- | ---------- | ----------------------------------------------------------------------------- | ---------- |
+| `0.1`   | 19/08/2026 | Plan y entrevista inicial                                                     | Sustituido |
+| `0.2`   | 20/08/2026 | Consolidación de ENT-01                                                       | Sustituido |
+| `0.3`   | 21/08/2026 | Tres técnicas aplicadas, ENT-02, benchmarking y refinamiento de HU bloqueadas | Vigente    |

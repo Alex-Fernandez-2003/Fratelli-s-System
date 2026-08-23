@@ -2,21 +2,19 @@
 
 ## Identificación
 
-| Campo | Valor |
-|---|---|
-| **Código de sesión** | `ENT-02` |
-| **Proyecto** | Restaurant System |
-| **Organización** | Restaurante Fratelli |
-| **Fecha de entrevista** | Pendiente de consignar en la evidencia disponible |
-| **Modalidad** | Pendiente de consignar en la evidencia disponible |
-| **Entrevistador/a** | Pendiente de consignar en la evidencia disponible |
-| **Entrevistada** | Pendiente de consignar en la evidencia disponible |
-| **Perfil** | Trabajadora vinculada con la operación de Fratelli; nombre/rol exacto pendiente de consignar |
-| **Duración del audio** | Aproximadamente 14 min 17 s |
-| **Técnica** | Entrevista semiestructurada de refinamiento |
-| **Estado** | Completada y transcrita; metadatos de sesión parcialmente pendientes |
-
-> Los datos personales o de sesión que no aparecen en la evidencia entregada no se completan por inferencia.
+| Campo                   | Valor                                                       |
+| ----------------------- | ----------------------------------------------------------- |
+| **Código de sesión**    | `ENT-02`                                                    |
+| **Proyecto**            | Restaurant System                                           |
+| **Organización**        | Restaurante Fratelli                                        |
+| **Fecha de entrevista** | 20 de agosto de 2026                                        |
+| **Modalidad**           | Virtual (Discord)                                           |
+| **Entrevistador/a**     | Miguel Angel Colque Calizaya                                |
+| **Entrevistada**        | Ana Paola Viscarra Chambi                                   |
+| **Perfil**              | Trabajadora actual de Fratelli y Product Owner del proyecto |
+| **Duración del audio**  | Aproximadamente 14 min 17 s                                 |
+| **Técnica**             | Entrevista semiestructurada de refinamiento                 |
+| **Estado**              | Completada y transcrita                                     |
 
 ## Archivos de evidencia
 

@@ -482,18 +482,18 @@ Disponer de una fuente central para ventas, inventario y producción.
 
 ## HU-004 — Definir composición de platos y preparaciones
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-02`, `EPI-03` |
-| **Rol** | ADMINISTRADOR / ENCARGADO |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-010` |
-| **RNF** | `RNF-INT-002` |
-| **RN** | `RN-006`, `RN-008`, `RN-028` |
-| **Necesidades** | `N-003`, `N-004` |
-| **Dependencias** | `HU-003` |
+| Campo            | Valor                        |
+| ---------------- | ---------------------------- |
+| **Épica**        | `EPI-02`, `EPI-03`           |
+| **Rol**          | ADMINISTRADOR / ENCARGADO    |
+| **Prioridad**    | **MUST**                     |
+| **Story Points** | `5`                          |
+| **Estado**       | **CANDIDATA A READY**        |
+| **RF**           | `RF-010`                     |
+| **RNF**          | `RNF-INT-002`                |
+| **RN**           | `RN-006`, `RN-008`, `RN-028` |
+| **Necesidades**  | `N-003`, `N-004`             |
+| **Dependencias** | `HU-003`                     |
 
 ### Historia
 
@@ -582,18 +582,18 @@ Facilitar la detección oportuna de necesidades de reposición.
 
 ## HU-007 — Registrar producción y actualizar existencia preparada
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-03` |
-| **Rol** | COCINA / ENCARGADO / ADMINISTRADOR |
-| **Prioridad** | **MUST** |
-| **Story Points** | `8` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-021`, `RF-022`, `RF-023` |
-| **RNF** | `RNF-INT-001`, `RNF-INT-002`, `RNF-INT-003` |
-| **RN** | `RN-006`, `RN-007`, `RN-008`, `RN-029`, `RN-030`, `RN-031` |
-| **Necesidades** | `N-003`, `N-004` |
-| **Dependencias** | `HU-004`, `HU-005` |
+| Campo            | Valor                                                      |
+| ---------------- | ---------------------------------------------------------- |
+| **Épica**        | `EPI-03`                                                   |
+| **Rol**          | COCINA / ENCARGADO / ADMINISTRADOR                         |
+| **Prioridad**    | **MUST**                                                   |
+| **Story Points** | `8`                                                        |
+| **Estado**       | **CANDIDATA A READY**                                      |
+| **RF**           | `RF-021`, `RF-022`, `RF-023`                               |
+| **RNF**          | `RNF-INT-001`, `RNF-INT-002`, `RNF-INT-003`                |
+| **RN**           | `RN-006`, `RN-007`, `RN-008`, `RN-029`, `RN-030`, `RN-031` |
+| **Necesidades**  | `N-003`, `N-004`                                           |
+| **Dependencias** | `HU-004`, `HU-005`                                         |
 
 ### Historia
 
@@ -618,18 +618,18 @@ Eliminar la secuencia hoja manual → transcripción posterior y mantener invent
 
 ## HU-008 — Consultar registros de producción
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-03` |
-| **Rol** | COCINA / ENCARGADO / ADMINISTRADOR / CONTADORA |
-| **Prioridad** | **SHOULD** |
-| **Story Points** | `3` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-024` |
-| **RNF** | `RNF-AUD-001`, `RNF-AUD-002` |
-| **RN** | `RN-007`, `RN-030` |
-| **Necesidades** | `N-003`, `N-004` |
-| **Dependencias** | `HU-007` |
+| Campo            | Valor                                          |
+| ---------------- | ---------------------------------------------- |
+| **Épica**        | `EPI-03`                                       |
+| **Rol**          | COCINA / ENCARGADO / ADMINISTRADOR / CONTADORA |
+| **Prioridad**    | **SHOULD**                                     |
+| **Story Points** | `3`                                            |
+| **Estado**       | **CANDIDATA A READY**                          |
+| **RF**           | `RF-024`                                       |
+| **RNF**          | `RNF-AUD-001`, `RNF-AUD-002`                   |
+| **RN**           | `RN-007`, `RN-030`                             |
+| **Necesidades**  | `N-003`, `N-004`                               |
+| **Dependencias** | `HU-007`                                       |
 
 ### Historia
 
@@ -750,17 +750,17 @@ Evitar operaciones inválidas y mantener coherencia con cocina.
 
 ## HU-012 — Registrar y confirmar una venta
 
-| Campo            | Valor                                                                     |
-| ---------------- | ------------------------------------------------------------------------- |
-| **Épica**        | `EPI-05`                                                                  |
-| **Rol**          | MESERO / ENCARGADO / ADMINISTRADOR                                        |
-| **Prioridad**    | **MUST**                                                                  |
-| **Story Points** | `8`                                                                       |
-| **Estado**       | **CANDIDATA A READY**                                                     |
-| **RF**           | `RF-031`, `RF-032`, `RF-033`, `RF-035`, `RF-036`                          |
-| **RNF**          | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001`                               |
-| **RN**           | `RN-004`, `RN-005`, `RN-008`, `RN-015`                                    |
-| **Necesidades**  | `N-004`, `N-011`, `N-014`                                                 |
+| Campo            | Valor                                                                          |
+| ---------------- | ------------------------------------------------------------------------------ |
+| **Épica**        | `EPI-05`                                                                       |
+| **Rol**          | MESERO / ENCARGADO / ADMINISTRADOR                                             |
+| **Prioridad**    | **MUST**                                                                       |
+| **Story Points** | `8`                                                                            |
+| **Estado**       | **CANDIDATA A READY**                                                          |
+| **RF**           | `RF-031`, `RF-032`, `RF-033`, `RF-035`, `RF-036`                               |
+| **RNF**          | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001`                                    |
+| **RN**           | `RN-004`, `RN-005`, `RN-008`, `RN-015`                                         |
+| **Necesidades**  | `N-004`, `N-011`, `N-014`                                                      |
 | **Dependencias** | `HU-003`, `HU-005`, `HU-009`; `HU-007` para elementos con existencia preparada |
 
 ### Historia
@@ -914,18 +914,18 @@ Reducir la dispersión de información de proveedores.
 
 ## HU-017 — Registrar una compra
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-06` |
-| **Rol** | ENCARGADO / ADMINISTRADOR / COCINA según ámbito |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-040`, `RF-041` |
-| **RNF** | `RNF-AUD-001`, `RNF-USA-003` |
-| **RN** | `RN-009`, `RN-010`, `RN-027`, `RN-032` |
-| **Necesidades** | `N-006`, `N-007`, `N-008`, `N-014` |
-| **Dependencias** | `HU-003`, `HU-016` |
+| Campo            | Valor                                           |
+| ---------------- | ----------------------------------------------- |
+| **Épica**        | `EPI-06`                                        |
+| **Rol**          | ENCARGADO / ADMINISTRADOR / COCINA según ámbito |
+| **Prioridad**    | **MUST**                                        |
+| **Story Points** | `5`                                             |
+| **Estado**       | **CANDIDATA A READY**                           |
+| **RF**           | `RF-040`, `RF-041`                              |
+| **RNF**          | `RNF-AUD-001`, `RNF-USA-003`                    |
+| **RN**           | `RN-009`, `RN-010`, `RN-027`, `RN-032`          |
+| **Necesidades**  | `N-006`, `N-007`, `N-008`, `N-014`              |
+| **Dependencias** | `HU-003`, `HU-016`                              |
 
 ### Historia
 
@@ -948,18 +948,18 @@ Sustituir parte del manejo distribuido de compras y conservar responsable/respal
 
 ## HU-018 — Recibir una compra e incrementar inventario
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-06` |
-| **Rol** | ENCARGADO / ADMINISTRADOR / COCINA según ámbito |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-042`, `RF-043` |
-| **RNF** | `RNF-INT-001`, `RNF-INT-002` |
-| **RN** | `RN-009`, `RN-010`, `RN-027`, `RN-033`, `RN-034` |
-| **Necesidades** | `N-004`, `N-006`, `N-008` |
-| **Dependencias** | `HU-005`, `HU-017` |
+| Campo            | Valor                                            |
+| ---------------- | ------------------------------------------------ |
+| **Épica**        | `EPI-06`                                         |
+| **Rol**          | ENCARGADO / ADMINISTRADOR / COCINA según ámbito  |
+| **Prioridad**    | **MUST**                                         |
+| **Story Points** | `5`                                              |
+| **Estado**       | **CANDIDATA A READY**                            |
+| **RF**           | `RF-042`, `RF-043`                               |
+| **RNF**          | `RNF-INT-001`, `RNF-INT-002`                     |
+| **RN**           | `RN-009`, `RN-010`, `RN-027`, `RN-033`, `RN-034` |
+| **Necesidades**  | `N-004`, `N-006`, `N-008`                        |
+| **Dependencias** | `HU-005`, `HU-017`                               |
 
 ### Historia
 
@@ -1177,18 +1177,18 @@ Reducir la transcripción desde planillas físicas.
 
 ## HU-025 — Gestionar y operar turnos
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-09` |
-| **Rol** | ENCARGADO / ADMINISTRADOR / MESERO |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-052`, `RF-053` |
-| **RNF** | `RNF-AUD-001`, `RNF-INT-001` |
-| **RN** | `RN-020`, `RN-025`, `RN-035`, `RN-036` |
-| **Necesidades** | `N-009`, `N-011`, `N-014` |
-| **Dependencias** | `HU-012`, `HU-020` |
+| Campo            | Valor                                  |
+| ---------------- | -------------------------------------- |
+| **Épica**        | `EPI-09`                               |
+| **Rol**          | ENCARGADO / ADMINISTRADOR / MESERO     |
+| **Prioridad**    | **MUST**                               |
+| **Story Points** | `5`                                    |
+| **Estado**       | **CANDIDATA A READY**                  |
+| **RF**           | `RF-052`, `RF-053`                     |
+| **RNF**          | `RNF-AUD-001`, `RNF-INT-001`           |
+| **RN**           | `RN-020`, `RN-025`, `RN-035`, `RN-036` |
+| **Necesidades**  | `N-009`, `N-011`, `N-014`              |
+| **Dependencias** | `HU-012`, `HU-020`                     |
 
 ### Historia
 
@@ -1212,18 +1212,18 @@ Agrupar operaciones por turno sin modelar incorrectamente dos cajas o dos cierre
 
 ## HU-026 — Preparar información esperada del cierre
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-09` |
-| **Rol** | ENCARGADO / ADMINISTRADOR |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-054` |
-| **RNF** | `RNF-INT-001`, `RNF-REC-001` |
-| **RN** | `RN-016`, `RN-023`, `RN-035`–`RN-038` |
-| **Necesidades** | `N-009`, `N-011` |
-| **Dependencias** | `HU-025` |
+| Campo            | Valor                                 |
+| ---------------- | ------------------------------------- |
+| **Épica**        | `EPI-09`                              |
+| **Rol**          | ENCARGADO / ADMINISTRADOR             |
+| **Prioridad**    | **MUST**                              |
+| **Story Points** | `5`                                   |
+| **Estado**       | **CANDIDATA A READY**                 |
+| **RF**           | `RF-054`                              |
+| **RNF**          | `RNF-INT-001`, `RNF-REC-001`          |
+| **RN**           | `RN-016`, `RN-023`, `RN-035`–`RN-038` |
+| **Necesidades**  | `N-009`, `N-011`                      |
+| **Dependencias** | `HU-025`                              |
 
 ### Historia
 
@@ -1247,18 +1247,18 @@ Centralizar el cierre a partir de las operaciones de ambos turnos y mostrar por 
 
 ## HU-027 — Registrar cierre de turno/caja
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-09` |
-| **Rol** | ENCARGADO / ADMINISTRADOR |
-| **Prioridad** | **MUST** |
-| **Story Points** | `5` |
-| **Estado** | **CANDIDATA A READY** |
-| **RF** | `RF-055` |
-| **RNF** | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001` |
-| **RN** | `RN-016`, `RN-020`, `RN-023`, `RN-024`, `RN-035`, `RN-038`, `RN-039` |
-| **Necesidades** | `N-009`, `N-011`, `N-013`, `N-014` |
-| **Dependencias** | `HU-026` |
+| Campo            | Valor                                                                |
+| ---------------- | -------------------------------------------------------------------- |
+| **Épica**        | `EPI-09`                                                             |
+| **Rol**          | ENCARGADO / ADMINISTRADOR                                            |
+| **Prioridad**    | **MUST**                                                             |
+| **Story Points** | `5`                                                                  |
+| **Estado**       | **CANDIDATA A READY**                                                |
+| **RF**           | `RF-055`                                                             |
+| **RNF**          | `RNF-INT-001`, `RNF-CON-001`, `RNF-AUD-001`                          |
+| **RN**           | `RN-016`, `RN-020`, `RN-023`, `RN-024`, `RN-035`, `RN-038`, `RN-039` |
+| **Necesidades**  | `N-009`, `N-011`, `N-013`, `N-014`                                   |
+| **Dependencias** | `HU-026`                                                             |
 
 ### Historia
 
@@ -1608,39 +1608,39 @@ No es criterio de aceptación del MVP actual.
 
 # 10. Vista resumida y ordenada del MVP
 
-| Orden | HU       | Historia                                      | Épica         | MoSCoW |  SP | Estado                 |
-| ----: | -------- | --------------------------------------------- | ------------- | ------ | --: | ---------------------- |
-|     1 | `HU-001` | Iniciar y cerrar sesión                       | EPI-01        | MUST   |   3 | Candidata a Ready      |
-|     2 | `HU-002` | Administrar usuarios y múltiples roles        | EPI-01        | MUST   |   5 | Candidata a Ready      |
-|     3 | `HU-003` | Gestionar productos, ingredientes y platos    | EPI-02        | MUST   |   5 | Candidata a Ready      |
-|     4 | `HU-005` | Registrar movimientos y consultar existencias | EPI-02        | MUST   |   5 | Candidata a Ready      |
-|     5 | `HU-006` | Configurar y visualizar stock bajo            | EPI-02        | MUST   |   3 | Candidata a Ready      |
-|     6 | `HU-004` | Definir composición de platos/preparaciones   | EPI-02/EPI-03 | MUST   |   5 | Candidata a Ready      |
-|     7 | `HU-007` | Registrar producción y actualizar existencia  | EPI-03        | MUST   |   8 | Candidata a Ready      |
-|     8 | `HU-008` | Consultar registros de producción             | EPI-03        | SHOULD |   3 | Candidata a Ready      |
-|     9 | `HU-009` | Registrar y gestionar pedidos                 | EPI-04        | MUST   |   5 | Candidata a Ready      |
-|    10 | `HU-010` | Generar y gestionar comandas                  | EPI-04        | MUST   |   5 | Candidata a Ready      |
-|    11 | `HU-011` | Cancelar pedido antes de listo                | EPI-04        | MUST   |   2 | Candidata a Ready      |
-|    12 | `HU-012` | Registrar y confirmar venta                   | EPI-05        | MUST   |   8 | Candidata a Ready      |
-|    13 | `HU-013` | Continuar venta con stock insuficiente        | EPI-05        | MUST   |   2 | Candidata a Ready      |
-|    14 | `HU-014` | Gestionar clientes básicos                    | EPI-05        | SHOULD |   3 | Candidata a Ready      |
-|    15 | `HU-015` | Consultar historial de ventas                 | EPI-05        | SHOULD |   3 | Candidata a Ready      |
-|    16 | `HU-016` | Gestionar proveedores                         | EPI-06        | MUST   |   3 | Candidata a Ready      |
-|    17 | `HU-017` | Registrar compra                              | EPI-06        | MUST   |   5 | Candidata a Ready      |
-|    18 | `HU-018` | Recibir compra e incrementar inventario       | EPI-06        | MUST   |   5 | Candidata a Ready      |
-|    19 | `HU-019` | Consultar historial de compras                | EPI-06        | SHOULD |   3 | Candidata a Ready      |
-|    20 | `HU-020` | Registrar gastos diarios                      | EPI-07        | MUST   |   3 | Candidata a Ready      |
-|    21 | `HU-021` | Consultar gastos                              | EPI-07        | SHOULD |   2 | Candidata a Ready      |
-|    22 | `HU-022` | Registrar entrada y salida                    | EPI-08        | MUST   |   5 | Candidata a Ready      |
-|    23 | `HU-023` | Consultar mi asistencia                       | EPI-08        | SHOULD |   2 | Candidata a Ready      |
-|    24 | `HU-024` | Consultar asistencia de trabajadores          | EPI-08        | MUST   |   3 | Candidata a Ready      |
-|    25 | `HU-025` | Gestionar y operar turnos                     | EPI-09        | MUST   |   5 | Candidata a Ready      |
-|    26 | `HU-026` | Preparar información esperada de cierre       | EPI-09        | MUST   |   5 | Candidata a Ready      |
-|    27 | `HU-027` | Registrar cierre de turno/caja                | EPI-09        | MUST   |   5 | Candidata a Ready      |
-|    28 | `HU-028` | Consultar cierres                             | EPI-09        | SHOULD |   2 | Candidata a Ready      |
-|    29 | `HU-029` | Reporte de ventas                             | EPI-10        | SHOULD |   3 | Candidata a Ready      |
-|    30 | `HU-030` | Reporte de inventario                         | EPI-10        | SHOULD |   3 | Candidata a Ready      |
-|    31 | `HU-031` | Reporte de asistencia                         | EPI-10        | SHOULD |   3 | Candidata a Ready      |
+| Orden | HU       | Historia                                      | Épica         | MoSCoW |  SP | Estado            |
+| ----: | -------- | --------------------------------------------- | ------------- | ------ | --: | ----------------- |
+|     1 | `HU-001` | Iniciar y cerrar sesión                       | EPI-01        | MUST   |   3 | Candidata a Ready |
+|     2 | `HU-002` | Administrar usuarios y múltiples roles        | EPI-01        | MUST   |   5 | Candidata a Ready |
+|     3 | `HU-003` | Gestionar productos, ingredientes y platos    | EPI-02        | MUST   |   5 | Candidata a Ready |
+|     4 | `HU-005` | Registrar movimientos y consultar existencias | EPI-02        | MUST   |   5 | Candidata a Ready |
+|     5 | `HU-006` | Configurar y visualizar stock bajo            | EPI-02        | MUST   |   3 | Candidata a Ready |
+|     6 | `HU-004` | Definir composición de platos/preparaciones   | EPI-02/EPI-03 | MUST   |   5 | Candidata a Ready |
+|     7 | `HU-007` | Registrar producción y actualizar existencia  | EPI-03        | MUST   |   8 | Candidata a Ready |
+|     8 | `HU-008` | Consultar registros de producción             | EPI-03        | SHOULD |   3 | Candidata a Ready |
+|     9 | `HU-009` | Registrar y gestionar pedidos                 | EPI-04        | MUST   |   5 | Candidata a Ready |
+|    10 | `HU-010` | Generar y gestionar comandas                  | EPI-04        | MUST   |   5 | Candidata a Ready |
+|    11 | `HU-011` | Cancelar pedido antes de listo                | EPI-04        | MUST   |   2 | Candidata a Ready |
+|    12 | `HU-012` | Registrar y confirmar venta                   | EPI-05        | MUST   |   8 | Candidata a Ready |
+|    13 | `HU-013` | Continuar venta con stock insuficiente        | EPI-05        | MUST   |   2 | Candidata a Ready |
+|    14 | `HU-014` | Gestionar clientes básicos                    | EPI-05        | SHOULD |   3 | Candidata a Ready |
+|    15 | `HU-015` | Consultar historial de ventas                 | EPI-05        | SHOULD |   3 | Candidata a Ready |
+|    16 | `HU-016` | Gestionar proveedores                         | EPI-06        | MUST   |   3 | Candidata a Ready |
+|    17 | `HU-017` | Registrar compra                              | EPI-06        | MUST   |   5 | Candidata a Ready |
+|    18 | `HU-018` | Recibir compra e incrementar inventario       | EPI-06        | MUST   |   5 | Candidata a Ready |
+|    19 | `HU-019` | Consultar historial de compras                | EPI-06        | SHOULD |   3 | Candidata a Ready |
+|    20 | `HU-020` | Registrar gastos diarios                      | EPI-07        | MUST   |   3 | Candidata a Ready |
+|    21 | `HU-021` | Consultar gastos                              | EPI-07        | SHOULD |   2 | Candidata a Ready |
+|    22 | `HU-022` | Registrar entrada y salida                    | EPI-08        | MUST   |   5 | Candidata a Ready |
+|    23 | `HU-023` | Consultar mi asistencia                       | EPI-08        | SHOULD |   2 | Candidata a Ready |
+|    24 | `HU-024` | Consultar asistencia de trabajadores          | EPI-08        | MUST   |   3 | Candidata a Ready |
+|    25 | `HU-025` | Gestionar y operar turnos                     | EPI-09        | MUST   |   5 | Candidata a Ready |
+|    26 | `HU-026` | Preparar información esperada de cierre       | EPI-09        | MUST   |   5 | Candidata a Ready |
+|    27 | `HU-027` | Registrar cierre de turno/caja                | EPI-09        | MUST   |   5 | Candidata a Ready |
+|    28 | `HU-028` | Consultar cierres                             | EPI-09        | SHOULD |   2 | Candidata a Ready |
+|    29 | `HU-029` | Reporte de ventas                             | EPI-10        | SHOULD |   3 | Candidata a Ready |
+|    30 | `HU-030` | Reporte de inventario                         | EPI-10        | SHOULD |   3 | Candidata a Ready |
+|    31 | `HU-031` | Reporte de asistencia                         | EPI-10        | SHOULD |   3 | Candidata a Ready |
 
 ---
 
@@ -1723,14 +1723,14 @@ HU-022 Asistencia
 
 Las seis historias que inicialmente estaban en `Blocked` contaban con bloqueos informativos explícitos. La segunda entrevista proporcionó evidencia suficiente para definir su baseline funcional:
 
-| HU | Información aclarada | Estado documental actual | Movimiento en GitHub Projects |
-|---|---|---|---|
-| `HU-004` | unidades y conversión real `kg ↔ g` | CANDIDATA A READY | `Blocked → Backlog` |
-| `HU-007` | cantidad final, bajas con motivo, disponibilidad consolidada y sin lotes múltiples obligatorios | CANDIDATA A READY | `Blocked → Backlog` |
-| `HU-017` | compras directas de Cocina, compras generales del Encargado y respaldo por recibo | CANDIDATA A READY | `Blocked → Backlog` |
-| `HU-025` | dos turnos, una caja, monto inicial y traspaso | CANDIDATA A READY | `Blocked → Backlog` |
-| `HU-026` | efectivo, QR, gastos, caja chica, diferencias y PedidosYa separado | CANDIDATA A READY | `Blocked → Backlog` |
-| `HU-027` | cierre único por Encargado y revisión posterior de Contadora sin aprobación | CANDIDATA A READY | `Blocked → Backlog` |
+| HU       | Información aclarada                                                                            | Estado documental actual | Movimiento en GitHub Projects |
+| -------- | ----------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------- |
+| `HU-004` | unidades y conversión real `kg ↔ g`                                                             | CANDIDATA A READY        | `Blocked → Backlog`           |
+| `HU-007` | cantidad final, bajas con motivo, disponibilidad consolidada y sin lotes múltiples obligatorios | CANDIDATA A READY        | `Blocked → Backlog`           |
+| `HU-017` | compras directas de Cocina, compras generales del Encargado y respaldo por recibo               | CANDIDATA A READY        | `Blocked → Backlog`           |
+| `HU-025` | dos turnos, una caja, monto inicial y traspaso                                                  | CANDIDATA A READY        | `Blocked → Backlog`           |
+| `HU-026` | efectivo, QR, gastos, caja chica, diferencias y PedidosYa separado                              | CANDIDATA A READY        | `Blocked → Backlog`           |
+| `HU-027` | cierre único por Encargado y revisión posterior de Contadora sin aprobación                     | CANDIDATA A READY        | `Blocked → Backlog`           |
 
 ### Estado del bloqueo
 
@@ -1768,7 +1768,7 @@ Se consideran inicialmente críticas por valor, dependencia o riesgo:
 | `HU-018` | Integración compra/inventario                |
 | `HU-022` | Necesidad prioritaria de asistencia          |
 | `HU-025` | Habilita cierre                              |
-| `HU-026` | Alto impacto sobre conciliación/cierre            |
+| `HU-026` | Alto impacto sobre conciliación/cierre       |
 | `HU-027` | Capacidad operativa crítica existente        |
 
 Estas historias deberán recibir refinamiento especialmente cuidadoso antes de Sprint Planning.
@@ -2023,7 +2023,7 @@ Done
 
 # 23. Control de cambios
 
-| Versión | Fecha      | Descripción                                                                                                           | Estado                                           |
-| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `0.1`   | 20/08/2026 | Product Backlog inicial con 31 historias MVP y 8 historias Post-MVP, priorización MoSCoW, Story Points y trazabilidad | Listo para refinamiento |
+| Versión | Fecha      | Descripción                                                                                                                   | Estado                          |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `0.1`   | 20/08/2026 | Product Backlog inicial con 31 historias MVP y 8 historias Post-MVP, priorización MoSCoW, Story Points y trazabilidad         | Listo para refinamiento         |
 | `0.2`   | 21/08/2026 | ENT-02 resuelve las seis HU bloqueadas; se actualizan producción, compras y caja y se habilita movimiento `Blocked → Backlog` | Revalidado para GitHub Projects |
