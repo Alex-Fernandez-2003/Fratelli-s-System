@@ -1,0 +1,66 @@
+@startuml
+title Flujo UX — Pedido, comanda y venta
+
+start
+
+partition "Mesero / Encargado" {
+  :Abrir módulo Pedidos;
+  :Crear nuevo pedido;
+  :Seleccionar productos y cantidades;
+  :Registrar referencia de mesa\ncuando corresponda;
+  :Guardar pedido;
+}
+
+partition "Sistema" {
+  :Registrar pedido como PENDIENTE;
+  :Generar comanda PENDIENTE;
+}
+
+partition "Cocina" {
+  :Consultar comanda;
+  :Iniciar preparación;
+}
+
+partition "Sistema" {
+  :Pedido EN_PREPARACION;
+  :Comanda EN_PREPARACION;
+}
+
+partition "Cocina" {
+  :Marcar preparación como lista;
+}
+
+partition "Sistema" {
+  :Comanda LISTA;
+  :Pedido LISTO;
+}
+
+partition "Mesero / Encargado" {
+  :Entregar / continuar operación;
+  :Abrir acción de cobro;
+  :Revisar detalle y total;
+  :Seleccionar medio de pago;
+  :Asociar cliente opcionalmente;
+}
+
+partition "Sistema" {
+  if (¿Stock suficiente?) then (Sí)
+  else (No)
+    :Mostrar advertencia de stock insuficiente;
+    :Permitir continuar;
+  endif
+}
+
+partition "Mesero / Encargado" {
+  :Confirmar venta;
+}
+
+partition "Sistema" {
+  :Registrar venta;
+  :Afectar inventario;
+  :Conservar usuario, turno y fecha/hora;
+  :Mostrar confirmación;
+}
+
+stop
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+title Flujo UX — Compra, recepción e inventario
+
+start
+
+partition "Cocina / Encargado / Administrador" {
+  :Abrir módulo Compras;
+  :Seleccionar proveedor;
+  :Registrar detalle, cantidades y costos;
+  :Registrar respaldo cuando corresponda;
+  :Guardar compra;
+}
+
+partition "Sistema" {
+  :Crear compra PENDIENTE;
+  :No modificar inventario;
+}
+
+partition "Responsable de recepción" {
+  :Recibir y verificar productos;
+}
+
+if (¿Producto de cocina requiere\npesar o porcionar?) then (Sí)
+  partition "Cocina" {
+    :Pesar / verificar;
+    :Porcionar cuando corresponda;
+  }
+endif
+
+if (¿Compra aceptada?) then (Sí)
+  partition "Responsable de recepción" {
+    :Confirmar recepción;
+  }
+  partition "Sistema" {
+    :Cambiar a RECIBIDA;
+    :Incrementar inventario;
+    :Registrar trazabilidad;
+    :Mostrar confirmación;
+  }
+else (No)
+  partition "Responsable de recepción" {
+    :Coordinar devolución con proveedor;
+  }
+  partition "Sistema" {
+    :No registrar recepción definitiva;
+    :Mantener estado coherente\n(PENDIENTE o CANCELADA según corresponda);
+  }
+endif
+
+stop
+@enduml

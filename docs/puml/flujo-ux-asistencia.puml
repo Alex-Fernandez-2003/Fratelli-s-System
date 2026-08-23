@@ -1,0 +1,40 @@
+@startuml
+title Flujo UX — Registro de asistencia
+
+start
+
+partition "Trabajador" {
+  :Abrir módulo Asistencia;
+}
+
+partition "Sistema" {
+  :Consultar si existe asistencia abierta;
+}
+
+if (¿Existe asistencia abierta?) then (Sí)
+  partition "Sistema" {
+    :Mostrar entrada vigente;
+    :Habilitar Registrar salida;
+  }
+  partition "Trabajador" {
+    :Registrar salida;
+  }
+  partition "Sistema" {
+    :Cerrar asistencia;
+    :Mostrar fecha/hora y confirmación;
+  }
+else (No)
+  partition "Sistema" {
+    :Habilitar Registrar entrada;
+  }
+  partition "Trabajador" {
+    :Registrar entrada;
+  }
+  partition "Sistema" {
+    :Crear asistencia abierta;
+    :Mostrar fecha/hora y confirmación;
+  }
+endif
+
+stop
+@enduml

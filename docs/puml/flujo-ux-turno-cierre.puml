@@ -1,0 +1,64 @@
+@startuml
+title Flujo UX — Turnos y cierre de caja
+
+start
+
+partition "Encargado / Turno previo" {
+  :Dejar monto/fondo de continuidad;
+  :Registrar información necesaria\npara el siguiente turno;
+}
+
+partition "Turno siguiente" {
+  :Verificar monto e información recibida;
+  :Iniciar operación;
+  :Registrar ventas y gastos durante el turno;
+}
+
+partition "Sistema" {
+  :Asociar operaciones al contexto de turno;
+}
+
+partition "Encargado / Administrador" {
+  :Abrir cierre de caja;
+}
+
+partition "Sistema" {
+  :Mostrar monto inicial/fondo;
+  :Mostrar ventas en efectivo;
+  :Mostrar ventas por QR;
+  :Mostrar gastos y caja chica;
+  :Mostrar PedidosYa por separado;
+  :Calcular información esperada;
+}
+
+partition "Encargado / Administrador" {
+  :Registrar efectivo declarado/real\ncuando corresponda;
+}
+
+partition "Sistema" {
+  :Calcular diferencia;
+}
+
+if (¿Existe diferencia?) then (Sí)
+  partition "Encargado / Administrador" {
+    :Registrar observación;
+  }
+endif
+
+partition "Encargado / Administrador" {
+  :Revisar resumen;
+  :Confirmar cierre;
+}
+
+partition "Sistema" {
+  :Registrar único cierre final;
+  :Conservar responsable y trazabilidad;
+  :Mostrar confirmación;
+}
+
+partition "Contadora" {
+  :Consultar cierre posteriormente;
+}
+
+stop
+@enduml

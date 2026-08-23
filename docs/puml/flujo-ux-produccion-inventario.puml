@@ -1,0 +1,35 @@
+@startuml
+title Flujo UX — Producción e inventario
+
+start
+
+partition "Cocina / Encargado" {
+  :Abrir módulo Producción;
+  :Seleccionar preparación;
+}
+
+partition "Sistema" {
+  :Mostrar información disponible\nde composición;
+}
+
+partition "Cocina / Encargado" {
+  :Indicar cantidad final producida;
+  :Revisar información;
+  :Confirmar producción;
+}
+
+partition "Sistema" {
+  :Validar datos;
+  :Consumir ingredientes definidos\npor composición;
+  :Registrar evento de producción;
+  :Conservar fecha y responsable;
+  :Aumentar existencia preparada;
+  :Mostrar confirmación;
+}
+
+partition "Cocina / Encargado" {
+  :Consultar existencia preparada\no historial;
+}
+
+stop
+@enduml
