@@ -1,0 +1,3 @@
+# Backend
+
+Requiere .NET SDK 10 y PostgreSQL local. Antes de ejecutar la API o los comandos de EF, configure `ConnectionStrings__RestaurantSystem` y `Jwt__Key` en el entorno local; ninguno de los valores se versiona. Para restaurar, compilar y ejecutar use: `dotnet restore RestaurantSystem.slnx`, `dotnet build RestaurantSystem.slnx`, `dotnet run --project src/RestaurantSystem.Api`. La API escucha en `http://localhost:5057`; Development expone únicamente `/health`, `/openapi/v1.json` y `/swagger`. Aplique la migration técnica de Identity con `dotnet ef database update --project src/RestaurantSystem.Infrastructure --startup-project src/RestaurantSystem.Api`. Tests: `dotnet test RestaurantSystem.slnx`.
