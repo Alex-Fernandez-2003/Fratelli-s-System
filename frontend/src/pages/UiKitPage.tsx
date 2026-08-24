@@ -179,7 +179,7 @@ export function UiKitPage() {
         </Card>
       </section>
       <section aria-labelledby="integration">
-        <h2 id="integration">Integración</h2>
+        <h2 id="integration">Conexión con backend</h2>
         <Card>
           <h3>Salud del backend</h3>
           {health.isPending ? (
