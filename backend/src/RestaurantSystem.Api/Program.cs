@@ -4,7 +4,6 @@ using RestaurantSystem.Infrastructure;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://localhost:5057");
 builder.Services.AddProblemDetails();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(options => options.AddPolicy("frontend", policy => policy.WithOrigins("http://localhost:8087").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
@@ -16,7 +15,7 @@ var jwt = builder.Configuration.GetRequiredSection("Jwt");
 var key = jwt["Key"];
 if (string.IsNullOrWhiteSpace(key))
 {
-    throw new InvalidOperationException("Jwt__Key must be configured outside version control.");
+    throw new InvalidOperationException("Jwt:Key must be configured outside version control via User Secrets or the Jwt__Key environment variable.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new()
