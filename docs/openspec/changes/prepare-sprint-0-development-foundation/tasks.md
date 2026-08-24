@@ -260,42 +260,42 @@
 - Dependencias:
   Tareas 13, 19.
 
-- [ ] **Tarea 21: Implementar CI mínimo [S0-18]**
+- [x] **Tarea 21: CI remoto GitHub Actions — No aplica [S0-18]**
 
 - Objetivo:
-  Automatizar verificaciones estables sin convertir CI en un proyecto paralelo.
+  No aplica por decisión de alcance aprobada: GitHub Actions/CI remoto no forma parte del flujo adoptado para el proyecto.
 - Archivos o áreas probablemente involucradas:
-  `.github/workflows/ci.yml`.
+  Documentación de cierre.
 - Notas de ejecución:
-  Backend: restore/build/test. Frontend: `pnpm install --frozen-lockfile`, formato, typecheck, lint, build y tests únicamente si están estables. `pnpm-lock.yaml` es canónico; npm conserva compatibilidad de scripts sin `package-lock.json`. No añadir DB service container, deploy, HomeLab, Testcontainers, Playwright completo, coverage gate ni scanning avanzado.
+  No se requiere ejecutar ni observar un workflow remoto; no se registran IDs, URLs ni resultados inexistentes.
 - Método de verificación:
-  Ejecutar/observar el workflow real y registrar su resultado. Si falla, corregir únicamente causas pertenecientes al scope de Sprint 0.
+  No aplica por alcance aprobado. La CI remota no es una validación pendiente del Sprint 0.
 - Dependencias:
   Tareas 18, 19.
 
-- [ ] **Tarea 22: Ejecutar la validación reproducible local**
+- [x] **Tarea 22: Ejecutar la validación reproducible local**
 
 - Objetivo:
   Verificar el gate completo desde una instalación limpia o suficientemente equivalente.
 - Archivos o áreas probablemente involucradas:
   Repositorio completo, documentación, PostgreSQL local.
 - Notas de ejecución:
-  Ejecutar clone/restore/install/config DB/database update/backend/frontend/health/api generation/UI Kit/lint/build/tests. No convertir resultados esperados en evidencia antes de ejecutarlos.
+  El equipo confirmó que el clone local limpio y su checklist se realizaron correctamente. No se agregan detalles ni secretos.
 - Método de verificación:
-  Checklist del gate con comandos, resultados y problemas reales.
+  Completada con éxito según confirmación explícita del equipo.
 - Dependencias:
   Tareas 19, 20, 21.
 
-- [ ] **Tarea 23: Validar la fábrica en otra máquina**
+- [x] **Tarea 23: Validar la fábrica en otra máquina**
 
 - Objetivo:
   Demostrar que el scaffold no depende de la computadora o conocimiento implícito del autor.
 - Archivos o áreas probablemente involucradas:
   Documentación de onboarding y repositorio integrado.
 - Notas de ejecución:
-  Otro integrante debe intentar clone → DB → migrations → backend → frontend → health → UI Kit. No compartir secretos. Si no puede realizarse durante Sprint 0, registrar explícitamente `PENDIENTE`.
+  El equipo confirmó que la fábrica se probó correctamente en otra máquina. No se agregan identidad, fecha, dispositivo ni detalles no confirmados.
 - Método de verificación:
-  Resultado factual de la segunda instalación o registro explícito de pendiente.
+  Completada con éxito según confirmación explícita del equipo.
 - Dependencias:
   Tarea 22.
 

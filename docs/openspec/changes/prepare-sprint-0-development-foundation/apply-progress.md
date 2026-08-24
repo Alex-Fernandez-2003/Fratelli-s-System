@@ -136,4 +136,13 @@ La gama explícita de `@tanstack/react-query` es `^5.101.4`, en lugar de `^5.102
 
 ## Limpieza final de integración
 
-El árbol físico de OpenSpec se movió, sin copiarse, desde la raíz del repositorio a la ubicación canónica `docs/openspec/`. El runtime instalado de Windows no admite configuración de raíz de documentación, por lo que la compatibilidad local la proporciona una unión de Windows `openspec` ignorada en la raíz que apunta a `docs\\openspec`; no es un segundo árbol de artefactos y no debe incluirse en un commit. Las tareas 21–23 permanecen sin marcar.
+El árbol físico de OpenSpec se movió, sin copiarse, desde la raíz del repositorio a la ubicación canónica `docs/openspec/`. El runtime instalado de Windows no admite configuración de raíz de documentación, por lo que la compatibilidad local la proporciona una unión de Windows `openspec` ignorada en la raíz que apunta a `docs\\openspec`; no es un segundo árbol de artefactos y no debe incluirse en un commit.
+
+## Cierre documental final
+
+Sprint 0 está **COMPLETADO (25/25)** como fundación técnica únicamente; no incluye HUs ni alcance Post-MVP.
+
+- **Tarea 21:** resuelta como **No aplica** por decisión de alcance aprobada. GitHub Actions/CI remoto no forma parte del flujo adoptado, por lo que no es una validación pendiente; no se registran ejecuciones, IDs, URLs ni resultados remotos.
+- **Tarea 22:** completada correctamente según confirmación explícita del equipo de clone local limpio y checklist, sin agregar detalles ni secretos.
+- **Tarea 23:** completada correctamente según confirmación explícita del equipo de prueba en otra máquina, sin agregar identidad, fecha, dispositivo ni incidencias no confirmadas.
+- **Gate final:** **PASS**. La revisión de alcance confirma una base técnica sin HUs, funcionalidades de producto ni trabajo Post-MVP; la CI remota es N/A por el alcance adoptado.
