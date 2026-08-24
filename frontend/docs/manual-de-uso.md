@@ -109,7 +109,7 @@ CI ejecuta la comprobación de formato, comprobación de tipos, linting, build y
 
 ## Tutorial del UI Kit
 
-`/dev/ui-kit` existe solo en Development. Agrupa el catálogo en Fundamentos, Acciones, Retroalimentación, Formularios, Navegación, Datos, Superposiciones, Diseño e Integración. Revise allí un nuevo componente neutral antes de consumirlo desde una feature. Su suite de tests cubre las variantes/iconos/carga de Button, relaciones de FormField, PasswordInput, validación/eliminación de FileDropzone, Pagination, carga/error/acciones de DataTable, Modal y el estado de salud/catálogo.
+`/dev/ui-kit` existe solo en Development. Agrupa el catálogo en Fundamentos, Acciones, Retroalimentación, Formularios, Navegación, Datos, Superposiciones, Diseño y Conexión con backend. Revise allí un nuevo componente neutral antes de consumirlo desde una feature. Su suite de tests cubre las variantes/iconos/carga de Button, relaciones de FormField, PasswordInput, validación/eliminación de FileDropzone, Pagination, carga/error/acciones de DataTable, Modal y el estado de salud/catálogo.
 
 ## Prohibiciones
 

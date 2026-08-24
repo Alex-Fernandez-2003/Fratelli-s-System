@@ -175,7 +175,7 @@ describe('catálogo del UI Kit', () => {
       'Datos',
       'Superposiciones',
       'Diseño',
-      'Integración',
+      'Conexión con backend',
     ]) {
       expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
     }

@@ -36,15 +36,15 @@ Sprint 0 contiene únicamente infraestructura técnica. No se agregó ninguna HU
 
 ### Ejecución de Frontend y Backend en sus respectivas carpetas
 
-![Ejecución Frontend](../evidence/capturas/sprint-0-frontend.png)
+![Ejecución Frontend](../capturas/sprint-0-frontend.png)
 
-![Ejecución Backend](../evidence/capturas/sprint-0-backend.png)
+![Ejecución Backend](../capturas/sprint-0-backend.png)
 
 ---
 
 ### Muestra de la página de demostración del frontend
 
-![UiKit frontend](../evidence/capturas/sprint-0-uikit.png)
+![UiKit frontend](../capturas/sprint-0-uikit.png)
 
 ---
 
