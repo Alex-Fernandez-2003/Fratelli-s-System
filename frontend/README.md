@@ -11,7 +11,23 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-Vite se ejecuta en el puerto `8087` y redirige `/api`, `/hubs` y `/health` al backend en `5057`. En Development, abra `/dev/ui-kit` para inspeccionar los componentes reutilizables y la consulta real de salud del backend.
+Vite se ejecuta en el puerto `8087` y redirige `/api`, `/hubs` y `/health` al backend. En Development, abra `/dev/ui-kit` para inspeccionar los componentes reutilizables y la consulta real de salud del backend.
+
+## Configuración local
+
+Copie el ejemplo antes de iniciar Vite:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local` está ignorado por `*.local`; no lo versione. `VITE_APP_NAME`, `VITE_API_BASE_URL` y `VITE_REQUEST_TIMEOUT_MS` son valores públicos expuestos al navegador: no ponga secretos en variables `VITE_*`. `API_PROXY_TARGET` y `OPENAPI_SCHEMA_URL` son valores de tooling para Vite/Node y no se exponen al cliente. El proxy usa `API_PROXY_TARGET` para `/api`, `/health` y `/hubs` (este último conserva WebSocket).
+
+Para `pnpm run api:generate`, el backend debe estar activo en Development y exponer el documento configurado por `OPENAPI_SCHEMA_URL`; el valor de ejemplo usa OpenAPI local. El comando genera y formatea `src/types/api.generated.ts`.
 
 ## Comandos de calidad
 

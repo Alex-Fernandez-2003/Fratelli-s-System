@@ -8,6 +8,20 @@ Este frontend es una base reutilizable de Sprint 0. Intencionalmente no es una i
 2. Inspeccione el catálogo disponible solo en Development en `/dev/ui-kit`.
 3. Antes de proponer un cambio, ubíquelo en el nivel correcto de Atomic Design y ejecute los comandos de calidad.
 
+## Configuración de entorno y proxy
+
+Cree la configuración privada local a partir del ejemplo:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local` ya está ignorado por `*.local`; no cree ni versione configuraciones privadas. `VITE_APP_NAME`, `VITE_API_BASE_URL` y `VITE_REQUEST_TIMEOUT_MS` son públicos y llegan al navegador, por lo que nunca deben contener secretos. `API_PROXY_TARGET` configura solo el proxy de Vite y `OPENAPI_SCHEMA_URL` solo la generación de tipos en Node. El proxy Development reenvía `/api`, `/health` y `/hubs` al target; `/hubs` conserva WebSocket para SignalR.
+
 ## Gestor de paquetes
 
 pnpm es el gestor canónico del frontend: use `pnpm-lock.yaml` y las órdenes `pnpm` para instalación, CI y trabajo cotidiano. La instalación oficial reproducible es `pnpm install --frozen-lockfile`. Si pnpm no está instalado o activado, ejecute `corepack enable`; después, las órdenes `pnpm` usarán la versión fijada `pnpm@11.18.0` por `packageManager`.
@@ -86,7 +100,7 @@ CI ejecuta la comprobación de formato, comprobación de tipos, linting, build y
 ## Límite de API y tutorial de OpenAPI
 
 1. Agregue o cambie un endpoint backend fuera de esta tarea de base.
-2. Inicie el backend en Development para que su endpoint OpenAPI esté disponible.
+2. Inicie el backend en Development para que el documento de `OPENAPI_SCHEMA_URL` esté disponible.
 3. Desde `frontend`, ejecute `pnpm run api:generate`.
 4. El comando escribe `src/types/api.generated.ts` y le aplica formato inmediatamente.
 5. No edite manualmente los tipos generados. Agregue rutas con nombre a `src/lib/api/endpoints.ts`, luego escriba una función de API o hook en el nivel de feature usando `httpClient` y TanStack Query.

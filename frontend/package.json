@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "api:generate": "openapi-typescript http://localhost:5057/openapi/v1.json -o src/types/api.generated.ts && prettier --write src/types/api.generated.ts"
+    "api:generate": "node scripts/generate-api.mjs"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.11",
