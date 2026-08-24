@@ -188,7 +188,7 @@ Estas dependencias ayudarán a priorizar implementación y evitar bloquear front
 
 ```text
 backend/
-├── RestaurantSystem.sln
+├── RestaurantSystem.slnx
 ├── src/
 │   ├── RestaurantSystem.Domain/
 │   ├── RestaurantSystem.Application/
@@ -474,7 +474,7 @@ Frontend:
 http://localhost:8087
 
 Backend:
-http://localhost:5087
+http://localhost:5057
 ```
 
 El puerto del backend se configurará en el perfil de ejecución.
@@ -488,11 +488,11 @@ El frontend utilizará rutas relativas.
 ```text
 /api
     ↓
-http://localhost:5087
+http://localhost:5057
 
 /hubs
     ↓ WebSocket
-http://localhost:5087
+http://localhost:5057
 ```
 
 ---
@@ -735,7 +735,7 @@ Documento esperado:
 Ruta:
 
 ```text
-src/api/generated/
+src/types/api.generated.ts
 ```
 
 Regla:
@@ -751,7 +751,7 @@ OpenAPI actualizado
         ↓
 npm run api:generate
         ↓
-cliente y tipos regenerados
+tipos TypeScript regenerados; el cliente HTTP manual se conserva
         ↓
 feature consume contrato tipado
 ```
@@ -780,9 +780,7 @@ No se creará un cliente HTTP independiente por feature.
 
 # 34. Generador OpenAPI
 
-La decisión arquitectónica fija que el cliente será generado desde OpenAPI.
-
-La herramienta específica se elegirá durante el scaffold.
+La decisión de Sprint 0 fija OpenAPI para generar tipos TypeScript solamente; el cliente HTTP permanece manual e híbrido. La herramienta es `openapi-typescript`. No se usa Orval.
 
 Debe ser compatible con:
 

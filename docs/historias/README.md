@@ -494,7 +494,7 @@ fix(HU-022): impedir segunda entrada abierta
 docs(HU-005): añadir evidencia de movimientos
 ```
 
-El formato definitivo de commits podrá definirse por el equipo.
+La convención vigente es `tipo: descripción breve`; un ID de HU es opcional y no forma parte obligatoria del encabezado.
 
 ---
 

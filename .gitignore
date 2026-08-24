@@ -1,0 +1,24 @@
+# Local secrets and build output
+.env
+.env.*
+!.env.example
+**/bin/
+**/obj/
+frontend/node_modules/
+frontend/dist/
+frontend/package-lock.json
+.vs/
+.idea/
+*.user
+*.suo
+TestResults/
+coverage/
+Thumbs.db
+.DS_Store
+
+# Local Pi/Gentle AI runtime state and generated skill registry
+.pi/
+.atl/
+
+# Local Windows compatibility junction; canonical OpenSpec artifacts live in docs/openspec/.
+/openspec/

@@ -488,14 +488,14 @@ tipo: descripción breve
 
 Tipos permitidos:
 
-| Tipo | Uso |
-|---|---|
-| `feat` | Nueva funcionalidad |
-| `fix` | Corrección |
-| `docs` | Documentación |
-| `chore` | Configuración/mantenimiento |
+| Tipo       | Uso                                       |
+| ---------- | ----------------------------------------- |
+| `feat`     | Nueva funcionalidad                       |
+| `fix`      | Corrección                                |
+| `docs`     | Documentación                             |
+| `chore`    | Configuración/mantenimiento               |
 | `refactor` | Mejora interna sin cambiar comportamiento |
-| `test` | Pruebas |
+| `test`     | Pruebas                                   |
 
 ---
 
@@ -527,17 +527,17 @@ GitHub Project
 
 # 20. Convenciones de código
 
-| Elemento | Convención |
-|---|---|
-| Variables y funciones | `camelCase` |
-| Clases C# | `PascalCase` |
-| Componentes React | `PascalCase` |
-| Tipos/interfaces TS | `PascalCase` |
-| Tablas PostgreSQL | `snake_case` |
-| Columnas PostgreSQL | `snake_case` |
-| Ramas Git | prefijo + `kebab-case` |
-| Markdown | `kebab-case.md` |
-| PUML | `kebab-case.puml` |
+| Elemento              | Convención             |
+| --------------------- | ---------------------- |
+| Variables y funciones | `camelCase`            |
+| Clases C#             | `PascalCase`           |
+| Componentes React     | `PascalCase`           |
+| Tipos/interfaces TS   | `PascalCase`           |
+| Tablas PostgreSQL     | `snake_case`           |
+| Columnas PostgreSQL   | `snake_case`           |
+| Ramas Git             | prefijo + `kebab-case` |
+| Markdown              | `kebab-case.md`        |
+| PUML                  | `kebab-case.puml`      |
 
 ---
 
@@ -564,7 +564,7 @@ No se redactará un manual de estilo excesivo.
 
 ```text
 backend/
-├── RestaurantSystem.sln
+├── RestaurantSystem.slnx
 ├── src/
 │   ├── RestaurantSystem.Domain/
 │   ├── RestaurantSystem.Application/
@@ -1403,17 +1403,17 @@ Ejemplo futuro:
 ```ts
 export const endpoints = {
   auth: {
-    login: 'auth/login',
-    refresh: 'auth/refresh',
-    logout: 'auth/logout',
+    login: "auth/login",
+    refresh: "auth/refresh",
+    logout: "auth/logout",
   },
 
   products: {
-    list: 'products',
-    create: 'products',
+    list: "products",
+    create: "products",
     detail: (id: string) => `products/${encodeURIComponent(id)}`,
   },
-} as const
+} as const;
 ```
 
 Cuando se incorpora una nueva API:
@@ -1847,27 +1847,27 @@ No deberá marcar resultados como completados antes de verificarlos.
 
 # 87. Tareas propuestas del Sprint 0
 
-| ID | Tarea | Resultado esperado |
-|---|---|---|
-| `S0-01` | Preparar ramas `main` y `develop` | Flujo Git disponible |
-| `S0-02` | Inicializar backend Clean Architecture | Solución compilable |
-| `S0-03` | Configurar EF Core + Npgsql | Conexión DB disponible |
-| `S0-04` | Configurar migrations | DB recreable |
-| `S0-05` | Preparar Identity/JWT estructural | Infraestructura disponible, sin completar HU-001 |
-| `S0-06` | Configurar OpenAPI/Swagger Development | Contrato visible |
-| `S0-07` | Configurar ProblemDetails/CORS/health | API base verificable |
-| `S0-08` | Inicializar React/Vite/TS/Tailwind | Frontend ejecutable |
-| `S0-09` | Configurar React Router/TanStack Query | Infraestructura frontend |
-| `S0-10` | Crear HttpClient + endpoints + errores | Cliente base |
-| `S0-11` | Configurar tipos OpenAPI | `api:generate` funcional |
-| `S0-12` | Crear sistema visual global | Tokens Fratelli |
-| `S0-13` | Crear componentes mínimos | UI base reutilizable |
-| `S0-14` | Crear `/dev/ui-kit` | Catálogo visual |
-| `S0-15` | Conectar UI Kit con `/health` | Front↔Back validado |
-| `S0-16` | Crear manual frontend | Equipo con guía de uso |
-| `S0-17` | Preparar estructura tests | Proyectos/scripts disponibles |
-| `S0-18` | Configurar CI mínimo | Build básico verificable |
-| `S0-19` | Crear/actualizar evidencia Sprint 0 | Sprint auditable |
+| ID      | Tarea                                  | Resultado esperado                               |
+| ------- | -------------------------------------- | ------------------------------------------------ |
+| `S0-01` | Preparar ramas `main` y `develop`      | Flujo Git disponible                             |
+| `S0-02` | Inicializar backend Clean Architecture | Solución compilable                              |
+| `S0-03` | Configurar EF Core + Npgsql            | Conexión DB disponible                           |
+| `S0-04` | Configurar migrations                  | DB recreable                                     |
+| `S0-05` | Preparar Identity/JWT estructural      | Infraestructura disponible, sin completar HU-001 |
+| `S0-06` | Configurar OpenAPI/Swagger Development | Contrato visible                                 |
+| `S0-07` | Configurar ProblemDetails/CORS/health  | API base verificable                             |
+| `S0-08` | Inicializar React/Vite/TS/Tailwind     | Frontend ejecutable                              |
+| `S0-09` | Configurar React Router/TanStack Query | Infraestructura frontend                         |
+| `S0-10` | Crear HttpClient + endpoints + errores | Cliente base                                     |
+| `S0-11` | Configurar tipos OpenAPI               | `api:generate` funcional                         |
+| `S0-12` | Crear sistema visual global            | Tokens Fratelli                                  |
+| `S0-13` | Crear componentes mínimos              | UI base reutilizable                             |
+| `S0-14` | Crear `/dev/ui-kit`                    | Catálogo visual                                  |
+| `S0-15` | Conectar UI Kit con `/health`          | Front↔Back validado                              |
+| `S0-16` | Crear manual frontend                  | Equipo con guía de uso                           |
+| `S0-17` | Preparar estructura tests              | Proyectos/scripts disponibles                    |
+| `S0-18` | Configurar CI mínimo                   | Build básico verificable                         |
+| `S0-19` | Crear/actualizar evidencia Sprint 0    | Sprint auditable                                 |
 
 ---
 
@@ -2031,19 +2031,19 @@ Establecer identidad, catálogo e inventario inicial y habilitar los primeros fl
 
 Historias:
 
-| HU | Historia | SP |
-|---|---|---:|
-| `HU-001` | Iniciar y cerrar sesión | 3 |
-| `HU-002` | Administrar usuarios y múltiples roles | 5 |
-| `HU-003` | Gestionar productos, ingredientes y platos | 5 |
-| `HU-005` | Registrar movimientos y consultar existencias | 5 |
-| `HU-009` | Registrar y gestionar pedidos | 5 |
-| `HU-010` | Generar y gestionar comandas | 5 |
-| `HU-011` | Cancelar pedido antes de listo | 2 |
-| `HU-016` | Gestionar proveedores | 3 |
-| `HU-020` | Registrar gastos diarios | 3 |
-| `HU-022` | Registrar entrada y salida | 5 |
-|  | **Total** | **41** |
+| HU       | Historia                                      |     SP |
+| -------- | --------------------------------------------- | -----: |
+| `HU-001` | Iniciar y cerrar sesión                       |      3 |
+| `HU-002` | Administrar usuarios y múltiples roles        |      5 |
+| `HU-003` | Gestionar productos, ingredientes y platos    |      5 |
+| `HU-005` | Registrar movimientos y consultar existencias |      5 |
+| `HU-009` | Registrar y gestionar pedidos                 |      5 |
+| `HU-010` | Generar y gestionar comandas                  |      5 |
+| `HU-011` | Cancelar pedido antes de listo                |      2 |
+| `HU-016` | Gestionar proveedores                         |      3 |
+| `HU-020` | Registrar gastos diarios                      |      3 |
+| `HU-022` | Registrar entrada y salida                    |      5 |
+|          | **Total**                                     | **41** |
 
 ---
 
@@ -2105,17 +2105,17 @@ Integrar producción, inventario, ventas, compras y turnos para construir el nú
 
 Historias:
 
-| HU | Historia | SP |
-|---|---|---:|
-| `HU-004` | Definir composición de platos/preparaciones | 5 |
-| `HU-006` | Configurar y visualizar stock bajo | 3 |
-| `HU-007` | Registrar producción | 8 |
-| `HU-012` | Registrar y confirmar venta | 8 |
-| `HU-013` | Continuar venta con stock insuficiente | 2 |
-| `HU-017` | Registrar compra | 5 |
-| `HU-018` | Recibir compra e incrementar inventario | 5 |
-| `HU-025` | Gestionar y operar turnos | 5 |
-|  | **Total** | **41** |
+| HU       | Historia                                    |     SP |
+| -------- | ------------------------------------------- | -----: |
+| `HU-004` | Definir composición de platos/preparaciones |      5 |
+| `HU-006` | Configurar y visualizar stock bajo          |      3 |
+| `HU-007` | Registrar producción                        |      8 |
+| `HU-012` | Registrar y confirmar venta                 |      8 |
+| `HU-013` | Continuar venta con stock insuficiente      |      2 |
+| `HU-017` | Registrar compra                            |      5 |
+| `HU-018` | Recibir compra e incrementar inventario     |      5 |
+| `HU-025` | Gestionar y operar turnos                   |      5 |
+|          | **Total**                                   | **41** |
 
 ---
 
@@ -2188,22 +2188,22 @@ Completar consultas, cierre de caja y reportes del MVP y preparar el incremento 
 
 Historias:
 
-| HU | Historia | SP |
-|---|---|---:|
-| `HU-008` | Consultar producción | 3 |
-| `HU-014` | Gestionar clientes básicos | 3 |
-| `HU-015` | Consultar historial de ventas | 3 |
-| `HU-019` | Consultar historial de compras | 3 |
-| `HU-021` | Consultar gastos | 2 |
-| `HU-023` | Consultar mi asistencia | 2 |
-| `HU-024` | Consultar asistencia de trabajadores | 3 |
-| `HU-026` | Calcular información esperada de cierre | 5 |
-| `HU-027` | Registrar cierre de turno/caja | 5 |
-| `HU-028` | Consultar cierres | 2 |
-| `HU-029` | Reporte de ventas | 3 |
-| `HU-030` | Reporte de inventario | 3 |
-| `HU-031` | Reporte de asistencia | 3 |
-|  | **Total** | **40** |
+| HU       | Historia                                |     SP |
+| -------- | --------------------------------------- | -----: |
+| `HU-008` | Consultar producción                    |      3 |
+| `HU-014` | Gestionar clientes básicos              |      3 |
+| `HU-015` | Consultar historial de ventas           |      3 |
+| `HU-019` | Consultar historial de compras          |      3 |
+| `HU-021` | Consultar gastos                        |      2 |
+| `HU-023` | Consultar mi asistencia                 |      2 |
+| `HU-024` | Consultar asistencia de trabajadores    |      3 |
+| `HU-026` | Calcular información esperada de cierre |      5 |
+| `HU-027` | Registrar cierre de turno/caja          |      5 |
+| `HU-028` | Consultar cierres                       |      2 |
+| `HU-029` | Reporte de ventas                       |      3 |
+| `HU-030` | Reporte de inventario                   |      3 |
+| `HU-031` | Reporte de asistencia                   |      3 |
+|          | **Total**                               | **40** |
 
 ---
 
@@ -2943,6 +2943,6 @@ validación PO
 
 # 141. Control de cambios
 
-| Versión | Descripción | Estado |
-|---|---|---|
-| `0.1` | Plan inicial de desarrollo con Sprint 0 técnico, flujo `develop`, preparación frontend/backend, API híbrida, sistema visual Fratelli y distribución 41/41/40 SP | Vigente |
+| Versión | Descripción                                                                                                                                                     | Estado  |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `0.1`   | Plan inicial de desarrollo con Sprint 0 técnico, flujo `develop`, preparación frontend/backend, API híbrida, sistema visual Fratelli y distribución 41/41/40 SP | Vigente |
