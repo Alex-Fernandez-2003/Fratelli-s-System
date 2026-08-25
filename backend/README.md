@@ -43,9 +43,9 @@ Desde `backend/`, siga este flujo:
 
 ### Claves de configuración
 
-| Clave lógica | Equivalente de variable de entorno |
-| --- | --- |
-| `Jwt:Key` | `Jwt__Key` |
+| Clave lógica                         | Equivalente de variable de entorno    |
+| ------------------------------------ | ------------------------------------- |
+| `Jwt:Key`                            | `Jwt__Key`                            |
 | `ConnectionStrings:RestaurantSystem` | `ConnectionStrings__RestaurantSystem` |
 
 En Development, prefiera User Secrets. Las variables de entorno son una alternativa para procesos automatizados o entornos que las administren; no las establezca manualmente en la sesión para el flujo local normal.

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantSystem.Infrastructure;
@@ -11,9 +12,11 @@ using RestaurantSystem.Infrastructure;
 namespace RestaurantSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260825044849_AddSuppliers")]
+    partial class AddSuppliers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,47 +225,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", "identity");
-                });
-
-            modelBuilder.Entity("RestaurantSystem.Domain.Attendance.AttendanceRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly>("BusinessDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTimeOffset>("CheckInAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CheckInByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("CheckOutAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CheckOutByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CheckInByUserId");
-
-                    b.HasIndex("CheckOutByUserId");
-
-                    b.HasIndex("EmployeeId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_AttendanceRecords_Employee_Open")
-                        .HasFilter("\"CheckOutAt\" IS NULL");
-
-                    b.HasIndex("EmployeeId", "BusinessDate");
-
-                    b.ToTable("AttendanceRecords", "public");
                 });
 
             modelBuilder.Entity("RestaurantSystem.Domain.Catalog.Category", b =>
@@ -678,26 +640,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("RestaurantSystem.Domain.Attendance.AttendanceRecord", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("CheckInByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("CheckOutByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("RestaurantSystem.Domain.Identity.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
