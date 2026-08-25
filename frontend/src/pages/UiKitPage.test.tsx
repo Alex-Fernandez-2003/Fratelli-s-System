@@ -38,7 +38,7 @@ describe('componentes de UI compartidos', () => {
         Continuar
       </Button>,
     )
-    expect(screen.getByRole('button', { name: 'Continuar' })).toHaveClass('button--outline')
+    expect(screen.getByRole('button', { name: 'Continuar' })).toHaveClass('border-brand-orange')
     expect(screen.getByText('Atrás')).toBeInTheDocument()
     expect(screen.getByText('Siguiente')).toBeInTheDocument()
   })
