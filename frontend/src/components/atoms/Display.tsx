@@ -1,38 +1,52 @@
 import type { HTMLAttributes, LabelHTMLAttributes, ReactNode } from 'react'
-
 export function Label({ className = '', ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label {...props} className={`label ${className}`} />
+  return <label {...props} className={`mb-1.5 block font-bold ${className}`} />
 }
-
+const toneClasses = {
+  neutral: 'text-text',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-danger',
+}
 export function Badge({
   children,
   tone = 'neutral',
 }: {
   children: ReactNode
-  tone?: 'neutral' | 'success' | 'warning' | 'danger'
+  tone?: keyof typeof toneClasses
 }) {
-  return <span className={`badge badge--${tone}`}>{children}</span>
+  return (
+    <span
+      className={`inline-block rounded-full bg-surface-elevated px-2 py-0.5 text-[0.8rem] ${toneClasses[tone]}`}
+    >
+      {children}
+    </span>
+  )
 }
-
 export function StatusDot({
   label,
   tone = 'neutral',
 }: {
   label: string
-  tone?: 'neutral' | 'success' | 'warning' | 'danger'
+  tone?: keyof typeof toneClasses
 }) {
   return (
-    <span className={`status-dot status-dot--${tone}`} role="status">
+    <span className={`inline-flex items-center gap-1.5 ${toneClasses[tone]}`} role="status">
+      <span className="size-2 rounded-full bg-current" aria-hidden="true" />
       {label}
     </span>
   )
 }
-
 export function ProgressBar({ value, label }: { value: number; label: string }) {
-  const safeValue = Math.min(100, Math.max(0, value))
-  return <progress className="progress" value={safeValue} max="100" aria-label={label} />
+  return (
+    <progress
+      className="w-full accent-brand-orange"
+      value={Math.min(100, Math.max(0, value))}
+      max="100"
+      aria-label={label}
+    />
+  )
 }
-
 export function Skeleton({
   className = '',
   label = 'Cargando contenido',
@@ -40,42 +54,49 @@ export function Skeleton({
   className?: string
   label?: string
 }) {
-  return <span className={`skeleton ${className}`} aria-label={label} role="status" />
+  return (
+    <span
+      className={`block h-4 w-full animate-pulse rounded bg-surface-elevated ${className}`}
+      aria-label={label}
+      role="status"
+    />
+  )
 }
-
 export function Divider() {
-  return <hr className="divider" />
+  return <hr className="border-0 border-t border-border" />
 }
-
 export function Avatar({ name, src }: { name: string; src?: string }) {
+  const classes =
+    'inline-flex size-10 items-center justify-center rounded-full bg-surface-elevated object-cover'
   return src ? (
-    <img className="avatar" src={src} alt={name} />
+    <img className={classes} src={src} alt={name} />
   ) : (
-    <span className="avatar" aria-label={name}>
+    <span className={classes} aria-label={name}>
       {name.slice(0, 2).toUpperCase()}
     </span>
   )
 }
-
 export function Surface({
   children,
   className = '',
   ...props
 }: HTMLAttributes<HTMLElement> & { children: ReactNode }) {
   return (
-    <section {...props} className={`surface ${className}`}>
+    <section {...props} className={`rounded-lg border border-border bg-surface p-4 ${className}`}>
       {children}
     </section>
   )
 }
-
 export function Card({
   children,
   className = '',
   ...props
 }: HTMLAttributes<HTMLElement> & { children: ReactNode }) {
   return (
-    <section {...props} className={`card ${className}`}>
+    <section
+      {...props}
+      className={`rounded-lg border border-border bg-surface p-4 shadow-[0_0.25rem_1rem_rgb(0_0_0_/_15%)] ${className}`}
+    >
       {children}
     </section>
   )
