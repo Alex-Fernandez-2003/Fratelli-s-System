@@ -1,6 +1,6 @@
 # Manual de desarrollo del frontend
 
-Este frontend es una base reutilizable de Sprint 0. Intencionalmente no es una implementación de producto: no agregue rutas de negocio, APIs de negocio, almacenamiento o flujos de autenticación, cargas de archivos ni llamadas directas a `fetch`.
+Este frontend es una base reutilizable con la infraestructura de autenticación de HU-001. No agregue rutas o APIs de negocio, almacenamiento persistente de tokens, cargas de archivos fuera del componente neutral ni llamadas directas a `fetch`.
 
 ## Ruta rápida
 
@@ -96,6 +96,14 @@ pnpm run build         # typecheck y compilación de producción de Vite
 ```
 
 CI ejecuta la comprobación de formato, comprobación de tipos, linting, build y tests. No omita estos scripts con configuraciones puntuales del formateador.
+
+## Autenticación, rutas y límite HTTP
+
+`AuthProvider` es la fuente React de `checking`, `authenticated` y `unauthenticated`, usuario, roles, operación pendiente y error recuperable. El access JWT es propiedad exclusiva de `src/lib/auth/session-coordinator.ts`: vive solo en memoria, no se entrega por contexto y nunca se guarda en localStorage, sessionStorage, IndexedDB, URL, cookie JavaScript ni caché de Query.
+
+La feature usa `authApi` para `login`, `refresh` y `logout` crudos. Las demás features llaman `httpClient` sin pasar tokens: el cliente adjunta el Bearer actual al despachar, comparte un refresh cookie-backed tras el primer `401` elegible y repite cada solicitud original como máximo una vez. Login/refresh/logout, `403`, otros 4xx/5xx, red, abort y timeout no activan refresh. `HttpError` conserva ProblemDetails y permite distinguir `403` de pérdida de autenticación.
+
+`/inicio` exige sesión; durante bootstrap muestra un estado neutral sin flash de Login. Una visita no autenticada se redirige a `/login` conservando su destino y un usuario autenticado en `/login` va a `/inicio`. `RequireAnyRole` usa las cadenas exactas `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`; una falta de rol navega a `/403`. Logout solo limpia token, estado y QueryClient tras `204`; un fallo remoto conserva la sesión y muestra un error recuperable. La validación manual final cubrió teclado, 360 px, ~403 px, tablet, desktop, bootstrap tras F5, recuperación `401`, denegación de rol y ambos resultados de logout; las capturas vinculadas están en la [HU-001](../../docs/historias/HU-001-iniciar-cerrar-sesion.md).
 
 ## Límite de API y tutorial de OpenAPI
 

@@ -2,12 +2,12 @@
 
 ## Contrato implementado
 
-| Ruta | Acceso | Resultado |
-|---|---|---|
-| `POST /api/v1/auth/login` | Anónimo | 200 y sesión nueva |
-| `POST /api/v1/auth/refresh` | Cookie `refreshToken` | 200 y rotación de esa sesión |
-| `POST /api/v1/auth/logout` | Anónimo; cookie opcional | 204, siempre expira la cookie |
-| `GET /api/v1/auth/me` | Bearer | 200 con el usuario actual |
+| Ruta                        | Acceso                   | Resultado                     |
+| --------------------------- | ------------------------ | ----------------------------- |
+| `POST /api/v1/auth/login`   | Anónimo                  | 200 y sesión nueva            |
+| `POST /api/v1/auth/refresh` | Cookie `refreshToken`    | 200 y rotación de esa sesión  |
+| `POST /api/v1/auth/logout`  | Anónimo; cookie opcional | 204, siempre expira la cookie |
+| `GET /api/v1/auth/me`       | Bearer                   | 200 con el usuario actual     |
 
 `login` acepta solo `{"username":"string","password":"string"}`. No hay inicio por email. Campos de identidad adicionales y credenciales incompletas producen 400; usuario desconocido, contraseña incorrecta, cuenta inactiva o bloqueada producen el mismo 401 `application/problem+json`.
 
@@ -37,6 +37,10 @@ Roles disponibles: `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA`
 
 Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/validación, 401 para autenticación y refresh inválido, y 404 para un usuario autenticado que ya no puede resolverse.
 
-## Evidencia técnica
+## Estado de evidencia: COMPLETA
 
-La cobertura de integración PostgreSQL prueba login, rechazo de email, cuenta inactiva, `/me`, rotación/revocación/logout, sesiones paralelas, flags de cookie e idempotencia/guardia Production del seeder.
+La implementación automatizada cubre el coordinador memory-only, el cliente HTTP con Bearer de despacho y reintento `401` acotado/single-flight, el adaptador tipado, `AuthProvider`, limpieza de QueryClient al cerrar sesión y las rutas `/login`, `/inicio` y `/403`. Las pruebas automatizadas incluyen ciclo de bootstrap, rutas, rol, logout exitoso/fallido, protección ante completado tardío y accesibilidad de Login.
+
+La validación manual explícita del solicitante confirma en navegador la navegación por teclado y los viewports de 360 px, ~403 px, tablet y desktop sin desbordamiento horizontal ni pérdida de foco; Login → Inicio → F5; recuperación de una solicitud protegida tras `401`; denegación de rol; logout exitoso; y fallo de logout recuperable. Esta es la procedencia de la evidencia manual final.
+
+Capturas reales vinculadas: [Login](../capturas/HU-001-login.png) muestra el formulario de acceso; [Inicio y roles](../capturas/HU-001-roles.png) muestra la sesión autenticada de `admin.test`, sus roles y la acción de logout. Se preservan como evidencia de los estados que muestran; la validación manual anterior cubre los flujos interactivos y responsivos que una captura estática no demuestra por sí sola.

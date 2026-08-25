@@ -1,6 +1,6 @@
 # Base del frontend
 
-React, TypeScript, Vite, Tailwind, React Router y TanStack Query proporcionan la base del frontend de Sprint 0. No expone rutas de producto, comportamiento de autenticación, almacenamiento, carga de archivos ni llamadas directas de negocio con `fetch`.
+React, TypeScript, Vite, Tailwind, React Router y TanStack Query proporcionan la base del frontend. HU-001 añade el límite compartido de autenticación y las rutas `/login`, `/inicio` y `/403`; las features de negocio siguen sin llamar a `fetch` directamente.
 
 ## Inicio rápido
 
@@ -46,4 +46,12 @@ El formato se aplica mediante `.prettierrc.mjs` (comillas simples, sin punto y c
 
 Los scripts también pueden invocarse con `npm run <script>`. Para instalar con npm, use `npm install --package-lock=false`; no se crea, versiona ni mantiene `package-lock.json`. No alterne gestores sobre el mismo `node_modules`: al cambiar de gestor, haga una reinstalación limpia con el gestor elegido antes de ejecutar scripts.
 
-Consulte [el manual de desarrollo](docs/manual-de-uso.md) para conocer los límites de los componentes, el flujo de OpenAPI y las prohibiciones de alcance.
+## Autenticación HU-001
+
+`AuthProvider` mantiene el usuario, roles, estado de bootstrap y errores recuperables; el JWT pertenece exclusivamente al coordinador de sesión en memoria. No se expone por contexto ni se persiste en storage, cookies de JavaScript, URLs o caché.
+
+Use `authApi` para login, refresh y logout crudos. Las features usan `httpClient` sin argumentos de token: agrega el Bearer actual justo antes del envío y, únicamente ante el primer `401` elegible, comparte un refresh y reintenta una vez. `403` y el resto de errores siguen siendo `HttpError` observables y no refrescan sesión. Los roles exactos son `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`.
+
+La validación final incluye navegación por teclado y viewports de 360 px, ~403 px, tablet y desktop, además de Login → Inicio → F5, recuperación `401`, denegación de rol y logout recuperable; las capturas reales están vinculadas en la [HU-001](../docs/historias/HU-001-iniciar-cerrar-sesion.md).
+
+Consulte [el manual de desarrollo](docs/manual-de-uso.md) para los límites de componentes, el flujo OpenAPI, las rutas y las prohibiciones de alcance.
