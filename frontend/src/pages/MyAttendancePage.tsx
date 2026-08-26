@@ -1,39 +1,158 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState, useEffect } from 'react'
+import { Calendar, CheckCircle, LogOut, LogIn, Clock, AlertTriangle, Home } from 'lucide-react'
 import { Badge, Button, Input, Label, Skeleton } from '../components/atoms'
-import { Alert, EmptyState, Pagination, StatCard } from '../components/molecules'
-import { DataTable, PageHeader, type DataTableColumn } from '../components/organisms'
-import { AppShell } from '../components/templates'
-import { useAuth } from '../features/auth/AuthProvider'
+import { Alert, EmptyState } from '../components/molecules'
+import { AppLayout } from '../components/templates/AppLayout'
 import type { AttendanceRecordDto } from '../features/attendance/api'
-import { useMyAttendance } from '../features/attendance/hooks'
-import { errorMessage, formatDateTime, recordDuration, totalDuration } from '../features/attendance/format'
+import { useCheckIn, useCheckOut, useMyAttendance } from '../features/attendance/hooks'
+import { errorMessage, formatTime, formatDayShort, recordDuration, elapsedSince, totalDuration } from '../features/attendance/format'
+import { HttpError } from '../lib/api/http-client'
 
-const columns: DataTableColumn<AttendanceRecordDto>[] = [
-  { id: 'businessDate', header: 'Fecha', cell: (row) => row.businessDate },
-  { id: 'checkInAt', header: 'Entrada', cell: (row) => formatDateTime(row.checkInAt) },
-  {
-    id: 'checkOutAt',
-    header: 'Salida',
-    cell: (row) => (row.checkOutAt ? formatDateTime(row.checkOutAt) : <span className="text-text-muted">—</span>),
-  },
-  {
-    id: 'duration',
-    header: 'Duración',
-    cell: (row) => (
-      <span className={row.checkOutAt ? '' : 'text-text-muted'}>{recordDuration(row)}</span>
-    ),
-  },
-  {
-    id: 'status',
-    header: 'Estado',
-    cell: (row) =>
-      row.checkOutAt ? <Badge>Cerrada</Badge> : <Badge tone="success">Abierta</Badge>,
-  },
-]
+function StatusCard({
+  openRecord,
+  onCheckIn,
+  onCheckOut,
+  isLoading,
+  isPending,
+  error,
+}: {
+  openRecord: AttendanceRecordDto | null | undefined
+  onCheckIn: () => void
+  onCheckOut: () => void
+  isLoading: boolean
+  isPending: boolean
+  error: unknown
+}) {
+  const [elapsed, setElapsed] = useState('')
+
+  useEffect(() => {
+    if (!openRecord) return
+    const tick = () => setElapsed(elapsedSince(openRecord.checkInAt))
+    tick()
+    const interval = setInterval(tick, 60_000)
+    return () => clearInterval(interval)
+  }, [openRecord])
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <Skeleton className="h-48" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-danger bg-surface p-6 text-center">
+        <AlertTriangle className="mx-auto mb-3 size-10 text-danger" />
+        <h3 className="mb-1 text-lg font-bold">Error de conexión</h3>
+        <p className="mb-4 text-sm text-text-muted">
+          No pudimos sincronizar tu estado de asistencia. Por favor, verifica tu conexión e intenta de nuevo.
+        </p>
+        <Button variant="secondary" onClick={onCheckIn}>
+          Reintentar carga
+        </Button>
+      </div>
+    )
+  }
+
+  if (openRecord) {
+    return (
+      <div className="rounded-2xl border border-success/30 bg-surface p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <CheckCircle className="size-5 text-success" />
+          <div>
+            <p className="text-xs font-bold uppercase text-text-muted">Estado actual</p>
+            <p className="flex items-center gap-2 text-sm font-bold text-success">
+              <span className="size-2 rounded-full bg-success" /> Jornada Activa
+            </p>
+          </div>
+          <span className="ml-auto text-xs text-text-muted">{formatDayShort(openRecord.checkInAt)}</span>
+        </div>
+
+        <div className="mb-5 grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-border bg-surface-elevated p-4 text-center">
+            <p className="mb-1 text-[0.7rem] font-bold uppercase text-text-muted">Entrada</p>
+            <p className="text-xl font-bold tabular-nums text-brand-orange">{formatTime(openRecord.checkInAt)}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface-elevated p-4 text-center">
+            <p className="mb-1 text-[0.7rem] font-bold uppercase text-text-muted">Transcurrido</p>
+            <p className="text-xl font-bold tabular-nums text-brand-orange">{elapsed}</p>
+          </div>
+        </div>
+
+        <Button
+          variant="danger"
+          fullWidth
+          size="lg"
+          loading={isPending}
+          leftIcon={<LogOut size={18} />}
+          onClick={onCheckOut}
+        >
+          Registrar salida
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-6 text-center">
+      <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-surface-elevated">
+        <Calendar className="size-7 text-text-muted" />
+      </div>
+      <h3 className="mb-1 text-lg font-bold">
+        {new Date().toLocaleDateString('es-BO', {
+          timeZone: 'America/La_Paz',
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+        })}
+      </h3>
+      <p className="mb-5 text-sm text-text-muted">
+        No tienes una asistencia abierta para el día de hoy.
+      </p>
+      <Button
+        fullWidth
+        size="lg"
+        loading={isPending}
+        leftIcon={<LogIn size={18} />}
+        onClick={onCheckIn}
+      >
+        Registrar entrada
+      </Button>
+    </div>
+  )
+}
+
+function HistoryItem({ record }: { record: AttendanceRecordDto }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-border bg-surface p-4">
+      <div className="min-w-0 flex-1">
+        <p className="mb-1 text-sm font-bold">{formatDayShort(record.checkInAt)}</p>
+        <div className="flex items-center gap-3 text-xs text-text-muted">
+          <span className="flex items-center gap-1">
+            <span className="size-1.5 rounded-full bg-success" />
+            {formatTime(record.checkInAt)}
+          </span>
+          {record.checkOutAt && (
+            <span className="flex items-center gap-1">
+              <span className="size-1.5 rounded-full bg-danger" />
+              {formatTime(record.checkOutAt)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-text-muted">{recordDuration(record)}</span>
+        <Badge tone={record.checkOutAt ? 'neutral' : 'success'}>
+          {record.checkOutAt ? 'Cerrada' : 'Abierta'}
+        </Badge>
+      </div>
+    </div>
+  )
+}
 
 export function MyAttendancePage() {
-  const { user } = useAuth()
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
@@ -42,104 +161,124 @@ export function MyAttendancePage() {
     [from, to, page],
   )
   const history = useMyAttendance(filters)
+  const checkIn = useCheckIn()
+  const checkOut = useCheckOut()
 
   const items = history.data?.items ?? []
-  const totalCount = Number(history.data?.totalCount ?? 0)
-  const totalPages = Number(history.data?.totalPages ?? 0)
-  const openCount = items.filter((r) => !r.checkOutAt).length
-
+  const openRecord = items.find((r) => !r.checkOutAt) ?? null
+  const closedRecords = items.filter((r) => r.checkOutAt)
   const hasFilters = Boolean(from || to)
+  const mutationError = checkIn.error ?? checkOut.error
+  const lastSuccess = checkIn.isSuccess ? checkIn.data : checkOut.isSuccess ? checkOut.data : null
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  useEffect(() => {
+    if (checkIn.isPending || checkOut.isPending) setShowSuccess(false)
+  }, [checkIn.isPending, checkOut.isPending])
+  useEffect(() => {
+    if (lastSuccess) setShowSuccess(true)
+  }, [lastSuccess])
 
   return (
-    <AppShell
-      navigation={<Link to="/inicio">← Inicio</Link>}
-      header={
-        <PageHeader
-          title="Mi asistencia"
-          description={`Historial de ${user?.fullName ?? user?.username ?? ''}`}
-        />
-      }
+    <AppLayout
+      bottomNavItems={[
+        { to: '/inicio', icon: <Home size={20} />, label: 'Inicio' },
+        { to: '/asistencia', icon: <Clock size={20} />, label: 'Asistencia' },
+      ]}
     >
-      {history.isError && (
-        <Alert kind="error" title="No se pudo cargar el historial">
-          {errorMessage(history.error)}
-        </Alert>
-      )}
+      <div className="mx-auto max-w-2xl space-y-6">
+        {/* Title */}
+        <div>
+          <h1 className="text-2xl font-bold">Mi asistencia</h1>
+          <p className="text-sm text-text-muted">Gestiona tu jornada laboral de hoy.</p>
+        </div>
 
-      <form
-        className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface p-4"
-        onSubmit={(event) => {
-          event.preventDefault()
-          setPage(1)
-        }}
-        aria-label="Filtros de historial"
-      >
-        <div>
-          <Label htmlFor="from">Desde</Label>
-          <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="to">Hasta</Label>
-          <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </div>
-        <Button type="submit" variant="secondary">
-          Aplicar
-        </Button>
-        {hasFilters && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              setFrom('')
-              setTo('')
-              setPage(1)
-            }}
-          >
-            Limpiar
-          </Button>
+        {/* Status card */}
+        <StatusCard
+          openRecord={openRecord}
+          onCheckIn={() => checkIn.mutate('')}
+          onCheckOut={() => checkOut.mutate('')}
+          isLoading={history.isLoading}
+          isPending={checkIn.isPending || checkOut.isPending}
+          error={history.error}
+        />
+
+        {/* Success feedback */}
+        {showSuccess && !mutationError && lastSuccess && (
+          <Alert kind="success" title="Entrada registrada">
+            Registrada con éxito a las {formatTime(lastSuccess.checkInAt)}.
+          </Alert>
         )}
-      </form>
 
-      {history.isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
-        </div>
-      ) : (
-        !history.isError && (
-          <>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <StatCard label="Registros del período" value={totalCount} trend={`Página ${page}${totalPages ? ` de ${totalPages}` : ''}`} />
-              <StatCard label="Horas acumuladas" value={totalDuration(items)} trend="Ciclos cerrados en esta página" />
-              <StatCard label="Ciclos abiertos" value={openCount} trend="En curso ahora" />
+        {/* Error feedback */}
+        {mutationError && (
+          <Alert kind="error" title="No se pudo registrar">
+            {mutationError instanceof HttpError
+              ? (mutationError.problem.detail ?? 'Error inesperado.')
+              : 'Error inesperado.'}
+          </Alert>
+        )}
+
+        {/* History */}
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-bold">
+              <Clock size={18} className="text-text-muted" />
+              Historial reciente
+            </h2>
+          </div>
+
+          {/* Filters */}
+          <form
+            className="mb-4 flex flex-wrap items-end gap-3"
+            onSubmit={(e) => { e.preventDefault(); setPage(1) }}
+          >
+            <div>
+              <Label htmlFor="from">Desde</Label>
+              <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             </div>
+            <div>
+              <Label htmlFor="to">Hasta</Label>
+              <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
+            <Button type="submit" variant="secondary" size="sm">Aplicar</Button>
+            {hasFilters && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setFrom(''); setTo(''); setPage(1) }}>
+                Limpiar
+              </Button>
+            )}
+          </form>
 
-            <section aria-label="Historial de asistencia" className="rounded-lg border border-border bg-surface p-4">
-              {items.length === 0 ? (
-                <EmptyState title="Sin registros de asistencia">
-                  {hasFilters
-                    ? 'No hay registros en el rango seleccionado. Prueba con otras fechas.'
-                    : 'Aún no tienes entradas o salidas registradas.'}
-                </EmptyState>
-              ) : (
-                <>
-                  <DataTable
-                    columns={columns}
-                    rows={items}
-                    getRowId={(row) => row.id}
-                  />
-                  {totalPages > 1 && (
-                    <div className="mt-4">
-                      <Pagination page={page} pageCount={totalPages} onPageChange={setPage} />
-                    </div>
-                  )}
-                </>
+          {history.isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+            </div>
+          ) : history.isError ? (
+            <Alert kind="error">{errorMessage(history.error)}</Alert>
+          ) : items.length === 0 ? (
+            <EmptyState title="Aún no tienes registros de asistencia">
+              {hasFilters
+                ? 'No hay registros en el rango seleccionado.'
+                : 'Registra tu primera entrada para comenzar.'}
+            </EmptyState>
+          ) : (
+            <>
+              {closedRecords.length > 0 && (
+                <p className="mb-2 text-xs font-bold uppercase text-text-muted">
+                  Horas acumuladas: {totalDuration(closedRecords)}
+                </p>
               )}
-            </section>
-          </>
-        )
-      )}
-    </AppShell>
+              <div className="space-y-2">
+                {items.map((record) => (
+                  <HistoryItem key={record.id} record={record} />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+    </AppLayout>
   )
 }
