@@ -5,6 +5,7 @@ using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Identity;
 using RestaurantSystem.Domain.Suppliers;
 using RestaurantSystem.Domain.Attendance;
+using RestaurantSystem.Domain.Orders;
 using RestaurantSystem.Infrastructure.Catalog;
 
 namespace RestaurantSystem.Infrastructure;
@@ -18,6 +19,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<KitchenCommand> KitchenCommands => Set<KitchenCommand>();
+    public DbSet<KitchenCommandItem> KitchenCommandItems => Set<KitchenCommandItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -56,12 +61,40 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         });
         builder.Entity<Product>(entity =>
         {
-            entity.ToTable("Products", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Name).IsRequired(); entity.Property(x => x.SalePrice).HasPrecision(18, 2); entity.Property(x => x.MinStock).HasPrecision(18, 3); entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).IsRequired(); entity.Property(x => x.UpdatedByUserId).IsRequired();
+            entity.ToTable("Products", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Name).IsRequired(); entity.Property(x => x.IsSellable).HasDefaultValue(false); entity.Property(x => x.SalePrice).HasPrecision(18, 2); entity.Property(x => x.MinStock).HasPrecision(18, 3); entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).IsRequired(); entity.Property(x => x.UpdatedByUserId).IsRequired();
             entity.HasIndex(x => x.CategoryId); entity.HasIndex(x => x.InventoryUnitId);
             entity.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.InventoryUnit).WithMany().HasForeignKey(x => x.InventoryUnitId).OnDelete(DeleteBehavior.Restrict);
         });
-        builder.Entity<Supplier>(entity =>
+            builder.Entity<Order>(entity =>
+            {
+                entity.ToTable("orders", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.ShiftId).HasColumnName("shift_id"); entity.Property(x => x.WaiterEmployeeId).HasColumnName("waiter_employee_id"); entity.Property(x => x.Status).HasColumnName("status").HasConversion<string>().IsRequired(); entity.Property(x => x.TableReference).HasColumnName("table_reference").HasMaxLength(50); entity.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(500); entity.Property(x => x.CancellationReason).HasColumnName("cancellation_reason").HasMaxLength(500); entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id"); entity.Property(x => x.UpdatedByUserId).HasColumnName("updated_by_user_id"); entity.Property(x => x.CancelledByUserId).HasColumnName("cancelled_by_user_id");
+                entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.CancelledAt).HasColumnName("cancelled_at").HasColumnType("timestamp with time zone");
+                entity.HasIndex(x => x.Status); entity.HasIndex(x => x.CreatedAt); entity.HasIndex(x => x.WaiterEmployeeId);
+                entity.HasCheckConstraint("CK_orders_status", "status IN ('PENDIENTE','EN_PREPARACION','LISTO','ENTREGADO','CANCELADO')");
+                entity.HasOne<Employee>().WithMany().HasForeignKey(x => x.WaiterEmployeeId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.CreatedByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UpdatedByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.CancelledByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<OrderItem>(entity =>
+            {
+                entity.ToTable("order_items", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.OrderId).HasColumnName("order_id"); entity.Property(x => x.ProductId).HasColumnName("product_id"); entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(14, 4); entity.Property(x => x.UnitPrice).HasColumnName("unit_price").HasPrecision(18, 2); entity.Property(x => x.Notes).HasColumnName("notes").HasMaxLength(300); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+                entity.HasIndex(x => new { x.OrderId, x.ProductId }).IsUnique(); entity.HasIndex(x => x.ProductId); entity.HasCheckConstraint("CK_order_items_quantity", "quantity > 0"); entity.HasCheckConstraint("CK_order_items_unit_price", "unit_price >= 0");
+                entity.HasOne(x => x.Order).WithMany(x => x.Items).HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); entity.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<KitchenCommand>(entity =>
+            {
+                entity.ToTable("kitchen_commands", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.OrderId).HasColumnName("order_id"); entity.Property(x => x.Status).HasColumnName("status").HasConversion<string>().IsRequired(); entity.Property(x => x.UpdatedByUserId).HasColumnName("updated_by_user_id"); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.ReadyAt).HasColumnName("ready_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.CancelledAt).HasColumnName("cancelled_at").HasColumnType("timestamp with time zone");
+                entity.HasIndex(x => x.OrderId).IsUnique(); entity.HasIndex(x => x.Status); entity.HasIndex(x => x.CreatedAt); entity.HasCheckConstraint("CK_kitchen_commands_status", "status IN ('PENDIENTE','EN_PREPARACION','LISTA','CANCELADA')");
+                entity.HasOne(x => x.Order).WithOne(x => x.KitchenCommand).HasForeignKey<KitchenCommand>(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.UpdatedByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<KitchenCommandItem>(entity =>
+            {
+                entity.ToTable("kitchen_command_items", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.KitchenCommandId).HasColumnName("kitchen_command_id"); entity.Property(x => x.OrderItemId).HasColumnName("order_item_id"); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.HasIndex(x => new { x.KitchenCommandId, x.OrderItemId }).IsUnique();
+                entity.HasOne(x => x.KitchenCommand).WithMany(x => x.Items).HasForeignKey(x => x.KitchenCommandId).OnDelete(DeleteBehavior.Restrict); entity.HasOne(x => x.OrderItem).WithMany().HasForeignKey(x => x.OrderItemId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<Supplier>(entity =>
         {
             entity.ToTable("Suppliers", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Name).IsRequired(); entity.Property(x => x.PhoneNumber).IsRequired();
             entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).IsRequired(); entity.Property(x => x.UpdatedByUserId).IsRequired();

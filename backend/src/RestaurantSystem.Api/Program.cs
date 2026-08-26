@@ -12,10 +12,13 @@ using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Suppliers;
 using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Users;
+using RestaurantSystem.Application.Orders;
 using RestaurantSystem.Domain.Catalog;
+using RestaurantSystem.Domain.Orders;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Identity;
 using RestaurantSystem.Infrastructure.Attendance;
+using RestaurantSystem.Infrastructure.Orders;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails(); builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())); builder.Services.AddInfrastructure(builder.Configuration);
@@ -90,6 +93,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(PolicyNames.AttendanceSelf, p => p.RequireAuthenticatedUser());
     options.AddPolicy(PolicyNames.AttendanceHubAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.UsersManage, p => p.RequireRole(RoleNames.Administrator));
+    options.AddPolicy(PolicyNames.OrdersAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter));
+    options.AddPolicy(PolicyNames.KitchenAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
+    options.AddPolicy(PolicyNames.KitchenManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen));
+    options.AddPolicy(PolicyNames.KitchenHubAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
 });
 var app = builder.Build(); app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -178,7 +185,29 @@ attendance.MapPost("/employees/{employeeId:guid}/check-in", async (Guid employee
 attendance.MapPost("/employees/{employeeId:guid}/check-out", async (Guid employeeId, ClaimsPrincipal principal, IAttendanceService service, CancellationToken ct) => { var result = await service.CheckOutAsync(employeeId, principal.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceRecordDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 attendance.MapGet("/employees/today", async (IAttendanceService service, CancellationToken ct) => Results.Ok(await service.TodayAsync(ct))).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceTodayResponse>(200).ProducesProblem(401).ProducesProblem(403);
 attendance.MapGet("/me", async (DateOnly? from, DateOnly? to, int page = 1, int pageSize = 20, ClaimsPrincipal principal = null!, IAttendanceService service = null!, CancellationToken ct = default) => { var result = await service.MineAsync(principal.FindFirstValue(ClaimTypes.NameIdentifier)!, from, to, page, pageSize, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceSelf).Produces<AttendancePage>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(404);
-app.MapHub<AttendanceHub>("/hubs/attendance").RequireAuthorization(PolicyNames.AttendanceHubAccess); app.Run();
+static OrderActor Actor(ClaimsPrincipal principal) => new(principal.FindFirstValue(ClaimTypes.NameIdentifier)!, principal.FindAll(ClaimTypes.Role).Select(x => x.Value).ToHashSet(StringComparer.Ordinal));
+static IResult OrderError(string error) => error switch
+{
+"NOT_FOUND" => Results.NotFound(),
+"FORBIDDEN" => Results.Forbid(),
+"INVALID_REQUEST" or "DUPLICATE_PRODUCT" or "PRODUCT_NOT_ORDERABLE" or "WAITER_NOT_ELIGIBLE" => Results.ValidationProblem(new Dictionary<string, string[]> { ["orders"] = [error] }),
+_ => Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Order operation conflict", extensions: new Dictionary<string, object?> { ["code"] = error })
+};
+var orders = catalog.MapGroup("/orders").RequireAuthorization(PolicyNames.OrdersAccess);
+orders.MapPost("", async (CreateOrderRequest r, ClaimsPrincipal p, IOrderService s, CancellationToken ct) => { var x = await s.CreateAsync(r, Actor(p), ct); return x.Error is null ? Results.Created($"/api/v1/orders/{x.Value!.Id}", x.Value) : OrderError(x.Error); }).Produces<OrderDto>(201).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(409);
+orders.MapGet("", async (IOrderService s, int page = 1, int pageSize = 10, OrderStatus? status = null, string? search = null, CancellationToken ct = default) => page < 1 || pageSize is < 1 or > 100 ? Results.ValidationProblem(new Dictionary<string, string[]> { ["paging"] = ["page must be 1 and pageSize must be 1-100"] }) : Results.Ok(await s.ListAsync(page, pageSize, status, search, ct))).Produces<PagedResponse<OrderDto>>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403);
+orders.MapGet("/{id:guid}", async (Guid id, IOrderService s, CancellationToken ct) => await s.GetAsync(id, ct) is { } x ? Results.Ok(x) : Results.NotFound()).Produces<OrderDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
+orders.MapPut("/{id:guid}/assignment", async (Guid id, AssignOrderRequest r, ClaimsPrincipal p, IOrderService s, CancellationToken ct) => { var x = await s.AssignAsync(id, r, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.UsersManage).Produces<OrderDto>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+orders.MapPost("/{id:guid}/take", async (Guid id, ClaimsPrincipal p, IOrderService s, CancellationToken ct) => { var x = await s.TakeAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).Produces<OrderDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+orders.MapPost("/{id:guid}/deliver", async (Guid id, ClaimsPrincipal p, IOrderService s, CancellationToken ct) => { var x = await s.DeliverAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).Produces<OrderDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+orders.MapPost("/{id:guid}/cancel", async (Guid id, CancelOrderRequest r, ClaimsPrincipal p, IOrderService s, CancellationToken ct) => { var x = await s.CancelAsync(id, r, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).Produces<OrderDto>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+var kitchen = catalog.MapGroup("/kitchen/commands").RequireAuthorization(PolicyNames.KitchenAccess);
+kitchen.MapGet("", async (IKitchenCommandService s, int page = 1, int pageSize = 10, KitchenCommandStatus? status = null, CancellationToken ct = default) => page < 1 || pageSize is < 1 or > 100 ? Results.ValidationProblem(new Dictionary<string, string[]> { ["paging"] = ["page must be 1 and pageSize must be 1-100"] }) : Results.Ok(await s.ListAsync(page, pageSize, status, ct))).Produces<PagedResponse<KitchenCommandDto>>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403);
+kitchen.MapGet("/{id:guid}", async (Guid id, IKitchenCommandService s, CancellationToken ct) => await s.GetAsync(id, ct) is { } x ? Results.Ok(x) : Results.NotFound()).Produces<KitchenCommandDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
+kitchen.MapPost("/{id:guid}/start", async (Guid id, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.StartAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+kitchen.MapPost("/{id:guid}/ready", async (Guid id, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.ReadyAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+kitchen.MapPost("/{id:guid}/cancel", async (Guid id, CancelOrderRequest r, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.CancelAsync(id, r, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+app.MapHub<AttendanceHub>("/hubs/attendance").RequireAuthorization(PolicyNames.AttendanceHubAccess); app.MapHub<KitchenHub>("/hubs/kitchen").RequireAuthorization(PolicyNames.KitchenHubAccess); app.Run();
 static CookieOptions CookieOptions(HttpContext context) => new() { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/api/v1/auth", Secure = !context.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment() };
 static void SetCookie(HttpContext context, string token) => context.Response.Cookies.Append("refreshToken", token, CookieOptions(context));
 public partial class Program { }
