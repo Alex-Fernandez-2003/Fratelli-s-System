@@ -4,11 +4,12 @@ import type { MyAttendanceParams } from './api'
 
 const ATTENDANCE_KEY = 'attendance'
 
-export function useAttendanceToday(enabled: boolean) {
+export function useAttendanceToday(enabled: boolean, refetchIntervalMs = 30_000) {
   return useQuery({
     queryKey: [ATTENDANCE_KEY, 'today'],
     queryFn: attendanceApi.today,
     enabled,
+    refetchInterval: refetchIntervalMs,
   })
 }
 
