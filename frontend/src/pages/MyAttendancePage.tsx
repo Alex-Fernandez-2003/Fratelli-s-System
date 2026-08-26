@@ -3,10 +3,13 @@ import { Calendar, CheckCircle, LogOut, LogIn, Clock, AlertTriangle, Home } from
 import { Badge, Button, Input, Label, Skeleton } from '../components/atoms'
 import { Alert, EmptyState } from '../components/molecules'
 import { AppLayout } from '../components/templates/AppLayout'
+import { useAuth } from '../features/auth/AuthProvider'
 import type { AttendanceRecordDto } from '../features/attendance/api'
 import { useCheckIn, useCheckOut, useMyAttendance } from '../features/attendance/hooks'
 import { errorMessage, formatTime, formatDayShort, recordDuration, elapsedSince, totalDuration } from '../features/attendance/format'
 import { HttpError } from '../lib/api/http-client'
+
+const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
 function StatusCard({
   openRecord,
@@ -15,6 +18,7 @@ function StatusCard({
   isLoading,
   isPending,
   error,
+  canRegister,
 }: {
   openRecord: AttendanceRecordDto | null | undefined
   onCheckIn: () => void
@@ -22,6 +26,7 @@ function StatusCard({
   isLoading: boolean
   isPending: boolean
   error: unknown
+  canRegister: boolean
 }) {
   const [elapsed, setElapsed] = useState('')
 
@@ -49,9 +54,11 @@ function StatusCard({
         <p className="mb-4 text-sm text-text-muted">
           No pudimos sincronizar tu estado de asistencia. Por favor, verifica tu conexión e intenta de nuevo.
         </p>
-        <Button variant="secondary" onClick={onCheckIn}>
-          Reintentar carga
-        </Button>
+        {canRegister && (
+          <Button variant="secondary" onClick={onCheckIn}>
+            Reintentar carga
+          </Button>
+        )}
       </div>
     )
   }
@@ -81,16 +88,22 @@ function StatusCard({
           </div>
         </div>
 
-        <Button
-          variant="danger"
-          fullWidth
-          size="lg"
-          loading={isPending}
-          leftIcon={<LogOut size={18} />}
-          onClick={onCheckOut}
-        >
-          Registrar salida
-        </Button>
+        {canRegister ? (
+          <Button
+            variant="danger"
+            fullWidth
+            size="lg"
+            loading={isPending}
+            leftIcon={<LogOut size={18} />}
+            onClick={onCheckOut}
+          >
+            Registrar salida
+          </Button>
+        ) : (
+          <p className="text-center text-sm text-text-muted">
+            Tu hora de entrada fue registrada por un administrador o encargado.
+          </p>
+        )}
       </div>
     )
   }
@@ -108,18 +121,26 @@ function StatusCard({
           month: 'long',
         })}
       </h3>
-      <p className="mb-5 text-sm text-text-muted">
-        No tienes una asistencia abierta para el día de hoy.
-      </p>
-      <Button
-        fullWidth
-        size="lg"
-        loading={isPending}
-        leftIcon={<LogIn size={18} />}
-        onClick={onCheckIn}
-      >
-        Registrar entrada
-      </Button>
+      {canRegister ? (
+        <>
+          <p className="mb-5 text-sm text-text-muted">
+            No tienes una asistencia abierta para el día de hoy.
+          </p>
+          <Button
+            fullWidth
+            size="lg"
+            loading={isPending}
+            leftIcon={<LogIn size={18} />}
+            onClick={onCheckIn}
+          >
+            Registrar entrada
+          </Button>
+        </>
+      ) : (
+        <p className="mb-5 text-sm text-text-muted">
+          No tienes una asistencia abierta para el día de hoy. Tu hora será registrada por un administrador o encargado.
+        </p>
+      )}
     </div>
   )
 }
@@ -153,6 +174,8 @@ function HistoryItem({ record }: { record: AttendanceRecordDto }) {
 }
 
 export function MyAttendancePage() {
+  const { user } = useAuth()
+  const canRegister = user ? ATTENDANCE_MANAGE_ROLES.some((role) => user.roles.includes(role)) : false
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
@@ -190,7 +213,11 @@ export function MyAttendancePage() {
         {/* Title */}
         <div>
           <h1 className="text-2xl font-bold">Mi asistencia</h1>
-          <p className="text-sm text-text-muted">Gestiona tu jornada laboral de hoy.</p>
+          <p className="text-sm text-text-muted">
+            {canRegister
+              ? 'Gestiona tu jornada laboral de hoy.'
+              : 'Consulta tu estado de asistencia y horario registrado.'}
+          </p>
         </div>
 
         {/* Status card */}
@@ -201,6 +228,7 @@ export function MyAttendancePage() {
           isLoading={history.isLoading}
           isPending={checkIn.isPending || checkOut.isPending}
           error={history.error}
+          canRegister={canRegister}
         />
 
         {/* Success feedback */}
