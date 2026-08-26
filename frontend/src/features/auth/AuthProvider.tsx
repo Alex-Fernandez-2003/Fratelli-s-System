@@ -15,6 +15,8 @@ type AuthContextValue = {
   hasAnyRole: (roles: string[]) => boolean
   login: (request: LoginRequest) => Promise<void>
   logout: () => Promise<boolean>
+  refreshCurrentUser: () => Promise<void>
+  clearLocalSession: () => Promise<void>
 }
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
@@ -92,6 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [apply],
   )
+  const refreshCurrentUser = useCallback(async () => {
+    const refreshedUser = await authApi.me()
+    setUser(refreshedUser)
+  }, [])
   const logout = useCallback(async () => {
     setPending(true)
     setError(null)
@@ -114,9 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
+      refreshCurrentUser,
+      clearLocalSession: clearSession,
       hasAnyRole: (roles: string[]) => !!user && roles.some((role) => user.roles.includes(role)),
     }),
-    [status, user, pending, error, login, logout],
+    [status, user, pending, error, login, logout, refreshCurrentUser, clearSession],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

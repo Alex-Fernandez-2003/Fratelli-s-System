@@ -5,6 +5,8 @@ import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
 import { UiKitPage } from '../pages/UiKitPage'
+import { AuthenticatedLayout } from '../features/navigation'
+import { UsersPage } from '../features/users/pages/UsersPage'
 
 function Bootstrap() {
   return (
@@ -48,7 +50,12 @@ export function AppRoutes() {
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
       <Route path="/login" element={<LoginRoute />} />
       <Route element={<RequireAuth />}>
-        <Route path="/inicio" element={<InicioPage />} />
+        <Route element={<AuthenticatedLayout />}>
+          <Route path="/inicio" element={<InicioPage />} />
+          <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
+            <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
+        </Route>
       </Route>
       <Route path="/403" element={<ForbiddenPage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
