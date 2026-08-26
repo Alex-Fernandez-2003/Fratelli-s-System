@@ -86,10 +86,9 @@ Detalles de implementación:
 
 Capturas reales vinculadas (en `docs/capturas/`):
 
-- [Login](../capturas/HU-022-login.png) — sesión de `admin.test` desde la pantalla de acceso.
-- [Asistencia del día](../capturas/HU-022-hoy.png) — tabla con estados y acciones por empleado.
-- [Ciclo registrado](../capturas/HU-022-ciclo.png) — resultado de check-in y check-out sobre el mismo empleado.
-- [Mi asistencia](../capturas/HU-022-mi-asistencia.png) — historial propio con filtros y paginación.
+- [Asistencia del día — ciclo cerrado](../capturas/HU-022P1.png) — tabla del personal con fecha de negocio y zona horaria; `admin.test` muestra su ciclo cerrado (10:39 p. m. → 10:39 p. m.) y el resto del personal en `Sin registro` con acción *Marcar entrada* disponible.
+- [Mi asistencia — historial propio](../capturas/HU-022P2.png) — vista `/mi-asistencia` de `admin.test` con filtros Desde/Hasta, tabla (fecha, entrada, salida, duración) y estado `Cerrada`.
+- [Asistencia del día — ciclo abierto](../capturas/HU-022P3.png) — `contadora.test` en estado `Abierta` con ciclo en curso (12:01 a. m. → …) y acción *Marcar salida* activa.
 
 ## Decisiones técnicas
 
