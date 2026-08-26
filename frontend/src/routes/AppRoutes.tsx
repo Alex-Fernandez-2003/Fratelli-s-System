@@ -7,6 +7,8 @@ import { LoginPage } from '../pages/LoginPage'
 import { UiKitPage } from '../pages/UiKitPage'
 import { AuthenticatedLayout } from '../features/navigation'
 import { UsersPage } from '../features/users/pages/UsersPage'
+import { OrdersPage, NewOrderPage, OrderDetailPage } from '../features/orders/pages'
+import { KitchenPage } from '../features/kitchen/pages'
 
 function Bootstrap() {
   return (
@@ -52,6 +54,16 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<InicioPage />} />
+          <Route element={<RequireAnyRole roles={['MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}>
+            <Route path="/pedidos" element={<OrdersPage />} />
+            <Route path="/pedidos/nuevo" element={<NewOrderPage />} />
+            <Route path="/pedidos/:id" element={<OrderDetailPage />} />
+          </Route>
+          <Route
+            element={<RequireAnyRole roles={['COCINA', 'MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}
+          >
+            <Route path="/cocina" element={<KitchenPage />} />
+          </Route>
           <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
             <Route path="/usuarios" element={<UsersPage />} />
           </Route>
