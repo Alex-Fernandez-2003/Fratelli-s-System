@@ -23,7 +23,12 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     {
         base.OnModelCreating(builder);
         builder.HasDefaultSchema("identity");
-        builder.Entity<IdentityUser>().Property<bool>("IsActive").HasDefaultValue(true);
+            builder.Entity<IdentityUser>(entity =>
+            {
+                entity.Property<bool>("IsActive").HasDefaultValue(true);
+                entity.Property<string?>("CreatedByUserId");
+                entity.Property<string?>("UpdatedByUserId");
+            });
         builder.Entity<Employee>(entity =>
         {
             entity.ToTable("Employees", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.UserId).IsRequired(); entity.Property(x => x.FullName).IsRequired();
