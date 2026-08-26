@@ -1,10 +1,14 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
+import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
+import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
+
+const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
 function Bootstrap() {
   return (
@@ -49,6 +53,10 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginRoute />} />
       <Route element={<RequireAuth />}>
         <Route path="/inicio" element={<InicioPage />} />
+        <Route path="/mi-asistencia" element={<MyAttendancePage />} />
+        <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
+          <Route path="/asistencia" element={<AttendanceTodayPage />} />
+        </Route>
       </Route>
       <Route path="/403" element={<ForbiddenPage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
