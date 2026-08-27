@@ -79,4 +79,11 @@ export const httpClient = {
       headers: { 'Content-Type': 'application/json', ...options.headers },
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
+  put: <T>(path: string, body?: unknown, options: Options = {}) =>
+    request<T>(path, {
+      ...options,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    }),
 }

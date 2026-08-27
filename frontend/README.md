@@ -42,6 +42,12 @@ pnpm run build
 
 El formato se aplica mediante `.prettierrc.mjs` (comillas simples, sin punto y coma, comas finales, dos espacios, LF). Para un contrato de API disponible en Development, ejecute `pnpm run api:generate`; regenera y da formato a `src/types/api.generated.ts`. Ese archivo generado nunca se edita manualmente.
 
+## HU-002 — Usuarios y roles
+
+`/usuarios` requiere sesión y el rol exacto `ADMINISTRADOR`. La feature `src/features/users` usa tipos generados, `endpoints.users`, `httpClient` y TanStack Query; sus componentes nunca reciben JWT ni llaman `fetch` directamente. Permite listar, filtrar por búsqueda/rol/estado, paginar y administrar cuentas con roles múltiples, contraseña y ciclo activo/inactivo.
+
+Los roles canónicos son `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`. La navegación solo muestra Inicio y Usuarios y roles cuando la ruta existe y el rol lo permite. Para actualizar el contrato, inicie el backend Development y ejecute `pnpm run api:generate`; nunca edite `src/types/api.generated.ts` manualmente.
+
 ## Compatibilidad con npm
 
 Los scripts también pueden invocarse con `npm run <script>`. Para instalar con npm, use `npm install --package-lock=false`; no se crea, versiona ni mantiene `package-lock.json`. No alterne gestores sobre el mismo `node_modules`: al cambiar de gestor, haga una reinstalación limpia con el gestor elegido antes de ejecutar scripts.

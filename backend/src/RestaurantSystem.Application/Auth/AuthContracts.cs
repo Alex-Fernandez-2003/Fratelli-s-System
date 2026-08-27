@@ -12,7 +12,7 @@ public sealed class LoginRequest
 
 public interface ITokenService
 {
-    AuthResponse Create(string userId, string username, string? fullName, Guid? employeeId, IReadOnlyList<string> roles);
+    AuthResponse Create(string userId, string username, string? fullName, Guid? employeeId, IReadOnlyList<string> roles, string? securityStamp);
 }
 
 public interface IRefreshTokenService
@@ -20,6 +20,7 @@ public interface IRefreshTokenService
     Task<(Guid SessionId, string Token)> CreateAsync(string userId, CancellationToken cancellationToken = default);
     Task<(Guid SessionId, string UserId, string Token)?> RotateAsync(string token, CancellationToken cancellationToken = default);
     Task RevokeAsync(string? token, CancellationToken cancellationToken = default);
+    Task RevokeAllAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Application boundary for auth use cases; HTTP and Identity stay outside Application.</summary>

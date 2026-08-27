@@ -105,6 +105,12 @@ La feature usa `authApi` para `login`, `refresh` y `logout` crudos. Las demás f
 
 `/inicio` exige sesión; durante bootstrap muestra un estado neutral sin flash de Login. Una visita no autenticada se redirige a `/login` conservando su destino y un usuario autenticado en `/login` va a `/inicio`. `RequireAnyRole` usa las cadenas exactas `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`; una falta de rol navega a `/403`. Logout solo limpia token, estado y QueryClient tras `204`; un fallo remoto conserva la sesión y muestra un error recuperable. La validación manual final cubrió teclado, 360 px, ~403 px, tablet, desktop, bootstrap tras F5, recuperación `401`, denegación de rol y ambos resultados de logout; las capturas vinculadas están en la [HU-001](../../docs/historias/HU-001-iniciar-cerrar-sesion.md).
 
+## HU-002 — Administración de usuarios
+
+La ruta `/usuarios` compone los guards existentes de sesión y `ADMINISTRADOR`. `features/users` concentra la query de lista con `search`, `role`, `active`, `page` y `pageSize`, además de mutaciones para crear, editar, administrar contraseña y activar/desactivar. Toda mutación invalida la raíz `['users']`; cambios propios de perfil sincronizan `/auth/me` y cambios sensibles propios limpian la sesión local, porque el backend invalida la credencial previa.
+
+Crear y editar contienen únicamente nombre completo, username y roles canónicos múltiples; no incluyen contraseña. La contraseña se administra por separado y solo vive en estado local del diálogo. No se almacenan JWT ni se leen cookies HttpOnly desde JavaScript.
+
 ## Límite de API y tutorial de OpenAPI
 
 1. Agregue o cambie un endpoint backend fuera de esta tarea de base.

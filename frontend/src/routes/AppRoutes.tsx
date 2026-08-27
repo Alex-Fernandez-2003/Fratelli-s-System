@@ -7,6 +7,10 @@ import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
 import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
+import { AuthenticatedLayout } from '../features/navigation'
+import { UsersPage } from '../features/users/pages/UsersPage'
+import { OrdersPage, NewOrderPage, OrderDetailPage } from '../features/orders/pages'
+import { KitchenPage } from '../features/kitchen/pages'
 
 const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
@@ -52,10 +56,25 @@ export function AppRoutes() {
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
       <Route path="/login" element={<LoginRoute />} />
       <Route element={<RequireAuth />}>
-        <Route path="/inicio" element={<InicioPage />} />
-        <Route path="/mi-asistencia" element={<MyAttendancePage />} />
-        <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
-          <Route path="/asistencia" element={<AttendanceTodayPage />} />
+        <Route element={<AuthenticatedLayout />}>
+          <Route path="/inicio" element={<InicioPage />} />
+          <Route path="/mi-asistencia" element={<MyAttendancePage />} />
+          <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
+            <Route path="/asistencia" element={<AttendanceTodayPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={['MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}>
+            <Route path="/pedidos" element={<OrdersPage />} />
+            <Route path="/pedidos/nuevo" element={<NewOrderPage />} />
+            <Route path="/pedidos/:id" element={<OrderDetailPage />} />
+          </Route>
+          <Route
+            element={<RequireAnyRole roles={['COCINA', 'MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}
+          >
+            <Route path="/cocina" element={<KitchenPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
+            <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="/403" element={<ForbiddenPage />} />
