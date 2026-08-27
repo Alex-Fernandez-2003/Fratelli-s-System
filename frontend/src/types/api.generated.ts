@@ -1956,6 +1956,348 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/inventory/balances': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          page?: number | string
+          pageSize?: number | string
+          search?: string
+          productType?: components['schemas']['ProductType']
+          active?: boolean
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfInventoryBalanceDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/inventory/movements': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          page?: number | string
+          pageSize?: number | string
+          productId?: string
+          movementType?: components['schemas']['InventoryMovementType']
+          from?: string
+          to?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfInventoryMovementDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['RecordManualInventoryMovementRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['InventoryMovementDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/expenses': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateExpenseRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ExpenseDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/expense-categories': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ExpenseCategoryDto'][]
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/attendance/employees/{employeeId}/check-in': {
     parameters: {
       query?: never
@@ -3156,6 +3498,8 @@ export interface components {
     CancelOrderRequest: {
       reason: null | string
     }
+    /** @enum {unknown} */
+    CashSource: 'PETTY_CASH' | 'CASH_DRAWER'
     CategoryDto: {
       /** Format: uuid */
       id: string
@@ -3169,6 +3513,16 @@ export interface components {
     }
     /** @enum {unknown} */
     CategoryScope: 'MENU' | 'INVENTORY' | 'PREPARATION'
+    CreateExpenseRequest: {
+      /** Format: uuid */
+      expenseCategoryId: null | string
+      /** Format: double */
+      amount: number | string
+      cashSource: components['schemas']['CashSource']
+      description: string
+      /** Format: date */
+      expenseDate: string
+    }
     CreateOrderItemRequest: {
       /** Format: uuid */
       productId: string
@@ -3186,6 +3540,79 @@ export interface components {
       username: string
       roles: string[]
     }
+    ExpenseCategoryDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+    }
+    ExpenseDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      expenseCategoryId: null | string
+      expenseCategoryName: null | string
+      /** Format: double */
+      amount: number | string
+      cashSource: components['schemas']['CashSource']
+      description: string
+      /** Format: date */
+      expenseDate: string
+      /** Format: date-time */
+      createdAt: string
+      createdByUserId: string
+      createdByDisplayName: null | string
+    }
+    InventoryBalanceDto: {
+      /** Format: uuid */
+      productId: string
+      productName: string
+      productType: components['schemas']['ProductType']
+      /** Format: uuid */
+      inventoryUnitId: string
+      inventoryUnitCode: string
+      inventoryUnitName: string
+      inventoryUnitSymbol: string
+      /** Format: double */
+      currentQuantity: number | string
+      /** Format: double */
+      minStock: null | number | string
+      isLowStock: boolean
+      isActive: boolean
+    }
+    InventoryMovementDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      productId: string
+      productName: string
+      movementType: components['schemas']['InventoryMovementType']
+      /** Format: double */
+      quantityDelta: number | string
+      /** Format: uuid */
+      inventoryUnitId: string
+      inventoryUnitCode: string
+      inventoryUnitName: string
+      inventoryUnitSymbol: string
+      reason: null | string
+      referenceType: null | components['schemas']['InventoryReferenceType']
+      /** Format: uuid */
+      referenceId: null | string
+      /** Format: date-time */
+      createdAt: string
+      createdByUserId: string
+      createdByDisplayName: null | string
+    }
+    /** @enum {unknown} */
+    InventoryMovementType:
+      | 'ENTRY'
+      | 'SALE'
+      | 'PRODUCTION_CONSUMPTION'
+      | 'PRODUCTION_OUTPUT'
+      | 'PURCHASE_RECEIPT'
+      | 'WRITE_OFF'
+      | 'ADJUSTMENT'
+    /** @enum {unknown} */
+    InventoryReferenceType: 'MANUAL' | 'SALE' | 'PURCHASE' | 'PRODUCTION' | null
     KitchenCommandDto: {
       /** Format: uuid */
       id: string
@@ -3268,6 +3695,28 @@ export interface components {
     OrderStatus: 'PENDIENTE' | 'EN_PREPARACION' | 'LISTO' | 'ENTREGADO' | 'CANCELADO'
     PagedResponseOfCategoryDto: {
       items: components['schemas']['CategoryDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
+    PagedResponseOfInventoryBalanceDto: {
+      items: components['schemas']['InventoryBalanceDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
+    PagedResponseOfInventoryMovementDto: {
+      items: components['schemas']['InventoryMovementDto'][]
       /** Format: int32 */
       page: number | string
       /** Format: int32 */
@@ -3392,6 +3841,14 @@ export interface components {
     }
     /** @enum {unknown} */
     ProductType: 'INGREDIENT' | 'PREPARATION' | 'SALE_ITEM' | 'SUPPLY'
+    RecordManualInventoryMovementRequest: {
+      /** Format: uuid */
+      productId: string
+      type: components['schemas']['InventoryMovementType']
+      /** Format: double */
+      quantity: number | string
+      reason: string
+    }
     SetUserPasswordRequest: {
       newPassword: string
     }

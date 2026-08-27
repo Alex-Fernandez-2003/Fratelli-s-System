@@ -14,6 +14,8 @@ import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pa
 import { ProductsPage } from '../features/products/pages'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
+import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
+import { ExpensesPage } from '../features/expenses/pages'
 
 const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
@@ -88,12 +90,31 @@ export function AppRoutes() {
           </Route>
 
           {/* Productos */}
-          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA']} />}>
+          <Route
+            element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA']} />}
+          >
             <Route path="/productos" element={<ProductsPage />} />
           </Route>
 
+          {/* Inventario */}
+          <Route
+            element={
+              <RequireAnyRole
+                roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA']}
+              />
+            }
+          >
+            <Route path="/inventario" element={<InventoryBalancesPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
+            <Route path="/inventario/movimientos" element={<InventoryMovementsPage />} />
+            <Route path="/gastos" element={<ExpensesPage />} />
+          </Route>
+
           {/* Cocina */}
-          <Route element={<RequireAnyRole roles={['COCINA', 'MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}>
+          <Route
+            element={<RequireAnyRole roles={['COCINA', 'MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}
+          >
             <Route path="/cocina" element={<KitchenPage />} />
           </Route>
 
