@@ -2,18 +2,20 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
 import { AuthenticatedLayout } from '../features/navigation'
-
-// Páginas generales
+import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
+import { SuppliersPage } from '../pages/proveedores/SuppliersPage'
+import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
-
-// Páginas de características (Features)
 import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
 import { ProductsPage } from '../features/products/pages'
 import { UsersPage } from '../features/users/pages/UsersPage'
+import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
+
+const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
 function Bootstrap() {
   return (
@@ -64,12 +66,19 @@ export function AppRoutes() {
   return (
     <Routes>
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
+
       <Route path="/login" element={<LoginRoute />} />
 
       {/* Rutas protegidas por sesión */}
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<InicioPage />} />
+
+          {/* Asistencia */}
+          <Route path="/mi-asistencia" element={<MyAttendancePage />} />
+          <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
+            <Route path="/asistencia" element={<AttendanceTodayPage />} />
+          </Route>
 
           {/* Pedidos */}
           <Route element={<RequireAnyRole roles={['MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}>
@@ -91,6 +100,11 @@ export function AppRoutes() {
           {/* Gestión de usuarios */}
           <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
             <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
+
+          {/* Proveedores */}
+          <Route element={<RequireAnyRole roles={[...SUPPLIER_READ_ROLES]} />}>
+            <Route path="/proveedores" element={<SuppliersPage />} />
           </Route>
         </Route>
       </Route>

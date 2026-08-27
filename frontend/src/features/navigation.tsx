@@ -4,9 +4,10 @@ import { AppShell } from '@/components/templates'
 import { Button } from '@/components/atoms'
 import { useAuth } from '@/features/auth/AuthProvider'
 import type { ReactNode } from 'react'
+import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 
 export type AuthNavigationItem = {
-  path: '/inicio' | '/usuarios' | '/pedidos' | '/cocina' | '/productos'
+  path: '/inicio' | '/usuarios' | '/pedidos' | '/cocina' | '/productos' | '/proveedores'
   label: string
   icon: ReactNode
   allowedRoles?: string[]
@@ -37,6 +38,12 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     label: 'Usuarios y roles',
     icon: <UsersRound aria-hidden="true" size={18} />,
     allowedRoles: ['ADMINISTRADOR'],
+  },
+  {
+    path: '/proveedores',
+    label: 'Proveedores',
+    icon: <Package aria-hidden="true" size={18} />,
+    allowedRoles: [...SUPPLIER_READ_ROLES],
   },
 ]
 

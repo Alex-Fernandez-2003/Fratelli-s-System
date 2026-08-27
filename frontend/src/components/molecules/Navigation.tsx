@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 export type BreadcrumbItem = { label: string; href?: string }
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
@@ -73,5 +73,28 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
         </li>
       ))}
     </ol>
+  )
+}
+
+export type PrimaryNavItem = { label: string; href: string }
+export function PrimaryNav({ items }: { items: PrimaryNavItem[] }) {
+  const location = useLocation()
+  return (
+    <ul className="flex list-none flex-wrap gap-4 p-0">
+      {items.map((item) => {
+        const isActive = location.pathname === item.href
+        return (
+          <li key={item.href}>
+            <Link
+              to={item.href}
+              aria-current={isActive ? 'page' : undefined}
+              className={`font-bold no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange ${isActive ? 'text-brand-orange' : 'text-text-muted'}`}
+            >
+              {item.label}
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
   )
 }
