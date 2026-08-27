@@ -2,6 +2,7 @@ import { env } from '../../config/env'
 import { sessionCoordinator } from '../auth/session-coordinator'
 
 export type ProblemDetails = { title?: string; detail?: string; status?: number }
+
 export class HttpError extends Error {
   constructor(
     public readonly status: number,
@@ -86,4 +87,6 @@ export const httpClient = {
       headers: { 'Content-Type': 'application/json', ...options.headers },
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
+  delete: <T>(path: string, options: Options = {}) =>
+    request<T>(path, { ...options, method: 'DELETE' }),
 }

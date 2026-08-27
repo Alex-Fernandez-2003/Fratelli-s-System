@@ -1,7 +1,10 @@
-function query(path: string, params: Record<string, string | number | undefined>) {
+function query(path: string, params: Record<string, string | number | boolean | undefined>) {
   const search = new URLSearchParams()
-  for (const [key, value] of Object.entries(params))
-    if (value !== undefined && value !== '') search.set(key, String(value))
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') {
+      search.set(key, String(value))
+    }
+  }
   const value = search.toString()
   return `${path}${value ? `?${value}` : ''}`
 }
@@ -33,27 +36,50 @@ export const endpoints = {
     cancel: (id: string) => `/api/v1/kitchen/commands/${id}/cancel`,
   },
   users: {
-    list: (params?: {
+    list: (params: {
       page?: number
       pageSize?: number
       search?: string
       role?: string
       active?: boolean
-    }) => {
-      const query = new URLSearchParams()
-      if (params?.page) query.set('page', String(params.page))
-      if (params?.pageSize) query.set('pageSize', String(params.pageSize))
-      if (params?.search) query.set('search', params.search)
-      if (params?.role) query.set('role', params.role)
-      if (params?.active !== undefined) query.set('active', String(params.active))
-      const qs = query.toString()
-      return `/api/v1/users${qs ? `?${qs}` : ''}`
-    },
+    } = {}) => query('/api/v1/users', params),
     detail: (id: string) => `/api/v1/users/${id}`,
     create: () => '/api/v1/users',
     update: (id: string) => `/api/v1/users/${id}`,
     setPassword: (id: string) => `/api/v1/users/${id}/password`,
     activate: (id: string) => `/api/v1/users/${id}/activate`,
     deactivate: (id: string) => `/api/v1/users/${id}/deactivate`,
+  },
+  categories: {
+    list: (params: { page?: number; pageSize?: number; scope?: string; includeInactive?: boolean } = {}) =>
+      query('/api/v1/categories', params),
+    detail: (id: string) => `/api/v1/categories/${id}`,
+    create: () => '/api/v1/categories',
+    update: (id: string) => `/api/v1/categories/${id}`,
+  },
+  units: {
+    list: (params: { page?: number; pageSize?: number; includeInactive?: boolean } = {}) =>
+      query('/api/v1/units', params),
+    detail: (id: string) => `/api/v1/units/${id}`,
+    create: () => '/api/v1/units',
+    update: (id: string) => `/api/v1/units/${id}`,
+  },
+  products: {
+    list: (
+      params: {
+        page?: number
+        pageSize?: number
+        search?: string
+        productType?: string
+        categoryId?: string
+        categoryScope?: string
+        preparationArea?: string
+        isActive?: boolean
+      } = {},
+    ) => query('/api/v1/products', params),
+    detail: (id: string) => `/api/v1/products/${id}`,
+    create: () => '/api/v1/products',
+    update: (id: string) => `/api/v1/products/${id}`,
+    deactivate: (id: string) => `/api/v1/products/${id}`,
   },
 } as const
