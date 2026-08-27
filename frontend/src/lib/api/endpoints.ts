@@ -14,6 +14,14 @@ export const endpoints = {
     logout: '/api/v1/auth/logout',
     me: '/api/v1/auth/me',
   },
+  attendance: {
+    today: '/api/v1/attendance/employees/today',
+    checkIn: (employeeId: string) =>
+      `/api/v1/attendance/employees/${employeeId}/check-in`,
+    checkOut: (employeeId: string) =>
+      `/api/v1/attendance/employees/${employeeId}/check-out`,
+    me: '/api/v1/attendance/me',
+  },
   orders: {
     list: (params: { page?: number; pageSize?: number; status?: string; search?: string } = {}) =>
       query('/api/v1/orders', params),
@@ -62,3 +70,5 @@ export const endpoints = {
     byId: (id: string) => `/api/v1/suppliers/${id}`,
   },
 } as const
+
+export const MANAGE_ATTENDANCE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
