@@ -58,9 +58,9 @@ Un check-in duplicado concurrente y un check-out sin ciclo abierto devuelven 409
 
 El hub SignalR es `/hubs/attendance`, exclusivo de `ADMINISTRADOR` y `ENCARGADO`. Emite `AttendanceUpdated` con el payload de AttendanceRecord únicamente después del commit; un 4xx no emite y un fallo del notifier no revierte el registro persistido. El hub no forma parte del documento OpenAPI REST.
 
-## Enabler de HU-023 (pendiente)
+## Historial propio
 
-`GET /api/v1/attendance/me?from&to&page&pageSize` está implementado solamente como habilitador backend. Requiere Bearer, resuelve el Employee desde el JWT, no acepta `employeeId`, filtra fechas de negocio inclusivas, ordena por `checkInAt` descendente y retorna el sobre paginado de AttendanceRecord. `from > to` devuelve 400 y usuario sin Employee, 404. Esto no completa HU-023: no se entregan pantallas de consulta histórica dedicadas ni HU-024.
+`GET /api/v1/attendance/me?from&to&page&pageSize` requiere Bearer, resuelve el Employee desde el JWT, no acepta `employeeId`, filtra fechas de negocio inclusivas, ordena por `checkInAt` descendente y retorna el sobre paginado de AttendanceRecord. `from > to` devuelve 400 y un usuario sin Employee recibe 404. `/mi-asistencia` consume este contrato como historial propio de solo lectura.
 
 ## Frontend implementado
 
@@ -73,26 +73,22 @@ Detalles de implementación:
 
 - Tipos consumidos desde `src/types/api.generated.ts` (OpenAPI), sin duplicación manual de contratos.
 - Cliente HTTP existente: inyección automática de Bearer, reintento `401` vía refresh cookie y errores tipados `HttpError`.
-- Mutaciones con invalidación de caché bajo la clave `['attendance']`: tras check-in/check-out se refrescan *today* y *me* sin recarga manual.
-- Errores de negocio renderizados desde ProblemDetails: un 409 *"Attendance record already open"* o *"No open attendance record"* se muestra como alerta legible en pantalla.
-- Navegación en `/inicio` condicionada por rol: el enlace *Asistencia del día* solo aparece para `ADMINISTRADOR`/`ENCARGADO`; *Mi asistencia* para cualquier autenticado.
+- Las mutaciones de check-in/check-out viven exclusivamente en `/asistencia`; el historial propio no muta asistencia.
+- Los errores de negocio de gestión se renderizan desde ProblemDetails.
+- La navegación global expone una única capacidad Asistencia y usa la unión de roles para resolver el destino.
 - Estados de carga (`Spinner`) y vacío (`EmptyState` en tabla) cubiertos.
 
 ## Pruebas
 
 **Backend (integración, PostgreSQL real):** actor/objetivo, políticas por rol, conflictos y carreras, ciclos múltiples, `today`, aislamiento de `/attendance/me`, SignalR post-commit y persistencia ante fallo de notificación.
 
-**Frontend:** suite Vitest — 33 tests en verde, incluidos los de rutas (`AppRoutes.test.tsx`): bootstrap sin flash de login, redirección a `/login`, mismatch de rol hacia `/403`. `tsc --noEmit` y ESLint sin errores.
+**Frontend:** suite Vitest actual — 48 pruebas en verde, incluidos guards y navegación. Typecheck, lint y build completaron correctamente.
 
-**Validación manual extremo a extremo (local, Development):** login `admin.test` → `today` lista 6 empleados → *Marcar entrada* transita `NO_RECORD → OPEN` → *Marcar salida* cierra con timestamp → `/me` devuelve el ciclo cerrado con duración.
+**Validación manual:** PENDING. Debe validar gestión con `ADMINISTRADOR`/`ENCARGADO` y el historial de solo lectura con MESERO, COCINA, CONTADORA y EMPLEADO.
 
 ## Evidencia visual
 
-Capturas reales vinculadas (en `docs/capturas/`):
-
-- [Asistencia del día — ciclo cerrado](../capturas/HU-022P1.png) — tabla del personal con fecha de negocio y zona horaria; `admin.test` muestra su ciclo cerrado (10:39 p. m. → 10:39 p. m.) y el resto del personal en `Sin registro` con acción *Marcar entrada* disponible.
-- [Mi asistencia — historial propio](../capturas/HU-022P2.png) — vista `/mi-asistencia` de `admin.test` con filtros Desde/Hasta, tabla (fecha, entrada, salida, duración) y estado `Cerrada`.
-- [Asistencia del día — ciclo abierto](../capturas/HU-022P3.png) — `contadora.test` en estado `Abierta` con ciclo en curso (12:01 a. m. → …) y acción *Marcar salida* activa.
+Evidencia visual manual: pendiente. Las capturas históricas con rutas inexistentes se retiraron para no afirmar flujos ni archivos que no pueden verificarse.
 
 ## Decisiones técnicas
 

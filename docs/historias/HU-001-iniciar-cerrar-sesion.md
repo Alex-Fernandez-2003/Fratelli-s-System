@@ -1,5 +1,9 @@
 # HU-001 — Iniciar y cerrar sesión
 
+## Estado de implementación
+
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
+
 ## Contrato implementado
 
 | Ruta                        | Acceso                   | Resultado                     |
@@ -47,4 +51,4 @@ Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/v
 
 ### Captura de usuario logueado
 
-![Captura de usuario logueado](../capturas/HU-001-login.png)
+![Captura de usuario autenticado](../capturas/HU-001-roles.png)

@@ -2,7 +2,7 @@
 
 > **Como encargado, quiero registrar y consultar movimientos de inventario para conocer las existencias y el origen de sus variaciones.**
 
-**Backend: COMPLETE. Frontend: COMPLETE. Validación automatizada: COMPLETE. Validación manual browser/E2E: PENDING.**
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
 
 | Campo            | Valor                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------ |
@@ -57,12 +57,10 @@ No se implementó Product CRUD, alert center/notificaciones, SignalR, métricas 
 
 | Evidencia automatizada | Resultado                                                                                                                                             |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenAPI `api:generate` | PASS                                                                                                                                                  |
-| Typecheck              | PASS                                                                                                                                                  |
-| Lint                   | PASS                                                                                                                                                  |
-| Vitest                 | 45/45 PASS                                                                                                                                            |
-| Build                  | PASS                                                                                                                                                  |
-| `format:check`         | PREEXISTING_BASELINE_DEBT: `frontend/src/features/products/api.ts`, `frontend/src/features/products/pages.tsx`, `frontend/src/lib/api/http-client.ts` |
+| OpenAPI `api:generate` | COMPLETE (contrato sin cambios) |
+| Typecheck, lint y build | COMPLETE |
+| Vitest | 48 pruebas en verde |
+| `format:check` | COMPLETE |
 
 No hay capturas de validación manual asociadas a esta HU. La revisión humana pendiente debe comprobar roles, desktop/403px/360px, Product real, ENTRY, WRITE_OFF, aviso de saldo insuficiente, polling y refresh.
 

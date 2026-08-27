@@ -1,5 +1,11 @@
 # HU-003 — Catálogo
 
+## Estado de implementación
+
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
+
+La UI separa lectura y gestión: `ADMINISTRADOR` y `ENCARGADO` gestionan; `MESERO` y `COCINA` solo consultan. `CONTADORA` y `EMPLEADO` no acceden a Products.
+
 ## Rutas y autorización
 
 Todos los endpoints requieren Bearer. Lectura (`ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`): `GET /api/v1/categories`, `GET /api/v1/categories/{id}`, `GET /api/v1/units`, `GET /api/v1/units/{id}`, `GET /api/v1/products` y `GET /api/v1/products/{id}`. Escritura (`ADMINISTRADOR`, `ENCARGADO`): `POST`, `PUT` y `DELETE` sobre cada uno de esos tres recursos.
@@ -25,5 +31,7 @@ Product devuelve `{id,name,productType,categoryId,categoryScope,preparationArea,
 Las 11 categorías y cinco unidades anteriores son seeds estructurales de migración, presentes en todos los entornos. No hay composiciones, stock ni regla que acople `productType` con `categoryScope`.
 
 ## Errores y evidencia
+
+La evidencia automatizada del frontend actual incluye format, typecheck, lint, build y 48 pruebas Vitest en verde. Evidencia visual manual: pendiente.
 
 La API devuelve 400 para binding/validación, 401/403 para autorización, 404 para recursos inexistentes y 409 para duplicados o reglas de integridad. Las pruebas PostgreSQL cubren seeds, upgrade desde `InitialIdentity`, unicidad por scope, FKs, permisos, filtros, paginación y bajas lógicas.

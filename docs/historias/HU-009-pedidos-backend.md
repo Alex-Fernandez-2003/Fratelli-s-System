@@ -1,20 +1,26 @@
 # HU-009 — Pedidos
 
-**Backend: complete. Frontend implementation: complete pending human visual validation. Automated validation: complete. End-to-end: pending manual validation.**
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
 
-The backend exposes order creation, detail, listing, waiter assignment/claim and delivery. Prices are taken exclusively from active, sellable Products at creation and saved as item snapshots. Orders without KITCHEN lines start `LISTO`; KITCHEN orders start `PENDIENTE` with one command. `ShiftId` is nullable until a real shift lifecycle exists.
+## Implementación
 
-| Method | Route | Roles | Purpose | Response | Mapping / handler |
-|---|---|---|---|---|---|
-| POST | `/api/v1/orders` | MESERO, ENCARGADO, ADMINISTRADOR | Create | `OrderDto` 201 | `Program.cs` / `OrderService` |
-| GET | `/api/v1/orders` | MESERO, ENCARGADO, ADMINISTRADOR | List | `PagedResponse<OrderDto>` | `Program.cs` / `OrderService` |
-| GET | `/api/v1/orders/{id}` | MESERO, ENCARGADO, ADMINISTRADOR | Detail | `OrderDto` | `Program.cs` / `OrderService` |
-| PUT | `/api/v1/orders/{id}/assignment` | ADMINISTRADOR | Assign/reassign waiter | `OrderDto` | `Program.cs` / `OrderService` |
-| POST | `/api/v1/orders/{id}/take` | MESERO | Claim unassigned non-terminal order | `OrderDto` | `Program.cs` / `OrderService` |
-| POST | `/api/v1/orders/{id}/deliver` | Own MESERO, ENCARGADO, ADMINISTRADOR | Deliver ready order | `OrderDto` | `Program.cs` / `OrderService` |
+El backend expone creación, detalle, listado, asignación o toma por mesero y entrega de pedidos. Los precios se toman exclusivamente de Products activos y vendibles al crear el pedido y se persisten como snapshots. Los pedidos sin líneas `KITCHEN` inician `LISTO`; los que sí las tienen inician `PENDIENTE` con una comanda. `ShiftId` permanece nullable hasta que exista un ciclo real de turnos.
 
-No Sale, Customer relation, inventory movement, or Order editing is included.
+| Método | Ruta | Roles | Propósito | Respuesta |
+| --- | --- | --- | --- | --- |
+| POST | `/api/v1/orders` | MESERO, ENCARGADO, ADMINISTRADOR | Crear pedido | `OrderDto` 201 |
+| GET | `/api/v1/orders` | MESERO, ENCARGADO, ADMINISTRADOR | Listar pedidos | `PagedResponse<OrderDto>` |
+| GET | `/api/v1/orders/{id}` | MESERO, ENCARGADO, ADMINISTRADOR | Consultar detalle | `OrderDto` |
+| PUT | `/api/v1/orders/{id}/assignment` | ADMINISTRADOR | Asignar o reasignar mesero | `OrderDto` |
+| POST | `/api/v1/orders/{id}/take` | MESERO | Tomar pedido no terminal sin asignar | `OrderDto` |
+| POST | `/api/v1/orders/{id}/deliver` | MESERO propio, ENCARGADO, ADMINISTRADOR | Entregar pedido listo | `OrderDto` |
 
-## Frontend consumption
+No se incluyen venta, clientes, movimientos de inventario ni edición de pedidos.
 
-`/pedidos`, `/pedidos/nuevo`, and `/pedidos/{id}` consume the generated OpenAPI contract through the shared HTTP client and TanStack Query. ADMINISTRADOR assigns/reassigns using a paginated MESERO/active Users query and the real `employeeId`; MESERO can take unassigned non-terminal orders, while Deliver/Cancel follow ownership and global role rules. Query invalidation, rather than optimistic business-state patches, restores REST authority after mutations, conflicts, and kitchen events. See the frontend change handoff for the endpoint and SignalR tables. Manual responsive and live-runtime validation remains pending Alex.
+## Frontend y evidencia
+
+`/pedidos`, `/pedidos/nuevo` y `/pedidos/{id}` consumen el contrato OpenAPI generado mediante `httpClient` y TanStack Query. ADMINISTRADOR asigna usando `employeeId` real; MESERO toma pedidos permitidos. La invalidación de consultas preserva REST como autoridad después de mutaciones y eventos de cocina.
+
+- Evidencia automatizada: COMPLETE — suite frontend actual: 48 pruebas, typecheck, lint y build en verde.
+- Evidencia manual: PENDING — validar responsive y flujo contra runtime real.
+- Capturas: pendiente; no se fabricaron capturas.

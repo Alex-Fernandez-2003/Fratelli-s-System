@@ -1,12 +1,20 @@
 # HU-011 — Cancelar pedido
 
-**Backend: complete. Frontend implementation: complete pending human visual validation. Automated validation: complete. End-to-end: pending manual validation.**
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
 
-Cancellation is allowed only from `PENDIENTE` and `EN_PREPARACION`. Order cancellation atomically cancels its active KitchenCommand; Kitchen cancellation atomically cancels its Order. Retried authorized cancellation preserves the original actor, reason and timestamps. `LISTO` and `ENTREGADO` are conflicts.
+## Implementación
 
-| Method | Route | Roles | Purpose | Response | Mapping / handler |
-|---|---|---|---|---|---|
-| POST | `/api/v1/orders/{id}/cancel` | Own MESERO, ENCARGADO, ADMINISTRADOR | Cancel order/pair | `OrderDto` | `Program.cs` / `OrderService` |
-| POST | `/api/v1/kitchen/commands/{id}/cancel` | COCINA, ENCARGADO, ADMINISTRADOR | Cancel command/pair | `KitchenCommandDto` | `Program.cs` / `KitchenCommandService` |
+La cancelación se permite únicamente desde `PENDIENTE` y `EN_PREPARACION`. Cancelar un pedido cancela atómicamente su `KitchenCommand` activa; cancelar una comanda cancela atómicamente su pedido. Un reintento autorizado conserva actor, motivo y timestamps originales. `LISTO` y `ENTREGADO` devuelven conflicto.
 
-The server derives cancellation actors from authentication. Client-supplied actor, waiter, status, price or total fields are rejected. Frontend cancellation uses optional bounded reasons and authoritative query invalidation after success or conflict; it never sends actor, waiter, status, price, or total. Manual visual/runtime evidence remains pending Alex.
+| Método | Ruta | Roles | Propósito | Respuesta |
+| --- | --- | --- | --- | --- |
+| POST | `/api/v1/orders/{id}/cancel` | MESERO propio, ENCARGADO, ADMINISTRADOR | Cancelar pedido y par asociado | `OrderDto` |
+| POST | `/api/v1/kitchen/commands/{id}/cancel` | COCINA, ENCARGADO, ADMINISTRADOR | Cancelar comanda y par asociado | `KitchenCommandDto` |
+
+El servidor deriva el actor de cancelación desde la autenticación. Rechaza actor, mesero, estado, precio o total enviados por el cliente. El frontend usa motivos opcionales acotados e invalida consultas tras éxito o conflicto.
+
+## Evidencia
+
+- Evidencia automatizada: COMPLETE — suite frontend actual: 48 pruebas, typecheck, lint y build en verde.
+- Evidencia manual: PENDING — validar la cancelación en runtime real y sus transiciones.
+- Capturas: pendiente; no se fabricaron capturas.
