@@ -1,6 +1,5 @@
 import { Button } from '../components/atoms'
-import { PrimaryNav } from '../components/molecules'
-import { AppShell } from '../components/templates'
+
 import { Link } from 'react-router-dom'
 import { Home, Clock, Users, LogOut } from 'lucide-react'
 import { AppLayout } from '../components/templates/AppLayout'
@@ -11,9 +10,7 @@ const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 export function InicioPage() {
   const { user, logout, pending, error, hasAnyRole } = useAuth()
 
-  const navItems = [
-    { label: 'Inicio', href: '/inicio' },
-  ]
+
 
   const canManageAttendance = hasAnyRole(ATTENDANCE_MANAGE_ROLES)
 
