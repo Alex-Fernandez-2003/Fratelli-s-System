@@ -26,7 +26,7 @@ Los endpoints requieren Bearer. Lectura: `GET /api/v1/suppliers` y `GET /api/v1/
   "updatedAt": "2026-08-25T12:00:00+00:00",
   "updatedByUserId": "identity-string-id"
 }
-
+```
 POST y PUT reciben {name,phoneNumber,email,notes}. Nombre y teléfono son obligatorios; email, si se suministra, debe tener formato válido; los opcionales ausentes se serializan como null. Teléfono y email no tienen unicidad de negocio.
 
 GET /api/v1/suppliers acepta search, isActive, page y pageSize; busca en nombre o teléfono. La respuesta es el sobre común {items,page,pageSize,totalCount,totalPages} con page desde 1 y pageSize entre 1 y 100. Sin isActive solo se listan proveedores activos. DELETE es baja lógica, no borrado físico.
