@@ -53,7 +53,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             {(user?.fullName ?? user?.username ?? 'U').charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="m-0 truncate text-sm font-bold text-text">{user?.fullName ?? user?.username}</p>
+            <p className="m-0 truncate text-sm font-bold text-text">
+              {user?.fullName ?? user?.username}
+            </p>
             <p className="m-0 truncate text-xs text-text-muted">{user?.username}@fratelli.com</p>
           </div>
         </div>

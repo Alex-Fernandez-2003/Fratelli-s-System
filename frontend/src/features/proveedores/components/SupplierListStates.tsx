@@ -12,11 +12,20 @@ export function SuppliersLoadingSkeleton() {
   )
 }
 
-export function SuppliersEmptyState({ onCreate, canWrite }: { onCreate: () => void; canWrite: boolean }) {
+export function SuppliersEmptyState({
+  onCreate,
+  canWrite,
+}: {
+  onCreate: () => void
+  canWrite: boolean
+}) {
   return (
     <div className="p-4 text-center text-text-muted" role="status">
       <p>No hay proveedores registrados</p>
-      <p>Comienza agregando los proveedores de tu inventario para gestionar las compras y suministros.</p>
+      <p>
+        Comienza agregando los proveedores de tu inventario para gestionar las compras y
+        suministros.
+      </p>
       {canWrite && <Button onClick={onCreate}>+ Agregar primer proveedor</Button>}
     </div>
   )
@@ -27,8 +36,8 @@ export function SuppliersErrorState({ onRetry }: { onRetry: () => void }) {
     <div className="p-4 text-center text-danger" role="alert">
       <p>Error al cargar datos</p>
       <p>
-        Hubo un problema de conexión al intentar obtener la lista de proveedores. Verifica tu red e inténtalo
-        nuevamente.
+        Hubo un problema de conexión al intentar obtener la lista de proveedores. Verifica tu red e
+        inténtalo nuevamente.
       </p>
       <Button onClick={onRetry}>Reintentar carga</Button>
     </div>

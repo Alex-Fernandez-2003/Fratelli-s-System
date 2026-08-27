@@ -42,7 +42,9 @@ export function formatDayShort(iso: string): string {
   })
 }
 
-export function recordDuration(record: Pick<AttendanceRecordDto, 'checkInAt' | 'checkOutAt'>): string {
+export function recordDuration(
+  record: Pick<AttendanceRecordDto, 'checkInAt' | 'checkOutAt'>,
+): string {
   if (!record.checkOutAt) return 'En curso'
   const ms = new Date(record.checkOutAt).getTime() - new Date(record.checkInAt).getTime()
   const hours = Math.floor(ms / 3_600_000)
@@ -54,7 +56,8 @@ export function totalDuration(records: AttendanceRecordDto[]): string {
   const closed = records.filter((r) => r.checkOutAt)
   if (!closed.length) return '—'
   const ms = closed.reduce(
-    (acc, r) => acc + (new Date(r.checkOutAt as string).getTime() - new Date(r.checkInAt).getTime()),
+    (acc, r) =>
+      acc + (new Date(r.checkOutAt as string).getTime() - new Date(r.checkInAt).getTime()),
     0,
   )
   const hours = Math.floor(ms / 3_600_000)
@@ -69,7 +72,10 @@ export function elapsedSince(iso: string): string {
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 }
 
-export function errorMessage(error: unknown, fallback = 'No se pudo completar la operación.'): string {
+export function errorMessage(
+  error: unknown,
+  fallback = 'No se pudo completar la operación.',
+): string {
   if (error instanceof HttpError) {
     return error.problem.detail ?? error.problem.title ?? fallback
   }

@@ -67,11 +67,20 @@ export function SupplierFormFields({
         no acepta `htmlFor` ni requiere que le pasemos aria-* a mano.
       */}
       <FormField label="Nombre del proveedor" required error={errors.name}>
-        <Input value={name} onChange={(e) => setName(e.target.value)} disabled={submitting} autoFocus />
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={submitting}
+          autoFocus
+        />
       </FormField>
 
       <FormField label="Teléfono" required error={errors.phoneNumber}>
-        <Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} disabled={submitting} />
+        <Input
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          disabled={submitting}
+        />
       </FormField>
 
       <FormField label="Correo electrónico (opcional)" error={errors.email}>
@@ -84,7 +93,12 @@ export function SupplierFormFields({
       </FormField>
 
       <FormField label="Notas / información de contacto (opcional)">
-        <Textarea value={notes ?? ''} onChange={(e) => setNotes(e.target.value)} rows={3} disabled={submitting} />
+        <Textarea
+          value={notes ?? ''}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          disabled={submitting}
+        />
       </FormField>
 
       <div className="flex justify-end gap-2">

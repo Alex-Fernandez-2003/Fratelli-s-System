@@ -60,9 +60,9 @@ export function AppRoutes() {
   return (
     <Routes>
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
-      
+
       <Route path="/login" element={<LoginRoute />} />
-      
+
       {/* Rutas que requieren autenticación */}
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
@@ -86,14 +86,14 @@ export function AppRoutes() {
           </Route>
         </Route>
       </Route>
-      
+
       {/* Ruta de proveedores - TU CÓDIGO */}
       <Route element={<RequireAuth />}>
         <Route element={<RequireAnyRole roles={[...SUPPLIER_READ_ROLES]} />}>
           <Route path="/proveedores" element={<SuppliersPage />} />
         </Route>
       </Route>
-      
+
       <Route path="/403" element={<ForbiddenPage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>

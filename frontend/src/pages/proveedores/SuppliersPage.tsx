@@ -24,10 +24,15 @@ type EstadoFiltro = 'activos' | 'inactivos'
 
 function toServerErrorMessage(error: unknown): string {
   if (error instanceof HttpError) {
-    if (error.status === 409) return 'La operación entra en conflicto con una regla de negocio existente.'
+    if (error.status === 409)
+      return 'La operación entra en conflicto con una regla de negocio existente.'
     if (error.status === 404) return 'El proveedor ya no existe. Actualiza la lista.'
     if (error.status === 403) return 'No tienes permiso para realizar esta acción.'
-    return error.problem.detail ?? error.problem.title ?? 'Ocurrió un error inesperado. Intenta de nuevo.'
+    return (
+      error.problem.detail ??
+      error.problem.title ??
+      'Ocurrió un error inesperado. Intenta de nuevo.'
+    )
   }
   return 'Ocurrió un error inesperado. Intenta de nuevo.'
 }
@@ -166,7 +171,9 @@ export function SuppliersPage() {
                 id: 'status',
                 header: 'Estado',
                 cell: (row: Supplier) => (
-                  <Badge tone={row.isActive ? 'success' : 'danger'}>{row.isActive ? 'Activo' : 'Inactivo'}</Badge>
+                  <Badge tone={row.isActive ? 'success' : 'danger'}>
+                    {row.isActive ? 'Activo' : 'Inactivo'}
+                  </Badge>
                 ),
               },
             ]}
@@ -196,7 +203,11 @@ export function SuppliersPage() {
         </>
       )}
 
-      <Modal open={formOpen} title={editing ? 'Editar proveedor' : 'Nuevo proveedor'} onClose={() => setFormOpen(false)}>
+      <Modal
+        open={formOpen}
+        title={editing ? 'Editar proveedor' : 'Nuevo proveedor'}
+        onClose={() => setFormOpen(false)}
+      >
         <SupplierFormFields
           key={editing?.id ?? 'create'}
           initial={editing}

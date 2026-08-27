@@ -16,10 +16,8 @@ export const endpoints = {
   },
   attendance: {
     today: '/api/v1/attendance/employees/today',
-    checkIn: (employeeId: string) =>
-      `/api/v1/attendance/employees/${employeeId}/check-in`,
-    checkOut: (employeeId: string) =>
-      `/api/v1/attendance/employees/${employeeId}/check-out`,
+    checkIn: (employeeId: string) => `/api/v1/attendance/employees/${employeeId}/check-in`,
+    checkOut: (employeeId: string) => `/api/v1/attendance/employees/${employeeId}/check-out`,
     me: '/api/v1/attendance/me',
   },
   orders: {

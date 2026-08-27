@@ -8,13 +8,22 @@ import type { AttendanceTodayItem } from './api'
 import { useAttendanceToday, useCheckIn, useCheckOut } from './hooks'
 import { errorMessage, formatTime, recordDuration } from './format'
 
-const STATE_META: Record<string, { label: string; tone: 'success' | 'warning' | 'neutral'; dotClass: string }> = {
+const STATE_META: Record<
+  string,
+  { label: string; tone: 'success' | 'warning' | 'neutral'; dotClass: string }
+> = {
   OPEN: { label: 'Abierta', tone: 'success', dotClass: 'bg-success' },
   CLOSED: { label: 'Cerrada', tone: 'neutral', dotClass: 'bg-text-muted' },
   NO_RECORD: { label: 'Sin registro', tone: 'warning', dotClass: 'bg-warning' },
 }
 
-function EmployeeCard({ item, onCheckIn, onCheckOut, isPending, pendingAction }: {
+function EmployeeCard({
+  item,
+  onCheckIn,
+  onCheckOut,
+  isPending,
+  pendingAction,
+}: {
   item: AttendanceTodayItem
   onCheckIn: () => void
   onCheckOut: () => void
@@ -22,7 +31,8 @@ function EmployeeCard({ item, onCheckIn, onCheckOut, isPending, pendingAction }:
   pendingAction: 'check-in' | 'check-out' | null
 }) {
   const state = STATE_META[item.currentState] ?? STATE_META.NO_RECORD
-  const latestRecord = item.attendanceRecords.find((r) => !r.checkOutAt) ?? item.attendanceRecords[0]
+  const latestRecord =
+    item.attendanceRecords.find((r) => !r.checkOutAt) ?? item.attendanceRecords[0]
 
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-surface p-4">
@@ -130,7 +140,11 @@ export function AttendanceTodayPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-3">
-            <StatCard label="Personal activo" value={activeCount} trend={`${items.length} en total`} />
+            <StatCard
+              label="Personal activo"
+              value={activeCount}
+              trend={`${items.length} en total`}
+            />
             <StatCard label="Ciclos abiertos" value={openCount} trend="Trabajando ahora" />
             <StatCard label="Ciclos cerrados" value={closedCount} trend="Turno completado" />
           </div>
@@ -139,7 +153,9 @@ export function AttendanceTodayPage() {
         {showSuccess && !mutationError && lastSuccess && (
           <Alert kind="success" title="Asistencia actualizada">
             Registro a las {formatTime(lastSuccess.checkInAt)}
-            {lastSuccess.checkOutAt ? ` · salida a las ${formatTime(lastSuccess.checkOutAt)}.` : ' · ciclo abierto.'}
+            {lastSuccess.checkOutAt
+              ? ` · salida a las ${formatTime(lastSuccess.checkOutAt)}.`
+              : ' · ciclo abierto.'}
           </Alert>
         )}
         {mutationError && (
@@ -173,7 +189,9 @@ export function AttendanceTodayPage() {
                 onCheckIn={() => checkIn.mutate(item.employeeId)}
                 onCheckOut={() => checkOut.mutate(item.employeeId)}
                 isPending={checkIn.isPending || checkOut.isPending}
-                pendingAction={checkIn.isPending ? 'check-in' : checkOut.isPending ? 'check-out' : null}
+                pendingAction={
+                  checkIn.isPending ? 'check-in' : checkOut.isPending ? 'check-out' : null
+                }
               />
             ))}
           </div>

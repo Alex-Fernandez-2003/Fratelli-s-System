@@ -6,7 +6,14 @@ import { AppLayout } from '../components/templates/AppLayout'
 import { useAuth } from '../features/auth/AuthProvider'
 import type { AttendanceRecordDto } from '../features/attendance/api'
 import { useCheckIn, useCheckOut, useMyAttendance } from '../features/attendance/hooks'
-import { errorMessage, formatTime, formatDayShort, recordDuration, elapsedSince, totalDuration } from '../features/attendance/format'
+import {
+  errorMessage,
+  formatTime,
+  formatDayShort,
+  recordDuration,
+  elapsedSince,
+  totalDuration,
+} from '../features/attendance/format'
 import { HttpError } from '../lib/api/http-client'
 
 const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
@@ -52,7 +59,8 @@ function StatusCard({
         <AlertTriangle className="mx-auto mb-3 size-10 text-danger" />
         <h3 className="mb-1 text-lg font-bold">Error de conexión</h3>
         <p className="mb-4 text-sm text-text-muted">
-          No pudimos sincronizar tu estado de asistencia. Por favor, verifica tu conexión e intenta de nuevo.
+          No pudimos sincronizar tu estado de asistencia. Por favor, verifica tu conexión e intenta
+          de nuevo.
         </p>
         {canRegister && (
           <Button variant="secondary" onClick={onCheckIn}>
@@ -74,13 +82,17 @@ function StatusCard({
               <span className="size-2 rounded-full bg-success" /> Jornada Activa
             </p>
           </div>
-          <span className="ml-auto text-xs text-text-muted">{formatDayShort(openRecord.checkInAt)}</span>
+          <span className="ml-auto text-xs text-text-muted">
+            {formatDayShort(openRecord.checkInAt)}
+          </span>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-border bg-surface-elevated p-4 text-center">
             <p className="mb-1 text-[0.7rem] font-bold uppercase text-text-muted">Entrada</p>
-            <p className="text-xl font-bold tabular-nums text-brand-orange">{formatTime(openRecord.checkInAt)}</p>
+            <p className="text-xl font-bold tabular-nums text-brand-orange">
+              {formatTime(openRecord.checkInAt)}
+            </p>
           </div>
           <div className="rounded-xl border border-border bg-surface-elevated p-4 text-center">
             <p className="mb-1 text-[0.7rem] font-bold uppercase text-text-muted">Transcurrido</p>
@@ -138,7 +150,8 @@ function StatusCard({
         </>
       ) : (
         <p className="mb-5 text-sm text-text-muted">
-          No tienes una asistencia abierta para el día de hoy. Tu hora será registrada por un administrador o encargado.
+          No tienes una asistencia abierta para el día de hoy. Tu hora será registrada por un
+          administrador o encargado.
         </p>
       )}
     </div>
@@ -175,7 +188,9 @@ function HistoryItem({ record }: { record: AttendanceRecordDto }) {
 
 export function MyAttendancePage() {
   const { user } = useAuth()
-  const canRegister = user ? ATTENDANCE_MANAGE_ROLES.some((role) => user.roles.includes(role)) : false
+  const canRegister = user
+    ? ATTENDANCE_MANAGE_ROLES.some((role) => user.roles.includes(role))
+    : false
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
@@ -259,7 +274,10 @@ export function MyAttendancePage() {
           {/* Filters */}
           <form
             className="mb-4 flex flex-wrap items-end gap-3"
-            onSubmit={(e) => { e.preventDefault(); setPage(1) }}
+            onSubmit={(e) => {
+              e.preventDefault()
+              setPage(1)
+            }}
           >
             <div>
               <Label htmlFor="from">Desde</Label>
@@ -269,9 +287,20 @@ export function MyAttendancePage() {
               <Label htmlFor="to">Hasta</Label>
               <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             </div>
-            <Button type="submit" variant="secondary" size="sm">Aplicar</Button>
+            <Button type="submit" variant="secondary" size="sm">
+              Aplicar
+            </Button>
             {hasFilters && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => { setFrom(''); setTo(''); setPage(1) }}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFrom('')
+                  setTo('')
+                  setPage(1)
+                }}
+              >
                 Limpiar
               </Button>
             )}

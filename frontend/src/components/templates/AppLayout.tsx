@@ -70,14 +70,15 @@ export function AppLayout({
         )}
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
 
       {/* Mobile bottom nav */}
       {bottomNavItems && (
-        <nav className="flex items-center justify-around border-t border-border bg-surface py-2 lg:hidden" aria-label="Navegación móvil">
+        <nav
+          className="flex items-center justify-around border-t border-border bg-surface py-2 lg:hidden"
+          aria-label="Navegación móvil"
+        >
           {bottomNavItems.map((item) => (
             <a
               key={item.to}

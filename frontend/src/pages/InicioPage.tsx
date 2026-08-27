@@ -10,8 +10,6 @@ const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 export function InicioPage() {
   const { user, logout, pending, error, hasAnyRole } = useAuth()
 
-
-
   const canManageAttendance = hasAnyRole(ATTENDANCE_MANAGE_ROLES)
 
   return (
@@ -25,7 +23,10 @@ export function InicioPage() {
         <h1 className="text-2xl font-bold">Inicio</h1>
 
         {error && (
-          <p className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger" role="alert">
+          <p
+            className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger"
+            role="alert"
+          >
             {error}
           </p>
         )}
@@ -40,7 +41,13 @@ export function InicioPage() {
               <p className="text-xs text-text-muted">{user?.roles.join(', ')}</p>
             </div>
           </div>
-          <Button variant="secondary" fullWidth leftIcon={<LogOut size={16} />} loading={pending} onClick={() => void logout()}>
+          <Button
+            variant="secondary"
+            fullWidth
+            leftIcon={<LogOut size={16} />}
+            loading={pending}
+            onClick={() => void logout()}
+          >
             Cerrar sesión
           </Button>
         </div>
