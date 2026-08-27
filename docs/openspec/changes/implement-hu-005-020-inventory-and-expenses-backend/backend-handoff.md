@@ -2,20 +2,20 @@
 
 ## Delivery state
 
-| Story | Backend | Frontend | End-to-end |
-|---|---|---|---|
-| HU-005 Inventory | COMPLETE | PENDING | PENDING |
-| HU-020 Expenses | COMPLETE | PENDING | PENDING |
+| Story            | Backend  | Frontend | End-to-end                            |
+| ---------------- | -------- | -------- | ------------------------------------- |
+| HU-005 Inventory | COMPLETE | COMPLETE | PENDING MANUAL BROWSER/E2E VALIDATION |
+| HU-020 Expenses  | COMPLETE | COMPLETE | PENDING MANUAL BROWSER/E2E VALIDATION |
 
 ## Endpoint contract
 
-| Capability | Method | Route | Roles | Request | Response | Application handler/service | Notes |
-|---|---|---|---|---|---|---|---|
-| Inventory balances | GET | `/api/v1/inventory/balances` | ADMINISTRADOR, ENCARGADO, MESERO, COCINA, CONTADORA | page, pageSize, search, productType, active | paged balances | `IInventoryService.BalancesAsync` | Products without rows return `currentQuantity: 0`; exposes `minStock` and derived `isLowStock`. |
-| Inventory history | GET | `/api/v1/inventory/movements` | ADMINISTRADOR, ENCARGADO | page, pageSize, productId, movementType, from, to | paged movements | `IInventoryService.MovementsAsync` | Newest first; inactive Products are retained. |
-| Manual inventory movement | POST | `/api/v1/inventory/movements` | ADMINISTRADOR, ENCARGADO | productId, type, quantity, reason | movement, 201 | `IInventoryService.RecordManualAsync` | Only `ENTRY` and `WRITE_OFF`; quantity is positive and the server derives the signed delta and MANUAL reference. |
-| Expense categories | GET | `/api/v1/expense-categories` | ADMINISTRADOR, ENCARGADO | — | active categories | `IExpenseService.CategoriesAsync` | Name ascending; no CRUD. |
-| Register expense | POST | `/api/v1/expenses` | ADMINISTRADOR, ENCARGADO | expenseCategoryId?, amount, cashSource, description, expenseDate | expense, 201 | `IExpenseService.CreateAsync` | Category optional; actor and timestamp are server controlled. |
+| Capability                | Method | Route                         | Roles                                               | Request                                                          | Response          | Application handler/service           | Notes                                                                                                            |
+| ------------------------- | ------ | ----------------------------- | --------------------------------------------------- | ---------------------------------------------------------------- | ----------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Inventory balances        | GET    | `/api/v1/inventory/balances`  | ADMINISTRADOR, ENCARGADO, MESERO, COCINA, CONTADORA | page, pageSize, search, productType, active                      | paged balances    | `IInventoryService.BalancesAsync`     | Products without rows return `currentQuantity: 0`; exposes `minStock` and derived `isLowStock`.                  |
+| Inventory history         | GET    | `/api/v1/inventory/movements` | ADMINISTRADOR, ENCARGADO                            | page, pageSize, productId, movementType, from, to                | paged movements   | `IInventoryService.MovementsAsync`    | Newest first; inactive Products are retained.                                                                    |
+| Manual inventory movement | POST   | `/api/v1/inventory/movements` | ADMINISTRADOR, ENCARGADO                            | productId, type, quantity, reason                                | movement, 201     | `IInventoryService.RecordManualAsync` | Only `ENTRY` and `WRITE_OFF`; quantity is positive and the server derives the signed delta and MANUAL reference. |
+| Expense categories        | GET    | `/api/v1/expense-categories`  | ADMINISTRADOR, ENCARGADO                            | —                                                                | active categories | `IExpenseService.CategoriesAsync`     | Name ascending; no CRUD.                                                                                         |
+| Register expense          | POST   | `/api/v1/expenses`            | ADMINISTRADOR, ENCARGADO                            | expenseCategoryId?, amount, cashSource, description, expenseDate | expense, 201      | `IExpenseService.CreateAsync`         | Category optional; actor and timestamp are server controlled.                                                    |
 
 ## Inventory notes
 
@@ -35,4 +35,4 @@ It creates `inventory_balances`, `inventory_movements`, `expense_categories`, an
 
 ## Frontend follow-up
 
-Frontend remains unchanged. Consume `currentQuantity`, `minStock`, and `isLowStock` from the balances response; do not assume a dedicated low-stock endpoint.
+Frontend is complete and consumes `currentQuantity`, `minStock`, and `isLowStock` from the balances response; no dedicated low-stock endpoint is assumed. The frontend uses REST polling (no SignalR), keeps MinStock configuration deferred to HU-006-equivalent alert configuration, and keeps Expense history deferred to HU-021. See the [frontend handoff](../implement-hu-005-020-inventory-and-expenses-frontend/frontend-handoff.md). Manual browser/E2E validation remains pending; this status does not claim human evidence.

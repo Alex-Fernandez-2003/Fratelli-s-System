@@ -30,9 +30,17 @@
 - **OMIT:** fake SKU, stock aggregate cards, stock/negative local filters, MinStock mutation, inventory export, expense history/search/metrics, Shift, cash balance, and cloud-sync claims.
 - **DEFER:** `Configuración de alertas` owns MinStock configuration (HU-006-equivalent); expense history is HU-021. Global desktop sidebar, mobile menu, cross-module route reconciliation, and global documentation reconciliation remain the final Sprint 1 integration change.
 
-## External/manual validation
+## Validation status
 
-The Product module is available in the local baseline. Human validation should verify desktop, 403px, and 360px layouts; role guards; live Product data; ENTRY/WRITE_OFF including negative-stock warnings; polling/manual refresh; and Expense category error, success/reset, and CashSource states. No manual evidence is claimed here.
+| Area                    | Status                                                                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Backend contract        | COMPLETE                                                                                                                                                     |
+| Frontend implementation | COMPLETE                                                                                                                                                     |
+| Automated validation    | COMPLETE: `api:generate`, typecheck, lint, 45/45 Vitest tests, and build passed.                                                                             |
+| Manual browser/E2E      | PENDING. No human visual evidence or capture is claimed.                                                                                                     |
+| `format:check`          | PREEXISTING_BASELINE_DEBT in `frontend/src/features/products/api.ts`, `frontend/src/features/products/pages.tsx`, and `frontend/src/lib/api/http-client.ts`. |
+
+The Product module is available in the local baseline. Human validation should verify desktop, 403px, and 360px layouts; role guards; live Product data; ENTRY/WRITE_OFF including negative-stock warnings; polling/manual refresh; and Expense category error, success/reset, and CashSource states.
 
 ## Backend boundary
 

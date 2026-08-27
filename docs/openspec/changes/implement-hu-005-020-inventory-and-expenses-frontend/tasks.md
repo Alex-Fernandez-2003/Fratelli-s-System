@@ -356,7 +356,7 @@ No crear un segundo change para Expenses.
 
 - Tasks 1–3: complete. Local branch/HEAD and the five endpoints were audited; API types were regenerated from the running local OpenAPI endpoint.
 - Tasks 4–14: complete for the automatable frontend scope. Inventory and Expenses have separated adapters, keys, routes, pages, responsive presentations, REST polling, forms, and bounded scope.
-- Tasks 15–16: complete. Existing frontend suite passes (40 tests), as do `api:generate`, format check, typecheck, lint, and build.
-- Tasks 17–20: complete for documentation and delivery preparation. Manual browser/E2E validation remains human-owned and is not represented as executed evidence.
+- Tasks 15–16: complete. The frontend suite passes (45/45 tests); `api:generate`, typecheck, lint, and build pass. `format:check` remains PREEXISTING_BASELINE_DEBT in `frontend/src/features/products/api.ts`, `frontend/src/features/products/pages.tsx`, and `frontend/src/lib/api/http-client.ts`.
+- Tasks 17–20: complete for documentation and delivery preparation. Manual browser/E2E validation remains PENDING and human-owned; no capture or executed E2E evidence is represented as complete.
 
 Deferred only: final Sprint 1 navigation/shell reconciliation, future alert configuration (HU-006-equivalent), and Expense history (HU-021).
