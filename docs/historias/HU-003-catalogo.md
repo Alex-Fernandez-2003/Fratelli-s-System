@@ -1,4 +1,3 @@
-
 # HU-003 — Gestionar productos, ingredientes y platos
 
 ## Estado de implementación
@@ -7,17 +6,17 @@
 
 ## Contrato implementado
 
-| Ruta                          | Acceso                                              | Resultado                          |
-| ------------------------------ | ---------------------------------------------------- | ----------------------------------- |
-| `GET /api/v1/products`         | Bearer — `CatalogRead`                               | 200, listado paginado y filtrado    |
-| `GET /api/v1/products/{id}`    | Bearer — `CatalogRead`                               | 200 con el producto, o 404          |
-| `POST /api/v1/products`        | Bearer — `CatalogWrite`                              | 201 y producto creado               |
-| `PUT /api/v1/products/{id}`    | Bearer — `CatalogWrite`                              | 200 con el producto actualizado     |
-| `DELETE /api/v1/products/{id}` | Bearer — `CatalogWrite`                              | 204, baja lógica (no elimina histórico) |
-| `GET /api/v1/categories`       | Bearer — `CatalogRead`                               | 200, listado paginado               |
-| `POST/PUT /api/v1/categories`  | Bearer — `CatalogWrite`                              | 201/200                             |
-| `GET /api/v1/units`            | Bearer — `CatalogRead`                               | 200, listado paginado               |
-| `POST/PUT /api/v1/units`       | Bearer — `CatalogWrite`                              | 201/200                             |
+| Ruta                           | Acceso                  | Resultado                               |
+| ------------------------------ | ----------------------- | --------------------------------------- |
+| `GET /api/v1/products`         | Bearer — `CatalogRead`  | 200, listado paginado y filtrado        |
+| `GET /api/v1/products/{id}`    | Bearer — `CatalogRead`  | 200 con el producto, o 404              |
+| `POST /api/v1/products`        | Bearer — `CatalogWrite` | 201 y producto creado                   |
+| `PUT /api/v1/products/{id}`    | Bearer — `CatalogWrite` | 200 con el producto actualizado         |
+| `DELETE /api/v1/products/{id}` | Bearer — `CatalogWrite` | 204, baja lógica (no elimina histórico) |
+| `GET /api/v1/categories`       | Bearer — `CatalogRead`  | 200, listado paginado                   |
+| `POST/PUT /api/v1/categories`  | Bearer — `CatalogWrite` | 201/200                                 |
+| `GET /api/v1/units`            | Bearer — `CatalogRead`  | 200, listado paginado                   |
+| `POST/PUT /api/v1/units`       | Bearer — `CatalogWrite` | 201/200                                 |
 
 `CatalogRead` autoriza a `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`. `CatalogWrite` autoriza únicamente a `ADMINISTRADOR`, `ENCARGADO`.
 
@@ -76,7 +75,7 @@ Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/v
 
 ### Captura del formulario de creación
 
-![Captura del formulario](../capturas/HU-003-formulario.png)
+![Captura del formulario](../capturas/HU-003-formulario.png.png)
 
 ---
 
