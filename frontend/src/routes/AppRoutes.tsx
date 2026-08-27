@@ -4,11 +4,13 @@ import { useAuth } from '../features/auth/AuthProvider'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
+import { SuppliersPage } from '../pages/proveedores/SuppliersPage'
 import { UiKitPage } from '../pages/UiKitPage'
 import { AuthenticatedLayout } from '../features/navigation'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { OrdersPage, NewOrderPage, OrderDetailPage } from '../features/orders/pages'
 import { KitchenPage } from '../features/kitchen/pages'
+import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 
 function Bootstrap() {
   return (
@@ -21,6 +23,7 @@ function Bootstrap() {
     </main>
   )
 }
+
 export function RequireAuth() {
   const { status } = useAuth()
   const location = useLocation()
@@ -31,11 +34,13 @@ export function RequireAuth() {
     <Navigate to="/login" replace state={{ from: location }} />
   )
 }
+
 export function RequireAnyRole({ roles }: { roles: string[] }) {
   const { status, hasAnyRole } = useAuth()
   if (status === 'checking') return <Bootstrap />
   return hasAnyRole(roles) ? <Outlet /> : <Navigate to="/403" replace />
 }
+
 function LoginRoute() {
   const { status } = useAuth()
   return status === 'checking' ? (
@@ -46,11 +51,15 @@ function LoginRoute() {
     <LoginPage />
   )
 }
+
 export function AppRoutes() {
   return (
     <Routes>
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
+      
       <Route path="/login" element={<LoginRoute />} />
+      
+      {/* Rutas que requieren autenticación */}
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<InicioPage />} />
@@ -69,6 +78,14 @@ export function AppRoutes() {
           </Route>
         </Route>
       </Route>
+      
+      {/* Ruta de proveedores - TU CÓDIGO */}
+      <Route element={<RequireAuth />}>
+        <Route element={<RequireAnyRole roles={[...SUPPLIER_READ_ROLES]} />}>
+          <Route path="/proveedores" element={<SuppliersPage />} />
+        </Route>
+      </Route>
+      
       <Route path="/403" element={<ForbiddenPage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>

@@ -86,4 +86,6 @@ export const httpClient = {
       headers: { 'Content-Type': 'application/json', ...options.headers },
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
+  delete: <T>(path: string, options: Options = {}) =>
+    request<T>(path, { ...options, method: 'DELETE' }),
 }

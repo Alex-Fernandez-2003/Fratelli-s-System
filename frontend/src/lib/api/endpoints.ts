@@ -56,4 +56,9 @@ export const endpoints = {
     activate: (id: string) => `/api/v1/users/${id}/activate`,
     deactivate: (id: string) => `/api/v1/users/${id}/deactivate`,
   },
+  suppliers: {
+    list: '/api/v1/suppliers',
+    create: '/api/v1/suppliers',
+    byId: (id: string) => `/api/v1/suppliers/${id}`,
+  },
 } as const

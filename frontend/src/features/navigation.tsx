@@ -1,12 +1,13 @@
-import { ChefHat, ClipboardList, Home, UsersRound } from 'lucide-react'
+import { ChefHat, ClipboardList, Home, UsersRound, Package } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AppShell } from '@/components/templates'
 import { Button } from '@/components/atoms'
 import { useAuth } from '@/features/auth/AuthProvider'
 import type { ReactNode } from 'react'
+import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 
 export type AuthNavigationItem = {
-  path: '/inicio' | '/usuarios' | '/pedidos' | '/cocina'
+  path: '/inicio' | '/usuarios' | '/pedidos' | '/cocina' | '/proveedores'
   label: string
   icon: ReactNode
   allowedRoles?: string[]
@@ -31,6 +32,12 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     label: 'Usuarios y roles',
     icon: <UsersRound aria-hidden="true" size={18} />,
     allowedRoles: ['ADMINISTRADOR'],
+  },
+  {
+    path: '/proveedores',
+    label: 'Proveedores',
+    icon: <Package aria-hidden="true" size={18} />,
+    allowedRoles: [...SUPPLIER_READ_ROLES],
   },
 ]
 
