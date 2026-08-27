@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { LogOut, LogIn, RefreshCw } from 'lucide-react'
 import { Badge, Button, Skeleton } from '../../components/atoms'
 import { Alert, EmptyState, StatCard } from '../../components/molecules'
+import { BUSINESS_LOCATION_LABEL } from '../../lib/business-time'
 import { HttpError } from '../../lib/api/http-client'
 import type { AttendanceTodayItem } from './api'
 import { useAttendanceToday, useCheckIn, useCheckOut } from './hooks'
@@ -110,7 +111,7 @@ export function AttendanceTodayPage() {
           <h1 className="text-2xl font-bold">Asistencia del día</h1>
           <p className="text-sm text-text-muted">
             {today.data
-              ? `Fecha de negocio ${today.data.businessDate} · ${today.data.timeZone}`
+              ? `Fecha de negocio ${today.data.businessDate} · ${BUSINESS_LOCATION_LABEL}`
               : 'Marca la entrada y salida del personal.'}
           </p>
         </div>

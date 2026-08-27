@@ -1,11 +1,10 @@
+import { BUSINESS_TIME_ZONE } from '../../lib/business-time'
 import { HttpError } from '../../lib/api/http-client'
 import type { AttendanceRecordDto } from './api'
 
-const BOLIVIA_TZ = 'America/La_Paz'
-
 export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-BO', {
-    timeZone: BOLIVIA_TZ,
+    timeZone: BUSINESS_TIME_ZONE,
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
@@ -14,7 +13,7 @@ export function formatTime(iso: string): string {
 
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString('es-BO', {
-    timeZone: BOLIVIA_TZ,
+    timeZone: BUSINESS_TIME_ZONE,
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -25,7 +24,7 @@ export function formatDateTime(iso: string): string {
 
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-BO', {
-    timeZone: BOLIVIA_TZ,
+    timeZone: BUSINESS_TIME_ZONE,
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -35,7 +34,7 @@ export function formatDate(iso: string): string {
 
 export function formatDayShort(iso: string): string {
   return new Date(iso).toLocaleDateString('es-BO', {
-    timeZone: BOLIVIA_TZ,
+    timeZone: BUSINESS_TIME_ZONE,
     weekday: 'short',
     day: 'numeric',
     month: 'short',

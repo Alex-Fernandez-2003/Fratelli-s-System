@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Button } from '@/components/atoms'
+import { HeaderClock } from '@/components/templates/HeaderClock'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
@@ -229,7 +230,10 @@ export function AuthenticatedLayout() {
           </span>
           <strong>Fratelli</strong>
         </div>
-        <Profile compact />
+        <div className="flex items-center gap-3">
+          <HeaderClock />
+          <Profile compact />
+        </div>
       </header>
 
       {mobileOpen && (
@@ -270,6 +274,7 @@ export function AuthenticatedLayout() {
         <header className="hidden min-h-16 items-center justify-between border-b border-border bg-surface px-8 lg:flex">
           <span className="text-sm font-semibold text-text-muted">{name}</span>
           <div className="flex items-center gap-4">
+            <HeaderClock />
             <Profile />
             <Button
               type="button"
