@@ -20,7 +20,7 @@ public static class RoleNames
 }
 public static class PolicyNames
 {
-    public const string CatalogRead = nameof(CatalogRead), CatalogWrite = nameof(CatalogWrite), CatalogDeactivate = nameof(CatalogDeactivate), SupplierRead = nameof(SupplierRead), SupplierWrite = nameof(SupplierWrite), SupplierDeactivate = nameof(SupplierDeactivate), AttendanceManage = nameof(AttendanceManage), AttendanceSelf = nameof(AttendanceSelf), AttendanceHubAccess = nameof(AttendanceHubAccess), UsersManage = nameof(UsersManage), OrdersAccess = nameof(OrdersAccess), KitchenAccess = nameof(KitchenAccess), KitchenManage = nameof(KitchenManage), KitchenHubAccess = nameof(KitchenHubAccess);
+    public const string CatalogRead = nameof(CatalogRead), CatalogWrite = nameof(CatalogWrite), CatalogDeactivate = nameof(CatalogDeactivate), SupplierRead = nameof(SupplierRead), SupplierWrite = nameof(SupplierWrite), SupplierDeactivate = nameof(SupplierDeactivate), AttendanceManage = nameof(AttendanceManage), AttendanceSelf = nameof(AttendanceSelf), AttendanceHubAccess = nameof(AttendanceHubAccess), UsersManage = nameof(UsersManage), OrdersAccess = nameof(OrdersAccess), KitchenAccess = nameof(KitchenAccess), KitchenManage = nameof(KitchenManage), KitchenHubAccess = nameof(KitchenHubAccess), InventoryRead = nameof(InventoryRead), InventoryManage = nameof(InventoryManage), InventoryHistory = nameof(InventoryHistory), ExpenseWrite = nameof(ExpenseWrite), ExpenseCategoryRead = nameof(ExpenseCategoryRead);
 }
 
 public static class SecurityRevision

@@ -13,7 +13,11 @@ using RestaurantSystem.Application.Suppliers;
 using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Users;
 using RestaurantSystem.Application.Orders;
+using RestaurantSystem.Application.Inventory;
+using RestaurantSystem.Application.Expenses;
 using RestaurantSystem.Domain.Catalog;
+using RestaurantSystem.Domain.Inventory;
+using RestaurantSystem.Domain.Expenses;
 using RestaurantSystem.Domain.Orders;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Identity;
@@ -97,6 +101,11 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(PolicyNames.KitchenAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
     options.AddPolicy(PolicyNames.KitchenManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen));
     options.AddPolicy(PolicyNames.KitchenHubAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
+    options.AddPolicy(PolicyNames.InventoryRead, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen, RoleNames.Accountant));
+    options.AddPolicy(PolicyNames.InventoryManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy(PolicyNames.InventoryHistory, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy(PolicyNames.ExpenseWrite, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy(PolicyNames.ExpenseCategoryRead, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
 });
 var app = builder.Build(); app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -180,6 +189,15 @@ products.MapDelete("/{id:guid}",async(Guid id,ICatalogService s,CancellationToke
     suppliers.MapPut("/{id:guid}", async (Guid id, SupplierRequest r, ClaimsPrincipal p, ISupplierService s, CancellationToken ct) => { var x = await s.UpdateAsync(id, r, p.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return x.Error is null ? Results.Ok(x.Value) : Error(x.Error); }).RequireAuthorization(PolicyNames.SupplierWrite).Produces<SupplierDto>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
     suppliers.MapDelete("/{id:guid}", async (Guid id, ISupplierService s, CancellationToken ct) => (await s.DeleteAsync(id, ct)) is { } error ? Error(error) : Results.NoContent()).RequireAuthorization(PolicyNames.SupplierWrite).Produces(204).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404);
 static IResult AttendanceError(string error) => error == "Not found" ? Results.NotFound() : error.StartsWith("Invalid") ? Results.ValidationProblem(new Dictionary<string, string[]> { ["attendance"] = [error] }) : Results.Problem(statusCode: StatusCodes.Status409Conflict, title: error);
+static IResult InventoryError(string error) => error == "NOT_FOUND" ? Results.NotFound() : error is "INVALID_REQUEST" or "MANUAL_MOVEMENT_TYPE_NOT_ALLOWED" ? Results.ValidationProblem(new Dictionary<string, string[]> { ["inventory"] = [error] }) : Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Inventory operation conflict", extensions: new Dictionary<string, object?> { ["code"] = error });
+static IResult ExpenseError(string error) => error == "NOT_FOUND" ? Results.NotFound() : error == "INVALID_REQUEST" ? Results.ValidationProblem(new Dictionary<string, string[]> { ["expenses"] = [error] }) : Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Expense operation conflict", extensions: new Dictionary<string, object?> { ["code"] = error });
+var inventory = catalog.MapGroup("/inventory");
+inventory.MapGet("/balances", async (IInventoryService s, int page = 1, int pageSize = 20, string? search = null, ProductType? productType = null, bool? active = null, CancellationToken ct = default) => !Paging(page, pageSize) ? Results.ValidationProblem(new Dictionary<string, string[]> { ["paging"] = ["page must be 1 and pageSize must be 1-100"] }) : Results.Ok(await s.BalancesAsync(page, pageSize, search, productType, active, ct))).RequireAuthorization(PolicyNames.InventoryRead).Produces<PagedResponse<InventoryBalanceDto>>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403);
+inventory.MapGet("/movements", async (IInventoryService s, int page = 1, int pageSize = 20, Guid? productId = null, InventoryMovementType? movementType = null, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default) => !Paging(page, pageSize) || from > to ? Results.ValidationProblem(new Dictionary<string, string[]> { ["inventory"] = ["Invalid paging or date range"] }) : Results.Ok(await s.MovementsAsync(page, pageSize, productId, movementType, from, to, ct))).RequireAuthorization(PolicyNames.InventoryHistory).Produces<PagedResponse<InventoryMovementDto>>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403);
+inventory.MapPost("/movements", async (RecordManualInventoryMovementRequest r, ClaimsPrincipal p, IInventoryService s, CancellationToken ct) => { var x = await s.RecordManualAsync(r, p.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return x.Error is null ? Results.Created($"/api/v1/inventory/movements/{x.Value!.Id}", x.Value) : InventoryError(x.Error); }).RequireAuthorization(PolicyNames.InventoryManage).Produces<InventoryMovementDto>(201).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
+var expenses = catalog.MapGroup("/expenses");
+catalog.MapGet("/expense-categories", async (IExpenseService s, CancellationToken ct) => Results.Ok(await s.CategoriesAsync(ct))).RequireAuthorization(PolicyNames.ExpenseCategoryRead).Produces<IReadOnlyList<ExpenseCategoryDto>>(200).ProducesProblem(401).ProducesProblem(403);
+expenses.MapPost("", async (CreateExpenseRequest r, ClaimsPrincipal p, IExpenseService s, CancellationToken ct) => { var x = await s.CreateAsync(r, p.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return x.Error is null ? Results.Created($"/api/v1/expenses/{x.Value!.Id}", x.Value) : ExpenseError(x.Error); }).RequireAuthorization(PolicyNames.ExpenseWrite).Produces<ExpenseDto>(201).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 var attendance = catalog.MapGroup("/attendance");
 attendance.MapPost("/employees/{employeeId:guid}/check-in", async (Guid employeeId, ClaimsPrincipal principal, IAttendanceService service, CancellationToken ct) => { var result = await service.CheckInAsync(employeeId, principal.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return result.Error is null ? Results.Created($"/api/v1/attendance/employees/{employeeId}", result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceRecordDto>(201).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 attendance.MapPost("/employees/{employeeId:guid}/check-out", async (Guid employeeId, ClaimsPrincipal principal, IAttendanceService service, CancellationToken ct) => { var result = await service.CheckOutAsync(employeeId, principal.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceRecordDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
