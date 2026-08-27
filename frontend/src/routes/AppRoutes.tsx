@@ -1,14 +1,18 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
+import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
+import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
 import { AuthenticatedLayout } from '../features/navigation'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { OrdersPage, NewOrderPage, OrderDetailPage } from '../features/orders/pages'
 import { KitchenPage } from '../features/kitchen/pages'
+
+const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
 function Bootstrap() {
   return (
@@ -54,6 +58,10 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<InicioPage />} />
+          <Route path="/mi-asistencia" element={<MyAttendancePage />} />
+          <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
+            <Route path="/asistencia" element={<AttendanceTodayPage />} />
+          </Route>
           <Route element={<RequireAnyRole roles={['MESERO', 'ENCARGADO', 'ADMINISTRADOR']} />}>
             <Route path="/pedidos" element={<OrdersPage />} />
             <Route path="/pedidos/nuevo" element={<NewOrderPage />} />
