@@ -6,6 +6,8 @@ using RestaurantSystem.Domain.Identity;
 using RestaurantSystem.Domain.Suppliers;
 using RestaurantSystem.Domain.Attendance;
 using RestaurantSystem.Domain.Orders;
+using RestaurantSystem.Domain.Inventory;
+using RestaurantSystem.Domain.Expenses;
 using RestaurantSystem.Infrastructure.Catalog;
 
 namespace RestaurantSystem.Infrastructure;
@@ -23,6 +25,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<KitchenCommand> KitchenCommands => Set<KitchenCommand>();
     public DbSet<KitchenCommandItem> KitchenCommandItems => Set<KitchenCommandItem>();
+    public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
+    public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
+    public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+    public DbSet<Expense> Expenses => Set<Expense>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -99,7 +105,27 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             entity.ToTable("Suppliers", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Name).IsRequired(); entity.Property(x => x.PhoneNumber).IsRequired();
             entity.Property(x => x.CreatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.UpdatedAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).IsRequired(); entity.Property(x => x.UpdatedByUserId).IsRequired();
         });
-        builder.Entity<AttendanceRecord>(entity =>
+            builder.Entity<InventoryBalance>(entity =>
+            {
+                entity.ToTable("inventory_balances", "public"); entity.HasKey(x => x.ProductId); entity.Property(x => x.ProductId).HasColumnName("product_id"); entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(14, 4); entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone");
+                entity.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<InventoryMovement>(entity =>
+            {
+                entity.ToTable("inventory_movements", "public", table => { table.HasCheckConstraint("CK_inventory_movements_quantity_delta", "quantity_delta <> 0"); table.HasCheckConstraint("CK_inventory_movements_type", "movement_type IN ('ENTRY','SALE','PRODUCTION_CONSUMPTION','PRODUCTION_OUTPUT','PURCHASE_RECEIPT','WRITE_OFF','ADJUSTMENT')"); }); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.ProductId).HasColumnName("product_id"); entity.Property(x => x.MovementType).HasColumnName("movement_type").HasConversion<string>(); entity.Property(x => x.QuantityDelta).HasColumnName("quantity_delta").HasPrecision(14, 4); entity.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(500); entity.Property(x => x.ReferenceType).HasColumnName("reference_type").HasConversion<string>(); entity.Property(x => x.ReferenceId).HasColumnName("reference_id"); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id").IsRequired();
+                entity.HasIndex(x => new { x.ProductId, x.CreatedAt }); entity.HasIndex(x => x.CreatedAt);
+                entity.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict); entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.CreatedByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<ExpenseCategory>(entity =>
+            {
+                entity.ToTable("expense_categories", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(100).IsRequired(); entity.Property(x => x.IsActive).HasColumnName("is_active"); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.HasIndex(x => x.Name);
+            });
+            builder.Entity<Expense>(entity =>
+            {
+                entity.ToTable("expenses", "public", table => { table.HasCheckConstraint("CK_expenses_amount", "amount > 0"); table.HasCheckConstraint("CK_expenses_cash_source", "cash_source IN ('PETTY_CASH','CASH_DRAWER')"); }); entity.HasKey(x => x.Id); entity.Property(x => x.Id).HasColumnName("id"); entity.Property(x => x.ExpenseCategoryId).HasColumnName("expense_category_id"); entity.Property(x => x.Amount).HasColumnName("amount").HasPrecision(12, 2); entity.Property(x => x.CashSource).HasColumnName("cash_source").HasConversion<string>(); entity.Property(x => x.Description).HasColumnName("description").HasMaxLength(500).IsRequired(); entity.Property(x => x.ExpenseDate).HasColumnName("expense_date"); entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone"); entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id").IsRequired();
+                entity.HasIndex(x => x.ExpenseCategoryId); entity.HasOne<ExpenseCategory>().WithMany().HasForeignKey(x => x.ExpenseCategoryId).OnDelete(DeleteBehavior.Restrict); entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.CreatedByUserId).HasPrincipalKey(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<AttendanceRecord>(entity =>
         {
             entity.ToTable("AttendanceRecords", "public"); entity.HasKey(x => x.Id); entity.Property(x => x.CheckInByUserId).IsRequired();
             entity.Property(x => x.CheckInAt).HasColumnType("timestamp with time zone"); entity.Property(x => x.CheckOutAt).HasColumnType("timestamp with time zone");
