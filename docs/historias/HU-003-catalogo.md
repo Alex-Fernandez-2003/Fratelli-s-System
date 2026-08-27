@@ -1,37 +1,93 @@
-# HU-003 — Catálogo
+
+# HU-003 — Gestionar productos, ingredientes y platos
 
 ## Estado de implementación
 
-**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
+**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** PENDING. **Validación manual:** PENDING.
 
-La UI separa lectura y gestión: `ADMINISTRADOR` y `ENCARGADO` gestionan; `MESERO` y `COCINA` solo consultan. `CONTADORA` y `EMPLEADO` no acceden a Products.
+## Contrato implementado
 
-## Rutas y autorización
+| Ruta                          | Acceso                                              | Resultado                          |
+| ------------------------------ | ---------------------------------------------------- | ----------------------------------- |
+| `GET /api/v1/products`         | Bearer — `CatalogRead`                               | 200, listado paginado y filtrado    |
+| `GET /api/v1/products/{id}`    | Bearer — `CatalogRead`                               | 200 con el producto, o 404          |
+| `POST /api/v1/products`        | Bearer — `CatalogWrite`                              | 201 y producto creado               |
+| `PUT /api/v1/products/{id}`    | Bearer — `CatalogWrite`                              | 200 con el producto actualizado     |
+| `DELETE /api/v1/products/{id}` | Bearer — `CatalogWrite`                              | 204, baja lógica (no elimina histórico) |
+| `GET /api/v1/categories`       | Bearer — `CatalogRead`                               | 200, listado paginado               |
+| `POST/PUT /api/v1/categories`  | Bearer — `CatalogWrite`                              | 201/200                             |
+| `GET /api/v1/units`            | Bearer — `CatalogRead`                               | 200, listado paginado               |
+| `POST/PUT /api/v1/units`       | Bearer — `CatalogWrite`                              | 201/200                             |
 
-Todos los endpoints requieren Bearer. Lectura (`ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`): `GET /api/v1/categories`, `GET /api/v1/categories/{id}`, `GET /api/v1/units`, `GET /api/v1/units/{id}`, `GET /api/v1/products` y `GET /api/v1/products/{id}`. Escritura (`ADMINISTRADOR`, `ENCARGADO`): `POST`, `PUT` y `DELETE` sobre cada uno de esos tres recursos.
+`CatalogRead` autoriza a `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`. `CatalogWrite` autoriza únicamente a `ADMINISTRADOR`, `ENCARGADO`.
 
-Las listas retornan `{ "items": [], "page": 1, "pageSize": 20, "totalCount": 0, "totalPages": 0 }`; `page` inicia en 1 y `pageSize` admite 1–100.
+`GET /products` acepta `page`, `pageSize` (1–100), `search`, `productType`, `categoryId`, `categoryScope`, `preparationArea`, `isActive`. Las listas retornan `{ "items": [], "page", "pageSize", "totalCount", "totalPages" }`.
 
-## Categorías y unidades
-
-Category es `{id,name,scope,isActive}`; `scope` es `MENU`, `INVENTORY` o `PREPARATION`. `GET /categories` acepta `page`, `pageSize`, `scope` e `includeInactive`. `POST`/`PUT` reciben `{ "name": "Especiales", "scope": "MENU" }`. El nombre es único sin mayúsculas/minúsculas dentro del scope y DELETE es baja lógica; un duplicado o una categoría referenciada devuelve 409.
-
-Unit es `{id,code,name,symbol,dimension,factor_to_base,is_base,is_active}`. `GET /units` acepta `page`, `pageSize` e `includeInactive`; `POST`/`PUT` reciben, por ejemplo:
+Cuerpo de `ProductRequest`:
 
 ```json
-{"code":"taza","name":"Taza","symbol":"tz","dimension":"VOLUME","factor_to_base":250,"is_base":false}
+{
+  "name": "Hamburguesa de Pollo Crispy",
+  "productType": "SALE_ITEM",
+  "categoryId": "uuid|null",
+  "preparationArea": "KITCHEN|BAR|null",
+  "inventoryUnitId": "uuid",
+  "salePrice": 45.0,
+  "minStock": null,
+  "isSellable": true
+}
 ```
 
-`dimension` es `MASS`, `VOLUME` o `COUNT`; el factor es positivo. Las unidades canónicas `g`, `kg`, `ml`, `l` y `unit` no pueden cambiar sus campos estructurales ni desactivarse (409). Una unidad usada por un producto tampoco se desactiva.
+`productType` es `INGREDIENT | PREPARATION | SALE_ITEM | SUPPLY`. `ProductDto` agrega `id`, `isActive`, `createdAt`, `createdByUserId`, `updatedAt`, `updatedByUserId`, `categoryScope` (derivado de la categoría). El contrato **no incluye** descripción ni SKU.
 
-## Productos
+`Category` es `{ id, name, scope, isActive }`, con `scope` en `MENU | INVENTORY | PREPARATION`. `Unit` es `{ id, code, name, symbol, dimension, factor_to_base, is_base, is_active }`, con `dimension` en `MASS | VOLUME | COUNT`.
 
-Product devuelve `{id,name,productType,categoryId,categoryScope,preparationArea,inventoryUnitId,salePrice,minStock,isActive,createdAt,createdByUserId,updatedAt,updatedByUserId}`. `POST`/`PUT` requieren nombre, `productType` (`INGREDIENT|PREPARATION|SALE_ITEM|SUPPLY`) e `inventoryUnitId`; `categoryId`, importes y mínimos son opcionales según el contrato y los importes no pueden ser negativos. `GET /products` acepta `page`, `pageSize`, `search`, `productType`, `categoryId`, `categoryScope`, `preparationArea` e `isActive`. DELETE realiza baja lógica.
+## Frontend implementado
 
-Las 11 categorías y cinco unidades anteriores son seeds estructurales de migración, presentes en todos los entornos. No hay composiciones, stock ni regla que acople `productType` con `categoryScope`.
+Página `/productos` (`src/features/products/pages.tsx`), protegida por `RequireAuth` + `RequireAnyRole` con los mismos roles que `CatalogRead`, integrada al `AppShell` (sidebar/topbar) mediante `AuthenticatedLayout`.
 
-## Errores y evidencia
+Incluye: listado con búsqueda y filtros (tipo, categoría), tabla de escritorio (`DataTable`) y tarjetas para móvil, alta/edición mediante `Modal` con formulario, desactivación con `Modal` de confirmación, y los 4 estados de interfaz (carga, vacío, error, confirmación).
 
-La evidencia automatizada del frontend actual incluye format, typecheck, lint, build y 48 pruebas Vitest en verde. Evidencia visual manual: pendiente.
+Hooks tipados directamente desde `paths['/api/v1/products']` en `src/types/api.generated.ts` (`src/features/products/api.ts`), sin tipos manuales.
 
-La API devuelve 400 para binding/validación, 401/403 para autorización, 404 para recursos inexistentes y 409 para duplicados o reglas de integridad. Las pruebas PostgreSQL cubren seeds, upgrade desde `InitialIdentity`, unicidad por scope, FKs, permisos, filtros, paginación y bajas lógicas.
+## Hallazgos pendientes de confirmación con backend
+
+- **No existe endpoint de reactivación de producto.** `DELETE /products/{id}` es la única forma de cambiar el estado; a diferencia de `users` (que expone `/activate` y `/deactivate`), no hay forma de revertir la desactivación desde la API. La UI comunica la acción como no reversible mientras esto no se confirme o se agregue el endpoint faltante.
+- La policy `CatalogRead` no incluye el rol `CONTADORA`, pese a que RF-012 lo exige como autorizado para consultar el catálogo.
+- El diseño original contemplaba campos de descripción y SKU que el contrato actual no soporta; no fueron implementados.
+
+## Errores
+
+Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/validación, 401 para falta o expiración de token, 403 para rol sin autorización, 404 para recurso inexistente, 409 para duplicados o referencias en uso (p. ej. una unidad usada por un producto no puede desactivarse).
+
+## Evidencias
+
+### Captura del listado de productos (desktop)
+
+![Captura del listado desktop](../capturas/HU-003-listado-desktop.png)
+
+---
+
+### Captura del listado de productos (mobile)
+
+![Captura del listado mobile](../capturas/HU-003-listado-mobile.png)
+
+---
+
+### Captura del formulario de creación
+
+![Captura del formulario](../capturas/HU-003-formulario.png)
+
+---
+
+### Captura de filtros aplicados
+
+![Captura de filtros](../capturas/HU-003-filtros.png)
+
+---
+
+### Captura de confirmación de desactivación
+
+![Captura de confirmación](../capturas/HU-003-desactivacion.png)
+
+---
