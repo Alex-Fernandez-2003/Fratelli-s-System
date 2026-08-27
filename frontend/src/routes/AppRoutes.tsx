@@ -1,7 +1,11 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
-import { AuthenticatedLayout } from '../features/navigation'
+import {
+  ATTENDANCE_MANAGE_ROLES,
+  PRODUCT_READ_ROLES,
+  AuthenticatedLayout,
+} from '../features/navigation'
 import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
@@ -16,8 +20,6 @@ import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
-
-const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 
 function Bootstrap() {
   return (
@@ -78,7 +80,7 @@ export function AppRoutes() {
 
           {/* Asistencia */}
           <Route path="/mi-asistencia" element={<MyAttendancePage />} />
-          <Route element={<RequireAnyRole roles={ATTENDANCE_MANAGE_ROLES} />}>
+          <Route element={<RequireAnyRole roles={[...ATTENDANCE_MANAGE_ROLES]} />}>
             <Route path="/asistencia" element={<AttendanceTodayPage />} />
           </Route>
 
@@ -90,9 +92,7 @@ export function AppRoutes() {
           </Route>
 
           {/* Productos */}
-          <Route
-            element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA']} />}
-          >
+          <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
           </Route>
 

@@ -12,6 +12,10 @@
 
 ---
 
+## Estado actual — Sprint 1
+
+La experiencia integrada separa gestión e historial propio. `ADMINISTRADOR` y `ENCARGADO` acceden a `/asistencia` y ejecutan operaciones sobre el `EmployeeId` real del empleado objetivo. `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO` solo acceden a `/mi-asistencia`, que es de consulta; no muestra acciones de entrada o salida. La navegación global expone una única capacidad **Asistencia** y resuelve `/asistencia` para roles de gestión y `/mi-asistencia` para los demás.
+
 ## Contrato backend implementado
 
 | Ruta | Política | Resultado |

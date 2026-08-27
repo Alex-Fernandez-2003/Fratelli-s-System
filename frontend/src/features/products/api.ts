@@ -25,9 +25,9 @@ export function useProductsList(params?: {
   return useQuery({
     queryKey: ['products', 'list', params],
     queryFn: () =>
-      httpClient.get<paths['/api/v1/products']['get']['responses'][200]['content']['application/json']>(
-        endpoints.products.list(params),
-      ),
+      httpClient.get<
+        paths['/api/v1/products']['get']['responses'][200]['content']['application/json']
+      >(endpoints.products.list(params)),
     staleTime: 30_000,
     placeholderData: (previous) => previous,
   })
@@ -37,9 +37,9 @@ export function useCategoriesList(params?: { includeInactive?: boolean }) {
   return useQuery({
     queryKey: ['categories', 'list', params],
     queryFn: () =>
-      httpClient.get<paths['/api/v1/categories']['get']['responses'][200]['content']['application/json']>(
-        endpoints.categories.list({ pageSize: 100, ...params }),
-      ),
+      httpClient.get<
+        paths['/api/v1/categories']['get']['responses'][200]['content']['application/json']
+      >(endpoints.categories.list({ pageSize: 100, ...params })),
     staleTime: 5 * 60_000,
   })
 }
@@ -48,9 +48,9 @@ export function useUnitsList(params?: { includeInactive?: boolean }) {
   return useQuery({
     queryKey: ['units', 'list', params],
     queryFn: () =>
-      httpClient.get<paths['/api/v1/units']['get']['responses'][200]['content']['application/json']>(
-        endpoints.units.list({ pageSize: 100, ...params }),
-      ),
+      httpClient.get<
+        paths['/api/v1/units']['get']['responses'][200]['content']['application/json']
+      >(endpoints.units.list({ pageSize: 100, ...params })),
     staleTime: 5 * 60_000,
   })
 }
@@ -59,10 +59,9 @@ export function useCreateProduct() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (request: ProductRequest) =>
-      httpClient.post<paths['/api/v1/products']['post']['responses'][201]['content']['application/json']>(
-        endpoints.products.create(),
-        request,
-      ),
+      httpClient.post<
+        paths['/api/v1/products']['post']['responses'][201]['content']['application/json']
+      >(endpoints.products.create(), request),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   })
 }
@@ -71,10 +70,9 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, request }: { id: string; request: ProductRequest }) =>
-      httpClient.put<paths['/api/v1/products/{id}']['put']['responses'][200]['content']['application/json']>(
-        endpoints.products.update(id),
-        request,
-      ),
+      httpClient.put<
+        paths['/api/v1/products/{id}']['put']['responses'][200]['content']['application/json']
+      >(endpoints.products.update(id), request),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   })
 }

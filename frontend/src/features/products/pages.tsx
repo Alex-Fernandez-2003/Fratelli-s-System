@@ -13,6 +13,8 @@ import {
 } from '@/components/atoms'
 import { FormError, FormField } from '@/components/molecules'
 import { HttpError } from '@/lib/api/http-client'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { canManageProducts } from '@/features/navigation'
 import {
   useCategoriesList,
   useCreateProduct,
@@ -210,7 +212,13 @@ function ProductForm({
         <input
           type="checkbox"
           checked={value.isSellable}
-          onChange={(e) => onChange({ ...value, isSellable: e.target.checked, salePrice: e.target.checked ? value.salePrice : '' })}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              isSellable: e.target.checked,
+              salePrice: e.target.checked ? value.salePrice : '',
+            })
+          }
         />
         ¿Es vendible?
       </Label>
@@ -234,6 +242,8 @@ function ProductForm({
 }
 
 export function ProductsPage() {
+  const { user } = useAuth()
+  const canManage = canManageProducts(user?.roles ?? [])
   const [filters, setFilters] = useState({
     page: 1,
     pageSize: 20,
@@ -300,7 +310,8 @@ export function ProductsPage() {
     {
       id: 'unit',
       header: 'Unidad',
-      cell: (product: ProductDto) => units.find((u) => u.id === product.inventoryUnitId)?.symbol ?? '—',
+      cell: (product: ProductDto) =>
+        units.find((u) => u.id === product.inventoryUnitId)?.symbol ?? '—',
     },
     {
       id: 'sellable',
@@ -310,7 +321,8 @@ export function ProductsPage() {
     {
       id: 'price',
       header: 'Precio (Bs.)',
-      cell: (product: ProductDto) => (product.salePrice != null ? Number(product.salePrice).toFixed(2) : '—'),
+      cell: (product: ProductDto) =>
+        product.salePrice != null ? Number(product.salePrice).toFixed(2) : '—',
     },
     {
       id: 'active',
@@ -329,30 +341,31 @@ export function ProductsPage() {
   const firstResult = totalCount ? (filters.page - 1) * filters.pageSize + 1 : 0
   const lastResult = Math.min(filters.page * filters.pageSize, totalCount)
 
-  const actions = (product: ProductDto) => (
-    <div className="flex gap-1">
-      <IconButton
-        type="button"
-        label={`Editar ${product.name}`}
-        onClick={() => {
-          setEditing(product)
-          setForm(toFormValue(product))
-          setMutationError(undefined)
-        }}
-      >
-        <Pencil size={16} />
-      </IconButton>
-      {product.isActive && (
+  const actions = (product: ProductDto) =>
+    canManage ? (
+      <div className="flex gap-1">
         <IconButton
           type="button"
-          label={`Desactivar ${product.name}`}
-          onClick={() => setDeactivateTarget(product)}
+          label={`Editar ${product.name}`}
+          onClick={() => {
+            setEditing(product)
+            setForm(toFormValue(product))
+            setMutationError(undefined)
+          }}
         >
-          <XCircle size={16} />
+          <Pencil size={16} />
         </IconButton>
-      )}
-    </div>
-  )
+        {product.isActive && (
+          <IconButton
+            type="button"
+            label={`Desactivar ${product.name}`}
+            onClick={() => setDeactivateTarget(product)}
+          >
+            <XCircle size={16} />
+          </IconButton>
+        )}
+      </div>
+    ) : null
 
   return (
     <div className="grid gap-6">
@@ -360,17 +373,19 @@ export function ProductsPage() {
         title="Productos"
         description="Administra productos, ingredientes, preparaciones e insumos."
         actions={
-          <Button
-            type="button"
-            onClick={() => {
-              setForm(initialForm)
-              setCreateOpen(true)
-            }}
-            leftIcon={<Plus size={16} />}
-            className="w-full sm:w-auto"
-          >
-            Nuevo producto
-          </Button>
+          canManage ? (
+            <Button
+              type="button"
+              onClick={() => {
+                setForm(initialForm)
+                setCreateOpen(true)
+              }}
+              leftIcon={<Plus size={16} />}
+              className="w-full sm:w-auto"
+            >
+              Nuevo producto
+            </Button>
+          ) : undefined
         }
       />
 
@@ -430,7 +445,12 @@ export function ProductsPage() {
           </div>
         ) : (
           <div className="hidden md:block">
-            <DataTable columns={columns} rows={query.data.items} getRowId={(p) => p.id} actions={actions} />
+            <DataTable
+              columns={columns}
+              rows={query.data.items}
+              getRowId={(p) => p.id}
+              actions={canManage ? actions : undefined}
+            />
           </div>
         )}
 
@@ -444,7 +464,7 @@ export function ProductsPage() {
                   label={product.isActive ? 'Activo' : 'Inactivo'}
                   tone={product.isActive ? 'success' : 'danger'}
                 />
-                {actions(product)}
+                {canManage && actions(product)}
               </Card>
             ))}
           </div>
@@ -477,48 +497,63 @@ export function ProductsPage() {
         </div>
       </Card>
 
-      <Modal open={createOpen || !!editing} title={editing ? 'Editar producto' : 'Nuevo producto'} onClose={closeForm}>
-        <ProductForm value={form} onChange={setForm} error={mutationError} categories={categories} units={units} />
-        <div className="mt-4 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={closeForm}>
-            Cancelar
-          </Button>
-          <Button type="button" loading={pending} onClick={() => void submitForm()}>
-            Guardar
-          </Button>
-        </div>
-      </Modal>
+      {canManage && (
+        <Modal
+          open={createOpen || !!editing}
+          title={editing ? 'Editar producto' : 'Nuevo producto'}
+          onClose={closeForm}
+        >
+          <ProductForm
+            value={form}
+            onChange={setForm}
+            error={mutationError}
+            categories={categories}
+            units={units}
+          />
+          <div className="mt-4 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={closeForm}>
+              Cancelar
+            </Button>
+            <Button type="button" loading={pending} onClick={() => void submitForm()}>
+              Guardar
+            </Button>
+          </div>
+        </Modal>
+      )}
 
-      <Modal open={!!deactivateTarget} title="Desactivar producto" onClose={() => setDeactivateTarget(null)}>
-        <p>
-          El producto <strong>{deactivateTarget?.name}</strong> dejará de estar disponible en pedidos y ventas,
-          pero se conservará su historial de movimientos.
-        </p>
-        {/*
-          NOTA: no hay endpoint de reactivación en el contrato actual
-          (ver comentario en features/products/api.ts). Por eso el mensaje
-          no promete que la acción sea reversible desde la UI.
-        */}
-        <p className="text-sm text-text-muted">Esta acción no se puede deshacer desde la aplicación.</p>
-        <div className="mt-4 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => setDeactivateTarget(null)}>
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            loading={deactivate.isPending}
-            onClick={() => {
-              if (!deactivateTarget) return
-              void deactivate
-                .mutateAsync(deactivateTarget.id)
-                .then(() => setDeactivateTarget(null))
-                .catch((error: unknown) => setMutationError(message(error)))
-            }}
-          >
-            Confirmar desactivación
-          </Button>
-        </div>
-      </Modal>
+      {canManage && (
+        <Modal
+          open={!!deactivateTarget}
+          title="Desactivar producto"
+          onClose={() => setDeactivateTarget(null)}
+        >
+          <p>
+            El producto <strong>{deactivateTarget?.name}</strong> dejará de estar disponible en
+            pedidos y ventas, pero se conservará su historial de movimientos.
+          </p>
+          <p className="text-sm text-text-muted">
+            Esta acción no se puede deshacer desde la aplicación.
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setDeactivateTarget(null)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              loading={deactivate.isPending}
+              onClick={() => {
+                if (!deactivateTarget) return
+                void deactivate
+                  .mutateAsync(deactivateTarget.id)
+                  .then(() => setDeactivateTarget(null))
+                  .catch((error: unknown) => setMutationError(message(error)))
+              }}
+            >
+              Confirmar desactivación
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

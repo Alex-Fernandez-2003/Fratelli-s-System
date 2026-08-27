@@ -25,6 +25,10 @@ POST y PUT reciben `{name,phoneNumber,email,notes}`. Nombre y teléfono son obli
 
 `GET /api/v1/suppliers` acepta `search`, `isActive`, `page` y `pageSize`; busca en nombre o teléfono. La respuesta es el sobre común `{items,page,pageSize,totalCount,totalPages}` con `page` desde 1 y `pageSize` entre 1 y 100. Sin `isActive` solo se listan proveedores activos. DELETE es baja lógica, no borrado físico.
 
+## Interfaz Sprint 1
+
+La ruta `/proveedores` conserva tabla en desktop y usa cards en mobile. Las cards muestran solo nombre, contacto real, estado y notas cuando existen. `ADMINISTRADOR` y `ENCARGADO` ven CTA y acciones; `COCINA` y `CONTADORA` no reciben controles mutantes.
+
 ## Errores y evidencia
 
 Los contratos de error son ProblemDetails: 400 para validación/binding, 401 sin Bearer, 403 sin política, 404 para un id inexistente y 409 para conflictos de regla de negocio. La integración PostgreSQL cubre la matriz de roles, campos opcionales, email inválido, búsqueda/paginación y baja lógica.

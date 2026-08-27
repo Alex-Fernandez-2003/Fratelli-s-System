@@ -42,11 +42,17 @@ pnpm run build
 
 El formato se aplica mediante `.prettierrc.mjs` (comillas simples, sin punto y coma, comas finales, dos espacios, LF). Para un contrato de API disponible en Development, ejecute `pnpm run api:generate`; regenera y da formato a `src/types/api.generated.ts`. Ese archivo generado nunca se edita manualmente.
 
+## Navegación y módulos integrados
+
+Las rutas autenticadas viven bajo un único `AuthenticatedLayout`: sidebar en desktop y topbar con drawer en mobile. No hay bottom navigation global. La misma registry define visibilidad, destino y estado activo de Inicio, Pedidos, Cocina, Productos, Inventario, Asistencia, Proveedores, Gastos y Usuarios.
+
+Productos permite lectura a `ADMINISTRADOR`, `ENCARGADO`, `MESERO` y `COCINA`; solo `ADMINISTRADOR` y `ENCARGADO` gestionan. Proveedores permite lectura a `ADMINISTRADOR`, `ENCARGADO`, `COCINA` y `CONTADORA`; sus cards mobile reutilizan la misma consulta que la tabla desktop. Asistencia dirige a `ADMINISTRADOR` y `ENCARGADO` a gestión por `EmployeeId`; los demás roles consultan únicamente `/mi-asistencia`.
+
 ## HU-002 — Usuarios y roles
 
 `/usuarios` requiere sesión y el rol exacto `ADMINISTRADOR`. La feature `src/features/users` usa tipos generados, `endpoints.users`, `httpClient` y TanStack Query; sus componentes nunca reciben JWT ni llaman `fetch` directamente. Permite listar, filtrar por búsqueda/rol/estado, paginar y administrar cuentas con roles múltiples, contraseña y ciclo activo/inactivo.
 
-Los roles canónicos son `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`. La navegación solo muestra Inicio y Usuarios y roles cuando la ruta existe y el rol lo permite. Para actualizar el contrato, inicie el backend Development y ejecute `pnpm run api:generate`; nunca edite `src/types/api.generated.ts` manualmente.
+Los roles canónicos son `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`. La navegación solo muestra capacidades implementadas cuando la ruta existe y el rol lo permite. Para actualizar el contrato, inicie el backend Development y ejecute `pnpm run api:generate`; nunca edite `src/types/api.generated.ts` manualmente.
 
 ## Compatibilidad con npm
 

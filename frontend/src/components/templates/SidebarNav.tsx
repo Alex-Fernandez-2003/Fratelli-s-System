@@ -56,7 +56,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             <p className="m-0 truncate text-sm font-bold text-text">
               {user?.fullName ?? user?.username}
             </p>
-            <p className="m-0 truncate text-xs text-text-muted">{user?.username}@fratelli.com</p>
+            <p className="m-0 truncate text-xs text-text-muted">{user?.roles.join(', ')}</p>
           </div>
         </div>
       </div>

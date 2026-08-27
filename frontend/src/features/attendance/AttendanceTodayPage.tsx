@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Clock, LogOut, LogIn, Home, RefreshCw } from 'lucide-react'
+import { LogOut, LogIn, RefreshCw } from 'lucide-react'
 import { Badge, Button, Skeleton } from '../../components/atoms'
 import { Alert, EmptyState, StatCard } from '../../components/molecules'
-import { AppLayout } from '../../components/templates/AppLayout'
 import { HttpError } from '../../lib/api/http-client'
 import type { AttendanceTodayItem } from './api'
 import { useAttendanceToday, useCheckIn, useCheckOut } from './hooks'
@@ -105,98 +104,89 @@ export function AttendanceTodayPage() {
   }, [lastSuccess])
 
   return (
-    <AppLayout
-      bottomNavItems={[
-        { to: '/inicio', icon: <Home size={20} />, label: 'Inicio' },
-        { to: '/asistencia', icon: <Clock size={20} />, label: 'Asistencia' },
-      ]}
-    >
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Asistencia del día</h1>
-            <p className="text-sm text-text-muted">
-              {today.data
-                ? `Fecha de negocio ${today.data.businessDate} · ${today.data.timeZone}`
-                : 'Marca la entrada y salida del personal.'}
-            </p>
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={today.isFetching}
-            leftIcon={<RefreshCw size={14} />}
-            onClick={() => void today.refetch()}
-          >
-            Actualizar
-          </Button>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Asistencia del día</h1>
+          <p className="text-sm text-text-muted">
+            {today.data
+              ? `Fecha de negocio ${today.data.businessDate} · ${today.data.timeZone}`
+              : 'Marca la entrada y salida del personal.'}
+          </p>
         </div>
-
-        {today.isLoading ? (
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-3">
-            <StatCard
-              label="Personal activo"
-              value={activeCount}
-              trend={`${items.length} en total`}
-            />
-            <StatCard label="Ciclos abiertos" value={openCount} trend="Trabajando ahora" />
-            <StatCard label="Ciclos cerrados" value={closedCount} trend="Turno completado" />
-          </div>
-        )}
-
-        {showSuccess && !mutationError && lastSuccess && (
-          <Alert kind="success" title="Asistencia actualizada">
-            Registro a las {formatTime(lastSuccess.checkInAt)}
-            {lastSuccess.checkOutAt
-              ? ` · salida a las ${formatTime(lastSuccess.checkOutAt)}.`
-              : ' · ciclo abierto.'}
-          </Alert>
-        )}
-        {mutationError && (
-          <Alert kind="error" title="No se pudo registrar">
-            {mutationError instanceof HttpError
-              ? (mutationError.problem.detail ?? 'Error inesperado.')
-              : 'Error inesperado.'}
-          </Alert>
-        )}
-
-        {today.isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-16" />
-            <Skeleton className="h-16" />
-            <Skeleton className="h-16" />
-          </div>
-        ) : today.isError ? (
-          <Alert kind="error" title="No se pudo cargar la asistencia">
-            {errorMessage(today.error)}
-          </Alert>
-        ) : items.length === 0 ? (
-          <EmptyState title="Sin personal registrado">
-            No hay empleados cargados todavía.
-          </EmptyState>
-        ) : (
-          <div className="space-y-2">
-            {items.map((item) => (
-              <EmployeeCard
-                key={item.employeeId}
-                item={item}
-                onCheckIn={() => checkIn.mutate(item.employeeId)}
-                onCheckOut={() => checkOut.mutate(item.employeeId)}
-                isPending={checkIn.isPending || checkOut.isPending}
-                pendingAction={
-                  checkIn.isPending ? 'check-in' : checkOut.isPending ? 'check-out' : null
-                }
-              />
-            ))}
-          </div>
-        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          loading={today.isFetching}
+          leftIcon={<RefreshCw size={14} />}
+          onClick={() => void today.refetch()}
+        >
+          Actualizar
+        </Button>
       </div>
-    </AppLayout>
+
+      {today.isLoading ? (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <StatCard
+            label="Personal activo"
+            value={activeCount}
+            trend={`${items.length} en total`}
+          />
+          <StatCard label="Ciclos abiertos" value={openCount} trend="Trabajando ahora" />
+          <StatCard label="Ciclos cerrados" value={closedCount} trend="Turno completado" />
+        </div>
+      )}
+
+      {showSuccess && !mutationError && lastSuccess && (
+        <Alert kind="success" title="Asistencia actualizada">
+          Registro a las {formatTime(lastSuccess.checkInAt)}
+          {lastSuccess.checkOutAt
+            ? ` · salida a las ${formatTime(lastSuccess.checkOutAt)}.`
+            : ' · ciclo abierto.'}
+        </Alert>
+      )}
+      {mutationError && (
+        <Alert kind="error" title="No se pudo registrar">
+          {mutationError instanceof HttpError
+            ? (mutationError.problem.detail ?? 'Error inesperado.')
+            : 'Error inesperado.'}
+        </Alert>
+      )}
+
+      {today.isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+        </div>
+      ) : today.isError ? (
+        <Alert kind="error" title="No se pudo cargar la asistencia">
+          {errorMessage(today.error)}
+        </Alert>
+      ) : items.length === 0 ? (
+        <EmptyState title="Sin personal registrado">No hay empleados cargados todavía.</EmptyState>
+      ) : (
+        <div className="space-y-2">
+          {items.map((item) => (
+            <EmployeeCard
+              key={item.employeeId}
+              item={item}
+              onCheckIn={() => checkIn.mutate(item.employeeId)}
+              onCheckOut={() => checkOut.mutate(item.employeeId)}
+              isPending={checkIn.isPending || checkOut.isPending}
+              pendingAction={
+                checkIn.isPending ? 'check-in' : checkOut.isPending ? 'check-out' : null
+              }
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
