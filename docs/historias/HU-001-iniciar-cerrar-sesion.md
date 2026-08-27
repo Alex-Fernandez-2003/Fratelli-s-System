@@ -1,45 +1,62 @@
 # HU-001 — Iniciar y cerrar sesión
 
-## Estado de implementación
+## Resultado
 
-**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** COMPLETE. **Validación manual:** PENDING.
+Implementada end-to-end: autenticación por usuario y contraseña, sesión renovable y cierre de sesión.
 
-## Contrato implementado
+## Reglas implementadas
 
-| Ruta                        | Acceso                   | Resultado                     |
-| --------------------------- | ------------------------ | ----------------------------- |
-| `POST /api/v1/auth/login`   | Anónimo                  | 200 y sesión nueva            |
-| `POST /api/v1/auth/refresh` | Cookie `refreshToken`    | 200 y rotación de esa sesión  |
-| `POST /api/v1/auth/logout`  | Anónimo; cookie opcional | 204, siempre expira la cookie |
-| `GET /api/v1/auth/me`       | Bearer                   | 200 con el usuario actual     |
+- `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` y `GET /auth/me` conforman el flujo.
+- El access token JWT dura 15 minutos; el refresh rota y tiene un límite absoluto de sesión de 12 horas.
+- El refresh se persiste solo como hash. Cuentas desconocidas, credenciales incorrectas, inactivas o bloqueadas se rechazan.
 
-`login` acepta solo `{"username":"string","password":"string"}`. No hay inicio por email. Campos de identidad adicionales y credenciales incompletas producen 400; usuario desconocido, contraseña incorrecta, cuenta inactiva o bloqueada producen el mismo 401 `application/problem+json`.
+## Seguridad
 
-Respuesta de login/refresh:
+La cookie `refreshToken` es `HttpOnly`, `SameSite=Strict` y se limita a `/api/v1/auth`; es `Secure` fuera de Development. La validación JWT comprueba la cuenta activa y la revisión de seguridad. Véanse ADR-004 y ADR-007.
 
-```json
-{
-  "accessToken": "jwt",
-  "expiresAt": "2026-08-25T12:15:00+00:00",
-  "user": {
-    "id": "identity-string-id",
-    "username": "admin.test",
-    "fullName": "admin.test",
-    "employeeId": "uuid|null",
-    "roles": ["ADMINISTRADOR", "EMPLEADO"]
-  }
-}
-```
+## Frontend y validación
 
-`/me` devuelve el mismo objeto `user`. El access token dura 15 minutos. La cookie nunca aparece en JSON: es `HttpOnly`, `SameSite=Strict`, `Path=/api/v1/auth`; es `Secure` fuera de Development. El refresh almacena únicamente su hash, rota el valor de su propia sesión y conserva el límite absoluto de 12 horas. Logout es idempotente y revoca solo la sesión asociada a la cookie.
+El frontend usa la API de autenticación, `AuthProvider`, rutas protegidas, `http-client` y el coordinador de sesión; no persiste el JWT como credencial de larga duración.
 
-## Roles y pruebas Development
+## Baseline revalidado
 
-Roles disponibles: `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`; no existe `CAJERO`. En Development, el seeder crea idempotentemente `admin.test`, `encargado.test`, `mesero.test`, `cocina.test`, `contadora.test` y `empleado.test`, todos con la contraseña **solo de prueba** `Sprint1.Test!123`. No se documentan ni persisten refresh tokens. En Production no se crean cuentas `.test`.
+`develop` revalidado en `bb2fd04a48bddce1b608bb1639308528daefcfc1`.
 
-## Errores
+## Evidencia real
 
-Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/validación, 401 para autenticación y refresh inválido, y 404 para un usuario autenticado que ya no puede resolverse.
+No se modifica ni incorpora evidencia técnica durante esta normalización.
+
+## Manifest de archivos del change
+
+### Backend
+
+| Archivo |
+| --- |
+| `backend/src/RestaurantSystem.Api/Program.cs` |
+| `backend/src/RestaurantSystem.Application/Auth/AuthContracts.cs` |
+| `backend/src/RestaurantSystem.Infrastructure/Identity/AuthServices.cs` |
+
+### Frontend y contrato generado
+
+| Archivo |
+| --- |
+| `frontend/src/features/auth/api.ts` |
+| `frontend/src/features/auth/AuthProvider.tsx` |
+| `frontend/src/routes/AppRoutes.tsx` |
+| `frontend/src/lib/api/http-client.ts` |
+| `frontend/src/lib/auth/session-coordinator.ts` |
+
+### Documentación
+
+| Archivo |
+| --- |
+| `docs/adr/ADR-004-identity-jwt-roles.md` |
+| `docs/adr/ADR-007-security-stamp-session-revocation.md` |
+| `docs/historias/HU-001-iniciar-cerrar-sesion.md` |
+
+## Estado de entrega
+
+Implementada; esta normalización no añade validación ni evidencia nueva.
 
 ## Evidencias
 

@@ -1,63 +1,58 @@
 # HU-003 — Gestionar productos, ingredientes y platos
 
-## Estado de implementación
+## Resultado
 
-**Backend:** COMPLETE. **Frontend:** COMPLETE. **Validación automatizada:** PENDING. **Validación manual:** PENDING.
+Implementada en backend y frontend para productos. Las categorías y unidades tienen API CRUD, pero no una interfaz dedicada.
 
-## Contrato implementado
+## Reglas implementadas
 
-| Ruta                           | Acceso                  | Resultado                               |
-| ------------------------------ | ----------------------- | --------------------------------------- |
-| `GET /api/v1/products`         | Bearer — `CatalogRead`  | 200, listado paginado y filtrado        |
-| `GET /api/v1/products/{id}`    | Bearer — `CatalogRead`  | 200 con el producto, o 404              |
-| `POST /api/v1/products`        | Bearer — `CatalogWrite` | 201 y producto creado                   |
-| `PUT /api/v1/products/{id}`    | Bearer — `CatalogWrite` | 200 con el producto actualizado         |
-| `DELETE /api/v1/products/{id}` | Bearer — `CatalogWrite` | 204, baja lógica (no elimina histórico) |
-| `GET /api/v1/categories`       | Bearer — `CatalogRead`  | 200, listado paginado                   |
-| `POST/PUT /api/v1/categories`  | Bearer — `CatalogWrite` | 201/200                                 |
-| `GET /api/v1/units`            | Bearer — `CatalogRead`  | 200, listado paginado                   |
-| `POST/PUT /api/v1/units`       | Bearer — `CatalogWrite` | 201/200                                 |
+- Lectura: `ADMINISTRADOR`, `ENCARGADO`, `MESERO` y `COCINA`; escritura: `ADMINISTRADOR` y `ENCARGADO`. `CONTADORA` y `EMPLEADO` no están autorizados.
+- Producto requiere unidad activa; la categoría es opcional y, si se informa, debe estar activa. El precio y el stock mínimo no pueden ser negativos. La baja es lógica; no existe endpoint de reactivación.
+- No se declara acoplamiento de negocio de catálogo que no esté implementado.
 
-`CatalogRead` autoriza a `ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`. `CatalogWrite` autoriza únicamente a `ADMINISTRADOR`, `ENCARGADO`.
+## Seguridad
 
-`GET /products` acepta `page`, `pageSize` (1–100), `search`, `productType`, `categoryId`, `categoryScope`, `preparationArea`, `isActive`. Las listas retornan `{ "items": [], "page", "pageSize", "totalCount", "totalPages" }`.
+Las políticas `CatalogRead` y `CatalogWrite` protegen el contrato REST; los errores usan ProblemDetails.
 
-Cuerpo de `ProductRequest`:
+## Frontend y validación
 
-```json
-{
-  "name": "Hamburguesa de Pollo Crispy",
-  "productType": "SALE_ITEM",
-  "categoryId": "uuid|null",
-  "preparationArea": "KITCHEN|BAR|null",
-  "inventoryUnitId": "uuid",
-  "salePrice": 45.0,
-  "minStock": null,
-  "isSellable": true
-}
-```
+`/productos` ofrece listado, filtros, alta, edición y desactivación con contrato generado, tabla desktop y tarjetas mobile.
 
-`productType` es `INGREDIENT | PREPARATION | SALE_ITEM | SUPPLY`. `ProductDto` agrega `id`, `isActive`, `createdAt`, `createdByUserId`, `updatedAt`, `updatedByUserId`, `categoryScope` (derivado de la categoría). El contrato **no incluye** descripción ni SKU.
+## Baseline revalidado
 
-`Category` es `{ id, name, scope, isActive }`, con `scope` en `MENU | INVENTORY | PREPARATION`. `Unit` es `{ id, code, name, symbol, dimension, factor_to_base, is_base, is_active }`, con `dimension` en `MASS | VOLUME | COUNT`.
+`develop` revalidado en `bb2fd04a48bddce1b608bb1639308528daefcfc1`.
 
-## Frontend implementado
+## Evidencia real
 
-Página `/productos` (`src/features/products/pages.tsx`), protegida por `RequireAuth` + `RequireAnyRole` con los mismos roles que `CatalogRead`, integrada al `AppShell` (sidebar/topbar) mediante `AuthenticatedLayout`.
+No se modifica ni incorpora evidencia técnica durante esta normalización.
 
-Incluye: listado con búsqueda y filtros (tipo, categoría), tabla de escritorio (`DataTable`) y tarjetas para móvil, alta/edición mediante `Modal` con formulario, desactivación con `Modal` de confirmación, y los 4 estados de interfaz (carga, vacío, error, confirmación).
+## Manifest de archivos del change
 
-Hooks tipados directamente desde `paths['/api/v1/products']` en `src/types/api.generated.ts` (`src/features/products/api.ts`), sin tipos manuales.
+### Backend
 
-## Hallazgos pendientes de confirmación con backend
+| Archivo |
+| --- |
+| `backend/src/RestaurantSystem.Api/Program.cs` |
+| `backend/src/RestaurantSystem.Application/Catalog/CatalogContracts.cs` |
+| `backend/src/RestaurantSystem.Infrastructure/Catalog/CatalogService.cs` |
 
-- **No existe endpoint de reactivación de producto.** `DELETE /products/{id}` es la única forma de cambiar el estado; a diferencia de `users` (que expone `/activate` y `/deactivate`), no hay forma de revertir la desactivación desde la API. La UI comunica la acción como no reversible mientras esto no se confirme o se agregue el endpoint faltante.
-- La policy `CatalogRead` no incluye el rol `CONTADORA`, pese a que RF-012 lo exige como autorizado para consultar el catálogo.
-- El diseño original contemplaba campos de descripción y SKU que el contrato actual no soporta; no fueron implementados.
+### Frontend y contrato generado
 
-## Errores
+| Archivo |
+| --- |
+| `frontend/src/features/products/api.ts` |
+| `frontend/src/features/products/pages.tsx` |
+| `frontend/src/types/api.generated.ts` |
 
-Los errores usan ProblemDetails (`application/problem+json`): 400 para binding/validación, 401 para falta o expiración de token, 403 para rol sin autorización, 404 para recurso inexistente, 409 para duplicados o referencias en uso (p. ej. una unidad usada por un producto no puede desactivarse).
+### Documentación
+
+| Archivo |
+| --- |
+| `docs/historias/HU-003-catalogo.md` |
+
+## Estado de entrega
+
+Implementada para productos; la UI dedicada de categorías y unidades no está implementada.
 
 ## Evidencias
 

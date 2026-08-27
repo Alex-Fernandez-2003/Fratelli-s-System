@@ -1,90 +1,65 @@
 # HU-022 — Registrador de entrada y salida de asistencia
 
-> **Como trabajador, quiero registrar mi entrada y salida para disponer de una asistencia centralizada y consistente.**
+## Resultado
 
-| Campo                 | Valor                                                                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Épica**             | `EPI-08`                                                                                                                                                      |
-| **Prioridad**         | MUST · 5 SP · RF-047, RF-048, RF-049 · RN-011, RN-012, RN-018                                                                                                 |
-| **Dependencias**      | HU-001 (sesión), HU-002 (gestión de usuarios/empleados)                                                                                                       |
-| **Rama**              | `feat/HU-022-registrador-de-entrada-y-salida-de-asistencia`                                                                                                   |
-| **Alcance entregado** | Backend completo (contrato, reglas, tiempo real, migración, pruebas de integración) + Frontend (páginas, rutas protegidas por rol, estado con TanStack Query) |
+Implementada end-to-end la gestión de asistencia y el historial propio.
 
----
+## Reglas implementadas
 
-## Estado actual — Sprint 1
+- `/asistencia` y el hub son para `ADMINISTRADOR` y `ENCARGADO`; toda persona autenticada con Employee consulta su historial en `/mi-asistencia`.
+- El servidor calcula hora y fecha de negocio.
+- El servicio y un índice parcial único permiten un solo registro abierto por empleado; se admiten múltiples ciclos cerrados.
+- La vista de hoy incluye registros de la fecha de negocio y abiertos arrastrados.
 
-La experiencia integrada separa gestión e historial propio. `ADMINISTRADOR` y `ENCARGADO` acceden a `/asistencia` y ejecutan operaciones sobre el `EmployeeId` real del empleado objetivo. `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO` solo acceden a `/mi-asistencia`, que es de consulta; no muestra acciones de entrada o salida. La navegación global expone una única capacidad **Asistencia** y resuelve `/asistencia` para roles de gestión y `/mi-asistencia` para los demás.
+## Seguridad
 
-## Contrato backend implementado
+El actor se deriva del JWT. El notifier se ejecuta best-effort después de guardar y no revierte el registro persistido.
 
-| Ruta                                                       | Política                     | Resultado |
-| ---------------------------------------------------------- | ---------------------------- | --------- |
-| `GET /api/v1/attendance/employees/today`                   | `ADMINISTRADOR`, `ENCARGADO` | 200       |
-| `POST /api/v1/attendance/employees/{employeeId}/check-in`  | `ADMINISTRADOR`, `ENCARGADO` | 201       |
-| `POST /api/v1/attendance/employees/{employeeId}/check-out` | `ADMINISTRADOR`, `ENCARGADO` | 200       |
+## Frontend y validación
 
-El actor siempre viene del JWT y puede ser distinto del Employee objetivo. El servidor ignora timestamps del cliente y usa `America/Argentina/Buenos_Aires` para `businessDate`. No existe toggle ni cierre automático: se permiten ciclos cerrados múltiples, pero PostgreSQL impone un único ciclo abierto por Employee mediante índice parcial.
+Las páginas de asistencia, API, hooks, rutas y navegación separan gestión e historial propio.
 
-Un registro es:
+## Baseline revalidado
 
-```json
-{
-  "id": "uuid",
-  "employeeId": "uuid",
-  "businessDate": "2026-08-25",
-  "checkInAt": "2026-08-25T12:00:00+00:00",
-  "checkInByUserId": "identity-string-id",
-  "checkOutAt": null,
-  "checkOutByUserId": null
-}
-```
+`develop` revalidado en `bb2fd04a48bddce1b608bb1639308528daefcfc1`.
 
-Un check-in duplicado concurrente y un check-out sin ciclo abierto devuelven 409. Un Employee inexistente devuelve 404; binding inválido, 400; sin Bearer, 401; y rol no operativo, 403.
+## Evidencia real
 
-`GET /api/v1/attendance/employees/today` devuelve `{businessDate,timeZone,items}`. Cada item contiene `{employeeId,fullName,isActive,attendanceRecords,currentState}`; `currentState` es `OPEN`, `CLOSED` o `NO_RECORD`. Incluye ciclos del día y abiertos arrastrados.
+No se modifica ni incorpora evidencia técnica durante esta normalización.
 
-## Criterios de aceptación y su cumplimiento
+## Manifest de archivos del change
 
-| Criterio (backlog)                                        | Mecanismo que lo garantiza                                                                                                                       |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Puede marcar entrada si no tiene una abierta              | Verificación previa en servicio + inserción exitosa cuando no hay ciclo abierto                                                                  |
-| No puede marcar una segunda entrada abierta               | Rechazo lógico **y** índice parcial único `UX_AttendanceRecords_Employee_Open WHERE "CheckOutAt" IS NULL` (defensa en profundidad ante carreras) |
-| Solo puede registrar salida si existe una entrada abierta | `CheckOutAsync` resuelve el ciclo abierto; sin él devuelve 409                                                                                   |
-| La salida cierra la asistencia                            | Se sella `CheckOutAt`/`CheckOutByUserId`; el ciclo pasa a `CLOSED` y habilita un nuevo ciclo futuro                                              |
-| El flujo funciona sin hardware biométrico                 | Registro manual desde la web; RN-018 cumplida por diseño                                                                                         |
+### Backend
 
-## Tiempo real
+| Archivo | Propósito |
+| --- | --- |
+| `backend/src/RestaurantSystem.Api/Program.cs` | Endpoints y autorización. |
+| `backend/src/RestaurantSystem.Application/Attendance/AttendanceContracts.cs` | Contratos de asistencia. |
+| `backend/src/RestaurantSystem.Infrastructure/Attendance/AttendanceServices.cs` | Reglas, hora de negocio y notificación. |
+| `backend/src/RestaurantSystem.Domain/Attendance/AttendanceRecord.cs` | Registro de asistencia. |
+| `backend/src/RestaurantSystem.Infrastructure/Migrations/20260825045324_AddAttendance.cs` | Migración e índice parcial. |
+| `backend/tests/RestaurantSystem.IntegrationTests/AttendancePostgresIntegrationTests.cs` | Integración de asistencia. |
 
-El hub SignalR es `/hubs/attendance`, exclusivo de `ADMINISTRADOR` y `ENCARGADO`. Emite `AttendanceUpdated` con el payload de AttendanceRecord únicamente después del commit; un 4xx no emite y un fallo del notifier no revierte el registro persistido. El hub no forma parte del documento OpenAPI REST.
+### Frontend y contrato generado
 
-## Historial propio
+| Archivo | Propósito |
+| --- | --- |
+| `frontend/src/features/attendance/api.ts` | API de asistencia. |
+| `frontend/src/features/attendance/hooks.ts` | Consultas y mutaciones. |
+| `frontend/src/features/attendance/AttendanceTodayPage.tsx` | Gestión diaria. |
+| `frontend/src/pages/MyAttendancePage.tsx` | Historial propio. |
+| `frontend/src/features/navigation.tsx` | Navegación autorizada. |
+| `frontend/src/routes/AppRoutes.tsx` | Rutas protegidas. |
 
-`GET /api/v1/attendance/me?from&to&page&pageSize` requiere Bearer, resuelve el Employee desde el JWT, no acepta `employeeId`, filtra fechas de negocio inclusivas, ordena por `checkInAt` descendente y retorna el sobre paginado de AttendanceRecord. `from > to` devuelve 400 y un usuario sin Employee recibe 404. `/mi-asistencia` consume este contrato como historial propio de solo lectura.
+### Documentación
 
-## Frontend implementado
+| Archivo | Propósito |
+| --- | --- |
+| `docs/historias/HU-022-registrar-asistencia.md` | Historia y evidencia. |
 
-| Página                | Ruta             | Acceso                                                          | Función                                                                                                                                                                                         |
-| --------------------- | ---------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AttendanceTodayPage` | `/asistencia`    | `RequireAnyRole(['ADMINISTRADOR','ENCARGADO'])` → si no, `/403` | Tabla del personal con `currentState` (Abierta/Cerrada/Sin registro), registros del día y acciones **Marcar entrada** / **Marcar salida** por empleado; muestra fecha de negocio y zona horaria |
-| `MyAttendancePage`    | `/mi-asistencia` | `RequireAuth`                                                   | Historial propio contra `/attendance/me`: filtros `from`/`to`, tabla (fecha, entrada, salida, duración, estado) y paginación                                                                    |
+## Estado de entrega
 
-Detalles de implementación:
-
-- Tipos consumidos desde `src/types/api.generated.ts` (OpenAPI), sin duplicación manual de contratos.
-- Cliente HTTP existente: inyección automática de Bearer, reintento `401` vía refresh cookie y errores tipados `HttpError`.
-- Las mutaciones de check-in/check-out viven exclusivamente en `/asistencia`; el historial propio no muta asistencia.
-- Los errores de negocio de gestión se renderizan desde ProblemDetails.
-- La navegación global expone una única capacidad Asistencia y usa la unión de roles para resolver el destino.
-- Estados de carga (`Spinner`) y vacío (`EmptyState` en tabla) cubiertos.
-
-## Pruebas
-
-**Backend (integración, PostgreSQL real):** actor/objetivo, políticas por rol, conflictos y carreras, ciclos múltiples, `today`, aislamiento de `/attendance/me`, SignalR post-commit y persistencia ante fallo de notificación.
-
-**Frontend:** suite Vitest actual — 48 pruebas en verde, incluidos guards y navegación. Typecheck, lint y build completaron correctamente.
-
-**Validación manual:** PENDING. Debe validar gestión con `ADMINISTRADOR`/`ENCARGADO` y el historial de solo lectura con MESERO, COCINA, CONTADORA y EMPLEADO.
+Implementada para MVP.
 
 ## Evidencias
 
