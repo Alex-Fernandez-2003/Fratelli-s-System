@@ -2,12 +2,12 @@
 
 > **Como trabajador, quiero registrar mi entrada y salida para disponer de una asistencia centralizada y consistente.**
 
-| Campo | Valor |
-|---|---|
-| **Épica** | `EPI-08` |
-| **Prioridad** | MUST · 5 SP · RF-047, RF-048, RF-049 · RN-011, RN-012, RN-018 |
-| **Dependencias** | HU-001 (sesión), HU-002 (gestión de usuarios/empleados) |
-| **Rama** | `feat/HU-022-registrador-de-entrada-y-salida-de-asistencia` |
+| Campo                 | Valor                                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Épica**             | `EPI-08`                                                                                                                                                      |
+| **Prioridad**         | MUST · 5 SP · RF-047, RF-048, RF-049 · RN-011, RN-012, RN-018                                                                                                 |
+| **Dependencias**      | HU-001 (sesión), HU-002 (gestión de usuarios/empleados)                                                                                                       |
+| **Rama**              | `feat/HU-022-registrador-de-entrada-y-salida-de-asistencia`                                                                                                   |
 | **Alcance entregado** | Backend completo (contrato, reglas, tiempo real, migración, pruebas de integración) + Frontend (páginas, rutas protegidas por rol, estado con TanStack Query) |
 
 ---
@@ -18,11 +18,11 @@ La experiencia integrada separa gestión e historial propio. `ADMINISTRADOR` y `
 
 ## Contrato backend implementado
 
-| Ruta | Política | Resultado |
-|---|---|---|
-| `GET /api/v1/attendance/employees/today` | `ADMINISTRADOR`, `ENCARGADO` | 200 |
-| `POST /api/v1/attendance/employees/{employeeId}/check-in` | `ADMINISTRADOR`, `ENCARGADO` | 201 |
-| `POST /api/v1/attendance/employees/{employeeId}/check-out` | `ADMINISTRADOR`, `ENCARGADO` | 200 |
+| Ruta                                                       | Política                     | Resultado |
+| ---------------------------------------------------------- | ---------------------------- | --------- |
+| `GET /api/v1/attendance/employees/today`                   | `ADMINISTRADOR`, `ENCARGADO` | 200       |
+| `POST /api/v1/attendance/employees/{employeeId}/check-in`  | `ADMINISTRADOR`, `ENCARGADO` | 201       |
+| `POST /api/v1/attendance/employees/{employeeId}/check-out` | `ADMINISTRADOR`, `ENCARGADO` | 200       |
 
 El actor siempre viene del JWT y puede ser distinto del Employee objetivo. El servidor ignora timestamps del cliente y usa `America/Argentina/Buenos_Aires` para `businessDate`. No existe toggle ni cierre automático: se permiten ciclos cerrados múltiples, pero PostgreSQL impone un único ciclo abierto por Employee mediante índice parcial.
 
@@ -46,13 +46,13 @@ Un check-in duplicado concurrente y un check-out sin ciclo abierto devuelven 409
 
 ## Criterios de aceptación y su cumplimiento
 
-| Criterio (backlog) | Mecanismo que lo garantiza |
-|---|---|
-| Puede marcar entrada si no tiene una abierta | Verificación previa en servicio + inserción exitosa cuando no hay ciclo abierto |
-| No puede marcar una segunda entrada abierta | Rechazo lógico **y** índice parcial único `UX_AttendanceRecords_Employee_Open WHERE "CheckOutAt" IS NULL` (defensa en profundidad ante carreras) |
-| Solo puede registrar salida si existe una entrada abierta | `CheckOutAsync` resuelve el ciclo abierto; sin él devuelve 409 |
-| La salida cierra la asistencia | Se sella `CheckOutAt`/`CheckOutByUserId`; el ciclo pasa a `CLOSED` y habilita un nuevo ciclo futuro |
-| El flujo funciona sin hardware biométrico | Registro manual desde la web; RN-018 cumplida por diseño |
+| Criterio (backlog)                                        | Mecanismo que lo garantiza                                                                                                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Puede marcar entrada si no tiene una abierta              | Verificación previa en servicio + inserción exitosa cuando no hay ciclo abierto                                                                  |
+| No puede marcar una segunda entrada abierta               | Rechazo lógico **y** índice parcial único `UX_AttendanceRecords_Employee_Open WHERE "CheckOutAt" IS NULL` (defensa en profundidad ante carreras) |
+| Solo puede registrar salida si existe una entrada abierta | `CheckOutAsync` resuelve el ciclo abierto; sin él devuelve 409                                                                                   |
+| La salida cierra la asistencia                            | Se sella `CheckOutAt`/`CheckOutByUserId`; el ciclo pasa a `CLOSED` y habilita un nuevo ciclo futuro                                              |
+| El flujo funciona sin hardware biométrico                 | Registro manual desde la web; RN-018 cumplida por diseño                                                                                         |
 
 ## Tiempo real
 
@@ -64,10 +64,10 @@ El hub SignalR es `/hubs/attendance`, exclusivo de `ADMINISTRADOR` y `ENCARGADO`
 
 ## Frontend implementado
 
-| Página | Ruta | Acceso | Función |
-|---|---|---|---|
-| `AttendanceTodayPage` | `/asistencia` | `RequireAnyRole(['ADMINISTRADOR','ENCARGADO'])` → si no, `/403` | Tabla del personal con `currentState` (Abierta/Cerrada/Sin registro), registros del día y acciones **Marcar entrada** / **Marcar salida** por empleado; muestra fecha de negocio y zona horaria |
-| `MyAttendancePage` | `/mi-asistencia` | `RequireAuth` | Historial propio contra `/attendance/me`: filtros `from`/`to`, tabla (fecha, entrada, salida, duración, estado) y paginación |
+| Página                | Ruta             | Acceso                                                          | Función                                                                                                                                                                                         |
+| --------------------- | ---------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AttendanceTodayPage` | `/asistencia`    | `RequireAnyRole(['ADMINISTRADOR','ENCARGADO'])` → si no, `/403` | Tabla del personal con `currentState` (Abierta/Cerrada/Sin registro), registros del día y acciones **Marcar entrada** / **Marcar salida** por empleado; muestra fecha de negocio y zona horaria |
+| `MyAttendancePage`    | `/mi-asistencia` | `RequireAuth`                                                   | Historial propio contra `/attendance/me`: filtros `from`/`to`, tabla (fecha, entrada, salida, duración, estado) y paginación                                                                    |
 
 Detalles de implementación:
 
@@ -86,9 +86,31 @@ Detalles de implementación:
 
 **Validación manual:** PENDING. Debe validar gestión con `ADMINISTRADOR`/`ENCARGADO` y el historial de solo lectura con MESERO, COCINA, CONTADORA y EMPLEADO.
 
-## Evidencia visual
+## Evidencias
 
-Evidencia visual manual: pendiente. Las capturas históricas con rutas inexistentes se retiraron para no afirmar flujos ni archivos que no pueden verificarse.
+### Captura de la pantalla pricipal de usuarios y roles
+
+![Captura de usuarios y roles](../capturas/HU-002-users-page.png)
+
+---
+
+### Captura de vista para celulares
+
+![Captura de vista mobile](../capturas/HU-002-mobile-page.png)
+
+---
+
+### Captura de modal para agregar usuario
+
+![Captura modal para agregar usuario](../capturas/HU-002-modal-user.png)
+
+---
+
+### Captura de modal para cambiar/asignar contraseña
+
+![Captura modal para cambiar contraseña](../capturas/HU-002-modal-password.png)
+
+---
 
 ## Decisiones técnicas
 

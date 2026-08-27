@@ -42,16 +42,24 @@ HU-020 implementa únicamente **Registrar gasto**. No implementa historial de ga
 
 La implementación contempla desktop, 403px y 360px a partir de las referencias visuales. Esto describe implementación automatizada, no evidencia visual humana: la validación browser/E2E de Alex y las capturas correspondientes están pendientes.
 
-| Evidencia automatizada | Resultado |
-| --- | --- |
-| `format:check`, typecheck, lint y build | COMPLETE |
-| Vitest | 48 pruebas en verde |
-| OpenAPI `api:generate` | N/A para esta auditoría documental; el contrato no cambió |
+| Evidencia automatizada                  | Resultado                                                 |
+| --------------------------------------- | --------------------------------------------------------- |
+| `format:check`, typecheck, lint y build | COMPLETE                                                  |
+| Vitest                                  | 48 pruebas en verde                                       |
+| OpenAPI `api:generate`                  | N/A para esta auditoría documental; el contrato no cambió |
 
-- [OpenSpec backend handoff](../openspec/changes/implement-hu-005-020-inventory-and-expenses-backend/backend-handoff.md)
-- [OpenSpec frontend handoff](../openspec/changes/implement-hu-005-020-inventory-and-expenses-frontend/frontend-handoff.md)
-- [Product Backlog — HU-020](../07-product-backlog.md#hu-020--registrar-gastos-diarios)
+## Evidencias
 
-No se fabricaron capturas ni evidencia de E2E.
+### Captura de la pantalla para registrar gastos
 
-## Referencias
+![Captura de inventario](../capturas/HU-020-expenses.png)
+
+---
+
+### Captura de gasto registrado
+
+![Captura de vista mobile](../capturas/HU-020-registered-expense.png)
+
+## Estado de entrega
+
+Completado para MVP, cambios visuales se harán posteriormente

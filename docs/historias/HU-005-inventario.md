@@ -55,13 +55,39 @@ No se implementó Product CRUD, alert center/notificaciones, SignalR, métricas 
 
 ## Validación y evidencia
 
-| Evidencia automatizada | Resultado                                                                                                                                             |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenAPI `api:generate` | COMPLETE (contrato sin cambios) |
-| Typecheck, lint y build | COMPLETE |
-| Vitest | 48 pruebas en verde |
-| `format:check` | COMPLETE |
+| Evidencia automatizada  | Resultado                       |
+| ----------------------- | ------------------------------- |
+| OpenAPI `api:generate`  | COMPLETE (contrato sin cambios) |
+| Typecheck, lint y build | COMPLETE                        |
+| Vitest                  | 48 pruebas en verde             |
+| `format:check`          | COMPLETE                        |
 
-No hay capturas de validación manual asociadas a esta HU. La revisión humana pendiente debe comprobar roles, desktop/403px/360px, Product real, ENTRY, WRITE_OFF, aviso de saldo insuficiente, polling y refresh.
+## Evidencias
 
-## Referencias
+### Captura de la pantalla pricipal de inventario
+
+![Captura de inventario](../capturas/HU-005-inventory-page.png)
+
+---
+
+### Captura de vista para celulares
+
+![Captura de vista mobile](../capturas/HU-005-mobile-page.png)
+
+---
+
+### Captura de modal para registrar baja
+
+![Captura modal para registrar baja](../capturas/HU-005-down-register.png)
+
+---
+
+### Captura de modal para registrar entrada
+
+![Captura modal para registrar entrada](../capturas/HU-005-up-register.png)
+
+---
+
+## Estado de entrega
+
+Completado para MVP, ajustes visuales se harán luego
