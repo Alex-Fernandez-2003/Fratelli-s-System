@@ -42,13 +42,15 @@ export const endpoints = {
     cancel: (id: string) => `/api/v1/kitchen/commands/${id}/cancel`,
   },
   users: {
-    list: (params: {
-      page?: number
-      pageSize?: number
-      search?: string
-      role?: string
-      active?: boolean
-    } = {}) => query('/api/v1/users', params),
+    list: (
+      params: {
+        page?: number
+        pageSize?: number
+        search?: string
+        role?: string
+        active?: boolean
+      } = {},
+    ) => query('/api/v1/users', params),
     detail: (id: string) => `/api/v1/users/${id}`,
     create: () => '/api/v1/users',
     update: (id: string) => `/api/v1/users/${id}`,
@@ -57,8 +59,9 @@ export const endpoints = {
     deactivate: (id: string) => `/api/v1/users/${id}/deactivate`,
   },
   categories: {
-    list: (params: { page?: number; pageSize?: number; scope?: string; includeInactive?: boolean } = {}) =>
-      query('/api/v1/categories', params),
+    list: (
+      params: { page?: number; pageSize?: number; scope?: string; includeInactive?: boolean } = {},
+    ) => query('/api/v1/categories', params),
     detail: (id: string) => `/api/v1/categories/${id}`,
     create: () => '/api/v1/categories',
     update: (id: string) => `/api/v1/categories/${id}`,
@@ -88,6 +91,23 @@ export const endpoints = {
     update: (id: string) => `/api/v1/products/${id}`,
     deactivate: (id: string) => `/api/v1/products/${id}`,
   },
+  inventory: {
+    balances: (
+      params: { page?: number; pageSize?: number; search?: string; productType?: string } = {},
+    ) => query('/api/v1/inventory/balances', params),
+    movements: (
+      params: {
+        page?: number
+        pageSize?: number
+        productId?: string
+        movementType?: string
+        from?: string
+        to?: string
+      } = {},
+    ) => query('/api/v1/inventory/movements', params),
+    create: () => '/api/v1/inventory/movements',
+  },
+  expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
   suppliers: {
     list: '/api/v1/suppliers',
     create: '/api/v1/suppliers',

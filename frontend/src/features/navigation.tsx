@@ -1,4 +1,4 @@
-import { ChefHat, ClipboardList, Home, Package, UsersRound } from 'lucide-react'
+import { ChefHat, ClipboardList, Home, Package, ReceiptText, UsersRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AppShell } from '@/components/templates'
 import { Button } from '@/components/atoms'
@@ -7,7 +7,15 @@ import type { ReactNode } from 'react'
 import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 
 export type AuthNavigationItem = {
-  path: '/inicio' | '/usuarios' | '/pedidos' | '/cocina' | '/productos' | '/proveedores'
+  path:
+    | '/inicio'
+    | '/usuarios'
+    | '/pedidos'
+    | '/cocina'
+    | '/productos'
+    | '/proveedores'
+    | '/inventario'
+    | '/gastos'
   label: string
   icon: ReactNode
   allowedRoles?: string[]
@@ -32,6 +40,18 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     label: 'Productos',
     icon: <Package aria-hidden="true" size={18} />,
     allowedRoles: ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'],
+  },
+  {
+    path: '/inventario',
+    label: 'Inventario',
+    icon: <Package aria-hidden="true" size={18} />,
+    allowedRoles: ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA'],
+  },
+  {
+    path: '/gastos',
+    label: 'Gastos',
+    icon: <ReceiptText aria-hidden="true" size={18} />,
+    allowedRoles: ['ADMINISTRADOR', 'ENCARGADO'],
   },
   {
     path: '/usuarios',
@@ -79,9 +99,10 @@ export function AuthenticatedLayout() {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-bold ${isActive
-                  ? 'bg-brand-orange text-brand-black'
-                  : 'text-text hover:bg-surface-elevated'
+                `inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-bold ${
+                  isActive
+                    ? 'bg-brand-orange text-brand-black'
+                    : 'text-text hover:bg-surface-elevated'
                 }`
               }
             >
