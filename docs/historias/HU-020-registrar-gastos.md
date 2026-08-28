@@ -58,7 +58,7 @@ No se modifica ni incorpora evidencia técnica durante esta normalización.
 
 ## Estado de entrega
 
-Implementada para MVP; validación manual pendiente.
+Implementada para MVP.
 
 ## Evidencias
 

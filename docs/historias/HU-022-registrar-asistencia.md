@@ -63,27 +63,23 @@ Implementada para MVP.
 
 ## Evidencias
 
-### Captura de la pantalla pricipal de usuarios y roles
+### Captura de la pantalla de inicio
 
-![Captura de usuarios y roles](../capturas/HU-002-users-page.png)
-
----
-
-### Captura de vista para celulares
-
-![Captura de vista mobile](../capturas/HU-002-mobile-page.png)
+![Captura de usuarios y roles](../capturas/HU-022F3.png)
 
 ---
 
-### Captura de modal para agregar usuario
+### Captura de la pantalla para registrar asistencia
 
-![Captura modal para agregar usuario](../capturas/HU-002-modal-user.png)
+![Captura pantalla para registrar asistencia 1](../capturas/HU-022F1.png)
+![Captura pantalla para registrar asistencia 2](../capturas/HU-022F2.png)
 
 ---
 
-### Captura de modal para cambiar/asignar contraseña
+### Captura de la pantalla de historial de asistencia
 
-![Captura modal para cambiar contraseña](../capturas/HU-002-modal-password.png)
+![Captura de pantalla de historial de asistencia 1](../capturas/HU-022F1-1.png)
+![Captura de pantalla de historial de asistencia 2](../capturas/HU-022F4.png)
 
 ---
 
