@@ -64,7 +64,7 @@ export function UiKitPage() {
       />
       <section aria-labelledby="foundations">
         <h2 id="foundations">Fundamentos</h2>
-        <div className="catalogue-grid">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4">
           <Surface>
             <StatusDot tone="success" label="Listo" />
             <Badge tone="warning">Demostración de token neutral</Badge>
@@ -81,7 +81,7 @@ export function UiKitPage() {
       </section>
       <section aria-labelledby="actions">
         <h2 id="actions">Acciones</h2>
-        <div className="inline-actions">
+        <div className="flex flex-wrap items-center gap-3">
           <Button>Principal</Button>
           <Button variant="secondary">Secundario</Button>
           <Button variant="outline" leftIcon={<span>←</span>} rightIcon={<span>→</span>}>
@@ -96,7 +96,7 @@ export function UiKitPage() {
       </section>
       <section aria-labelledby="feedback">
         <h2 id="feedback">Retroalimentación</h2>
-        <div className="catalogue-grid">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4">
           <Alert kind="info" title="Información">
             Retroalimentación neutral para un estado de interfaz.
           </Alert>
@@ -108,7 +108,7 @@ export function UiKitPage() {
       </section>
       <section id="forms" aria-labelledby="forms">
         <h2 id="forms">Formularios</h2>
-        <div className="catalogue-grid">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-4">
           <FormField
             label="Campo de ejemplo"
             hint="Este campo local demuestra descripciones accesibles."

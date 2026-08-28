@@ -3,13 +3,14 @@ import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ mode }) => {
   const { API_PROXY_TARGET } = loadEnv(mode, process.cwd(), '')
   const proxyTarget = API_PROXY_TARGET || 'http://localhost:5057'
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), svgr(), tailwindcss()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

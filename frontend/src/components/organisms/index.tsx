@@ -30,25 +30,33 @@ export function DataTable<T>({
   if (error) return <div role="alert">{error}</div>
   if (!rows.length) return <EmptyState>{emptyMessage}</EmptyState>
   return (
-    <div className="data-table-wrap">
-      <table className="data-table">
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.id} scope="col">
+              <th className="border-b border-border p-2.5 text-left" key={column.id} scope="col">
                 {column.header}
               </th>
             ))}
-            {actions && <th scope="col">Acciones</th>}
+            {actions && (
+              <th className="border-b border-border p-2.5 text-left" scope="col">
+                Acciones
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={getRowId(row)}>
               {columns.map((column) => (
-                <td key={column.id}>{column.cell(row)}</td>
+                <td className="border-b border-border p-2.5 text-left" key={column.id}>
+                  {column.cell(row)}
+                </td>
               ))}
-              {actions && <td>{actions(row)}</td>}
+              {actions && (
+                <td className="border-b border-border p-2.5 text-left">{actions(row)}</td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -75,13 +83,13 @@ export function Modal({
   if (!open) return null
   return (
     <div
-      className="modal-backdrop"
+      className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
     >
       <section
-        className="modal"
+        className="w-full max-w-lg rounded-lg border border-border bg-surface p-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -89,12 +97,12 @@ export function Modal({
           if (event.key === 'Escape') onClose()
         }}
       >
-        <header className="modal__header">
+        <header className="flex items-start justify-between gap-4">
           <h2 id="modal-title">{title}</h2>
           <button
             ref={closeRef}
             type="button"
-            className="button button--ghost button--sm"
+            className="rounded-md bg-transparent px-2.5 py-1.5 text-sm font-bold text-text"
             onClick={onClose}
           >
             Cerrar
@@ -116,7 +124,7 @@ export function PageHeader({
   actions?: ReactNode
 }) {
   return (
-    <header className="page-header">
+    <header className="flex items-start justify-between gap-4 [&_p]:text-text-muted">
       <div>
         <h1>{title}</h1>
         {description && <p>{description}</p>}

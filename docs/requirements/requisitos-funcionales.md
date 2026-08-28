@@ -77,7 +77,7 @@ La gestión de cuentas y asignación de roles será exclusiva de `ADMINISTRADOR`
 | Área | ADMINISTRADOR | ENCARGADO | MESERO | COCINA | CONTADORA | EMPLEADO |
 |---|---|---|---|---|---|---|
 | Usuarios y roles | Gestionar | — | — | — | — | — |
-| Productos/ingredientes/platos | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
+| Productos/ingredientes/platos | Gestionar | Gestionar | Consultar | Consultar | — | — |
 | Inventario | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
 | Stock mínimo/alertas | Gestionar | Gestionar | Consultar | Consultar | Consultar | — |
 | Producción/preparaciones | Gestionar/consultar | Gestionar/consultar | — | Registrar/gestionar | Consultar | — |
@@ -419,7 +419,7 @@ El catálogo de productos queda actualizado.
 ### Criterios de aceptación
 
 - ADMINISTRADOR y ENCARGADO pueden crear y actualizar productos.
-- MESERO, COCINA y CONTADORA pueden consultar según la matriz, pero no modificarlos.
+- MESERO y COCINA pueden consultar según la matriz, pero no modificarlos; CONTADORA no accede al catálogo de Products.
 - Desactivar un producto no elimina movimientos históricos.
 
 ---
@@ -658,7 +658,7 @@ El usuario obtiene la información de catálogo autorizada.
 
 - MESERO puede consultar platos/productos necesarios para pedidos.
 - COCINA puede consultar ingredientes y platos.
-- CONTADORA puede consultar información permitida sin modificarla.
+- CONTADORA no accede al catálogo de Products; su consulta de inventario conserva la matriz específica de ese módulo.
 
 ---
 
