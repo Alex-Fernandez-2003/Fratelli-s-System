@@ -15,6 +15,7 @@ using RestaurantSystem.Application.Users;
 using RestaurantSystem.Application.Orders;
 using RestaurantSystem.Application.Inventory;
 using RestaurantSystem.Application.Expenses;
+using RestaurantSystem.Application.Operations;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Inventory;
 using RestaurantSystem.Domain.Expenses;
@@ -106,6 +107,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(PolicyNames.InventoryHistory, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.ExpenseWrite, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.ExpenseCategoryRead, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("OperationsPurchase", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen));
+    options.AddPolicy("OperationsShiftManage", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
 });
 var app = builder.Build(); app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -225,7 +228,7 @@ kitchen.MapGet("/{id:guid}", async (Guid id, IKitchenCommandService s, Cancellat
 kitchen.MapPost("/{id:guid}/start", async (Guid id, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.StartAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 kitchen.MapPost("/{id:guid}/ready", async (Guid id, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.ReadyAsync(id, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 kitchen.MapPost("/{id:guid}/cancel", async (Guid id, CancelOrderRequest r, ClaimsPrincipal p, IKitchenCommandService s, CancellationToken ct) => { var x = await s.CancelAsync(id, r, Actor(p), ct); return x.Error is null ? Results.Ok(x.Value) : OrderError(x.Error); }).RequireAuthorization(PolicyNames.KitchenManage).Produces<KitchenCommandDto>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
-app.MapHub<AttendanceHub>("/hubs/attendance").RequireAuthorization(PolicyNames.AttendanceHubAccess); app.MapHub<KitchenHub>("/hubs/kitchen").RequireAuthorization(PolicyNames.KitchenHubAccess); app.Run();
+app.MapOperations(); app.MapHub<AttendanceHub>("/hubs/attendance").RequireAuthorization(PolicyNames.AttendanceHubAccess); app.MapHub<KitchenHub>("/hubs/kitchen").RequireAuthorization(PolicyNames.KitchenHubAccess); app.Run();
 static CookieOptions CookieOptions(HttpContext context) => new() { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/api/v1/auth", Secure = !context.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment() };
 static void SetCookie(HttpContext context, string token) => context.Response.Cookies.Append("refreshToken", token, CookieOptions(context));
 public partial class Program { }

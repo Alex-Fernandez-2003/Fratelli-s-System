@@ -12,7 +12,7 @@ public sealed class BusinessClock : IBusinessClock
     private readonly TimeZoneInfo zone;
     public BusinessClock(IConfiguration configuration)
     {
-        TimeZoneId = configuration["BusinessTime:TimeZoneId"] ?? "America/Argentina/Buenos_Aires";
+        TimeZoneId = configuration["BusinessTime:TimeZoneId"] ?? "America/La_Paz";
         zone = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
     }
     public string TimeZoneId { get; }
