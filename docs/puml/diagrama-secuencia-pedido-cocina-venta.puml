@@ -1,0 +1,91 @@
+@startuml
+title Diagrama de secuencia — Pedido, cocina y venta
+
+autonumber
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "MESERO / ENCARGADO" as User
+actor "COCINA" as KitchenUser
+participant "Frontend web" as Frontend
+participant "Orders API" as OrdersApi
+participant "Application\n(Orders / Kitchen / Sales)" as App
+database "PostgreSQL" as DB
+participant "SignalR Kitchen Hub" as Hub
+
+== Registro del pedido ==
+
+User -> Frontend : crear pedido con detalle
+Frontend -> OrdersApi : POST /orders
+OrdersApi -> App : CreateOrder(command)
+App -> DB : guardar Order + OrderItems
+App -> DB : crear KitchenCommand(PENDIENTE)
+App -> Hub : publicar nueva comanda
+App --> OrdersApi : pedido creado
+OrdersApi --> Frontend : 201 Created
+Frontend --> User : mostrar pedido registrado
+
+Hub -> KitchenUser : notificación de nueva comanda
+
+== Gestión en cocina ==
+
+KitchenUser -> Frontend : iniciar preparación
+Frontend -> OrdersApi : PATCH /kitchen-commands/{id}/start
+OrdersApi -> App : StartKitchenCommand(command)
+App -> DB : actualizar KitchenCommand=EN_PREPARACION
+App -> DB : actualizar Order=EN_PREPARACION
+App -> Hub : publicar cambio de estado
+App --> OrdersApi : estados actualizados
+OrdersApi --> Frontend : 200 OK
+Frontend --> KitchenUser : mostrar comanda en preparación
+
+KitchenUser -> Frontend : marcar comanda lista
+Frontend -> OrdersApi : PATCH /kitchen-commands/{id}/ready
+OrdersApi -> App : CompleteKitchenCommand(command)
+App -> DB : actualizar KitchenCommand=LISTA
+App -> DB : actualizar Order=LISTO
+App -> Hub : publicar cambio de estado
+App --> OrdersApi : estados actualizados
+OrdersApi --> Frontend : 200 OK
+Frontend --> KitchenUser : mostrar comanda lista
+
+Hub -> User : notificación de pedido listo
+
+== Confirmación de la venta ==
+
+User -> Frontend : iniciar cobro / confirmar venta
+Frontend -> OrdersApi : POST /sales
+OrdersApi -> App : ConfirmSale(command)
+App -> DB : obtener Order + OrderItems + Shift
+
+alt stock suficiente
+  App -> DB : registrar Sale + SaleItems
+  App -> DB : registrar InventoryMovements
+  App -> DB : actualizar InventoryBalances
+  App -> DB : actualizar Order=ENTREGADO
+  App --> OrdersApi : venta confirmada
+  OrdersApi --> Frontend : 201 Created
+  Frontend --> User : mostrar venta registrada
+else stock insuficiente
+  App --> OrdersApi : advertencia de stock insuficiente
+  OrdersApi --> Frontend : 409/advertencia controlada
+  Frontend --> User : mostrar advertencia y solicitar confirmación
+
+  User -> Frontend : confirmar continuar
+  Frontend -> OrdersApi : POST /sales (force/confirm)
+  OrdersApi -> App : ConfirmSale(command)
+  App -> DB : registrar Sale + SaleItems
+  App -> DB : registrar InventoryMovements
+  App -> DB : actualizar InventoryBalances\n(posible saldo negativo)
+  App -> DB : actualizar Order=ENTREGADO
+  App --> OrdersApi : venta confirmada
+  OrdersApi --> Frontend : 201 Created
+  Frontend --> User : mostrar venta registrada
+end
+
+note across
+La venta conserva responsable, turno, fecha/hora, canal y medio de pago.
+La afectación de inventario ocurre al confirmar/cobrar la venta.
+end note
+
+@enduml

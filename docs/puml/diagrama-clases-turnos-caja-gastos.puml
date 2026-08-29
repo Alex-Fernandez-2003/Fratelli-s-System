@@ -1,0 +1,85 @@
+@startuml
+title Diagrama de clases — Turnos, caja y gastos
+
+hide empty methods
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+class Employee {
+  +id: UUID
+  +fullName: String
+}
+
+class CashSession {
+  +id: UUID
+  +businessDate: Date
+  +openingAmount: Money
+  +pettyCashOpeningAmount: Money
+  +status: CashSessionStatus
+}
+
+class Shift {
+  +id: UUID
+  +shiftType: ShiftType
+  +status: ShiftStatus
+  +startedAt: DateTime?
+  +endedAt: DateTime?
+}
+
+class ShiftAssignment {
+  +id: UUID
+  +assignedAt: DateTime
+}
+
+class CashClosing {
+  +id: UUID
+  +expectedCash: Money
+  +declaredCash: Money
+  +difference: Money
+  +closedAt: DateTime
+}
+
+class ExpenseCategory {
+  +id: UUID
+  +name: String
+  +isActive: Boolean
+}
+
+class Expense {
+  +id: UUID
+  +amount: Money
+  +cashSource: CashSource
+}
+
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum ShiftType
+enum ShiftStatus
+enum CashSource
+
+CashSession "1" *-- "1..*" Shift
+Shift "1" *-- "0..*" ShiftAssignment
+Employee "1" -- "0..*" ShiftAssignment
+CashSession "1" *-- "0..1" CashClosing
+
+Shift "0..1" -- "0..*" Expense
+ExpenseCategory "0..1" -- "0..*" Expense
+
+CashSession ..> CashSessionStatus
+Shift ..> ShiftType
+Shift ..> ShiftStatus
+Expense ..> CashSource
+
+note bottom
+La sesión de caja agrupa los turnos operativos del día y culmina
+con un cierre de caja. Los gastos pueden asociarse opcionalmente
+al turno desde el que fueron registrados.
+end note
+
+@enduml

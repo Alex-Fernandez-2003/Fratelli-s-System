@@ -1,0 +1,65 @@
+@startuml
+title Diagrama de secuencia — Registro de asistencia
+
+autonumber
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "EMPLEADO / USUARIO AUTORIZADO" as User
+participant "Frontend web" as Frontend
+participant "Attendance API" as Api
+participant "Application\n(Attendance)" as App
+database "PostgreSQL" as DB
+
+== Registrar entrada ==
+
+User -> Frontend : registrar entrada
+Frontend -> Api : POST /attendance/check-in
+Api -> App : RegisterCheckIn(command)
+App -> DB : validar Employee
+
+alt no existe asistencia abierta
+  App -> DB : guardar AttendanceRecord(check_in_at)
+  App --> Api : entrada registrada
+  Api --> Frontend : 201 Created
+  Frontend --> User : mostrar entrada registrada
+else ya existe asistencia abierta
+  App --> Api : conflicto por asistencia abierta
+  Api --> Frontend : 409 Conflict
+  Frontend --> User : informar que ya existe una asistencia abierta
+end
+
+== Registrar salida ==
+
+User -> Frontend : registrar salida
+Frontend -> Api : POST /attendance/check-out
+Api -> App : RegisterCheckOut(command)
+App -> DB : buscar asistencia abierta
+
+alt existe asistencia abierta
+  App -> DB : actualizar check_out_at
+  App --> Api : salida registrada
+  Api --> Frontend : 200 OK
+  Frontend --> User : mostrar salida registrada
+else no existe asistencia abierta
+  App --> Api : error de validación
+  Api --> Frontend : 400 Bad Request
+  Frontend --> User : informar que no hay asistencia abierta
+end
+
+== Consulta ==
+
+User -> Frontend : consultar historial
+Frontend -> Api : GET /attendance
+Api -> App : GetAttendance(query)
+App -> DB : obtener registros según permisos
+App --> Api : listado
+Api --> Frontend : 200 OK
+Frontend --> User : mostrar historial / estado actual
+
+note bottom
+Solo puede existir una asistencia abierta por empleado.
+El control puede reforzarse con un índice único parcial en PostgreSQL.
+end note
+
+@enduml

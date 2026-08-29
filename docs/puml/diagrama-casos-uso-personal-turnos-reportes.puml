@@ -1,0 +1,74 @@
+@startuml
+title Diagrama de casos de uso — Personal, turnos, caja y reportes
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "ADMINISTRADOR" as Admin
+actor "ENCARGADO" as Encargado
+actor "MESERO" as Mesero
+actor "COCINA" as Cocina
+actor "CONTADORA" as Contadora
+actor "EMPLEADO" as Empleado
+
+rectangle "Personal, turnos, caja y reportes" {
+  usecase "Registrar entrada / salida\nde asistencia propia" as UC_AttendanceOwn
+  usecase "Consultar asistencia propia" as UC_AttendanceOwnView
+  usecase "Consultar asistencia general" as UC_AttendanceGeneral
+  usecase "Gestionar turnos" as UC_ShiftsManage
+  usecase "Operar turno propio" as UC_ShiftOwn
+  usecase "Registrar cierre\nde turno / caja" as UC_Close
+  usecase "Consultar cierre" as UC_CloseView
+  usecase "Consultar reporte\nde ventas" as UC_ReportSales
+  usecase "Consultar reporte\nde inventario" as UC_ReportInventory
+  usecase "Consultar reporte\nde asistencia" as UC_ReportAttendance
+}
+
+Admin --> UC_AttendanceOwn
+Encargado --> UC_AttendanceOwn
+Mesero --> UC_AttendanceOwn
+Cocina --> UC_AttendanceOwn
+Contadora --> UC_AttendanceOwn
+Empleado --> UC_AttendanceOwn
+
+Admin --> UC_AttendanceOwnView
+Encargado --> UC_AttendanceOwnView
+Mesero --> UC_AttendanceOwnView
+Cocina --> UC_AttendanceOwnView
+Contadora --> UC_AttendanceOwnView
+Empleado --> UC_AttendanceOwnView
+
+Admin --> UC_AttendanceGeneral
+Encargado --> UC_AttendanceGeneral
+Contadora --> UC_AttendanceGeneral
+
+Admin --> UC_ShiftsManage
+Encargado --> UC_ShiftsManage
+Mesero --> UC_ShiftOwn
+
+Admin --> UC_Close
+Encargado --> UC_Close
+
+Admin --> UC_CloseView
+Encargado --> UC_CloseView
+Contadora --> UC_CloseView
+
+Admin --> UC_ReportSales
+Encargado --> UC_ReportSales
+Mesero --> UC_ReportSales
+Contadora --> UC_ReportSales
+
+Admin --> UC_ReportInventory
+Encargado --> UC_ReportInventory
+Cocina --> UC_ReportInventory
+Contadora --> UC_ReportInventory
+
+Admin --> UC_ReportAttendance
+Encargado --> UC_ReportAttendance
+Mesero --> UC_ReportAttendance
+Cocina --> UC_ReportAttendance
+Contadora --> UC_ReportAttendance
+Empleado --> UC_ReportAttendance
+
+@enduml

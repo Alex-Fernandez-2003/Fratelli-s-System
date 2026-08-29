@@ -878,6 +878,8 @@ En el MVP existe como máximo una recepción definitiva por compra.
 
 No se implementa recepción parcial estructurada.
 
+> **Inconsistencia pendiente de reconciliación:** el change Sprint 2 y el diagrama de clases de compras describen líneas de recepción para registrar cantidades efectivamente aceptadas; esta baseline y su ER renderizado todavía no las modelan. No se incorporan campos ni relaciones adicionales hasta actualizar fuente `.puml` y render de forma conjunta.
+
 Solo una compra `RECIBIDA` genera movimientos de entrada. Cuando un insumo de Cocina requiere pesado/porcionado, la recepción se confirma después de esa verificación operativa.
 
 ---
@@ -1288,21 +1290,61 @@ Este documento es la especificación lógica; no se mantendrá un `schema.sql` m
 
 ---
 
-# 37. Diagrama ER
+# 37. Diagramas UML de clases
 
-Fuente:
+Los diagramas UML complementan —no reemplazan— el modelo entidad-relación de la sección siguiente. La vista general permite ubicar los agregados; las cinco vistas por módulo muestran atributos y relaciones relevantes sin convertir el ER en un diagrama de clases.
 
-```text
-docs/puml/modelo-entidad-relacion.puml
-```
+## 37.1. Vista general del dominio
 
-Render:
+![Diagrama de clases: dominio general](images/diagrama-clases-dominio-general.png)
 
-![Diagrama ER](./images/modelo-entidad-relacion.png)
+> **Fuente editable:** [`puml/diagrama-clases-dominio-general.puml`](puml/diagrama-clases-dominio-general.puml)
+
+## 37.2. Vistas por módulo
+
+- **Identidad y personal:** usuarios, roles, empleado y asistencia.
+
+  ![Diagrama de clases: identidad y personal](images/diagrama-clases-identidad-personal.png)
+
+  > **Fuente editable:** [`puml/diagrama-clases-identidad-personal.puml`](puml/diagrama-clases-identidad-personal.puml)
+
+- **Catálogo, inventario y producción:** catálogo unificado, composición, saldos, movimientos y producción.
+
+  ![Diagrama de clases: catálogo, inventario y producción](images/diagrama-clases-catalogo-inventario-produccion.png)
+
+  > **Fuente editable:** [`puml/diagrama-clases-catalogo-inventario-produccion.puml`](puml/diagrama-clases-catalogo-inventario-produccion.puml)
+
+- **Pedidos, cocina y ventas:** pedidos, comandas, clientes, ventas y su relación con turnos.
+
+  ![Diagrama de clases: pedidos, cocina y ventas](images/diagrama-clases-pedidos-cocina-ventas.png)
+
+  > **Fuente editable:** [`puml/diagrama-clases-pedidos-cocina-ventas.puml`](puml/diagrama-clases-pedidos-cocina-ventas.puml)
+
+- **Compras y abastecimiento:** proveedores, compras, recepción y sus líneas.
+
+  ![Diagrama de clases: compras y abastecimiento](images/diagrama-clases-compras-abastecimiento.png)
+
+  > **Fuente editable:** [`puml/diagrama-clases-compras-abastecimiento.puml`](puml/diagrama-clases-compras-abastecimiento.puml)
+
+- **Turnos, caja y gastos:** sesión de caja, turnos, asignaciones, cierre y gastos.
+
+  ![Diagrama de clases: turnos, caja y gastos](images/diagrama-clases-turnos-caja-gastos.png)
+
+  > **Fuente editable:** [`puml/diagrama-clases-turnos-caja-gastos.puml`](puml/diagrama-clases-turnos-caja-gastos.puml)
 
 ---
 
-# 38. Puertos vigentes del proyecto
+# 38. Diagrama ER
+
+El ER conserva la vista de persistencia: tablas, claves y relaciones físicas. No debe interpretarse como un diagrama de clases UML.
+
+![Modelo entidad-relación](images/modelo-entidad-relacion.png)
+
+> **Fuente editable:** [`puml/modelo-entidad-relacion.puml`](puml/modelo-entidad-relacion.puml)
+
+---
+
+# 39. Puertos vigentes del proyecto
 
 La baseline técnica utiliza:
 
@@ -1322,7 +1364,7 @@ Cualquier referencia previa a `5173` o `5000` en arquitectura, CORS, OpenAPI o e
 
 ---
 
-# 39. Próximo paso
+# 40. Próximo paso
 
 Con el modelo aprobado, el proyecto podrá continuar con seguridad/riesgos, pruebas y trazabilidad antes del Sprint Planning definitivo.
 
@@ -1330,7 +1372,7 @@ Antes de crear migrations, las entidades seleccionadas para el primer Sprint deb
 
 ---
 
-# 40. Control de cambios
+# 41. Control de cambios
 
 | Versión | Descripción                                                                                                                                                                      | Estado  |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |

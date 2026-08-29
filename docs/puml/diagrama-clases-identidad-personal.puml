@@ -1,0 +1,51 @@
+@startuml
+title Diagrama de clases — Identidad y personal
+
+hide empty methods
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: UUID
+  +username: String
+  +email: String
+}
+
+class Role {
+  +id: UUID
+  +name: String
+}
+
+class UserRole {
+  +userId: UUID
+  +roleId: UUID
+}
+
+class Employee {
+  +id: UUID
+  +userId: UUID?
+  +fullName: String
+  +isActive: Boolean
+}
+
+class AttendanceRecord {
+  +id: UUID
+  +employeeId: UUID
+  +checkInAt: DateTime
+  +checkOutAt: DateTime?
+}
+
+User "1" -- "0..*" UserRole
+Role "1" -- "0..*" UserRole
+User "0..1" -- "0..1" Employee : cuenta asociada >
+Employee "1" -- "0..*" AttendanceRecord
+
+note bottom
+Representa la identidad del usuario autenticado y su relación opcional
+con un empleado del negocio, además del registro de asistencia.
+end note
+
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+title Diagrama de casos de uso — Catálogo, inventario y producción
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "ADMINISTRADOR" as Admin
+actor "ENCARGADO" as Encargado
+actor "MESERO" as Mesero
+actor "COCINA" as Cocina
+actor "CONTADORA" as Contadora
+
+rectangle "Catálogo, inventario y producción" {
+  usecase "Gestionar catálogo" as UC_CatalogManage
+  usecase "Consultar catálogo" as UC_CatalogView
+  usecase "Gestionar inventario" as UC_InventoryManage
+  usecase "Consultar inventario" as UC_InventoryView
+  usecase "Configurar / consultar\nstock mínimo y alertas" as UC_Stock
+  usecase "Definir composición de\nplatos / preparaciones" as UC_Composition
+  usecase "Registrar / gestionar\nproducción" as UC_Production
+  usecase "Consultar producción" as UC_ProductionView
+}
+
+Admin --> UC_CatalogManage
+Admin --> UC_CatalogView
+Encargado --> UC_CatalogManage
+Encargado --> UC_CatalogView
+Mesero --> UC_CatalogView
+Cocina --> UC_CatalogView
+
+Admin --> UC_InventoryManage
+Admin --> UC_InventoryView
+Encargado --> UC_InventoryManage
+Encargado --> UC_InventoryView
+Mesero --> UC_InventoryView
+Cocina --> UC_InventoryView
+Contadora --> UC_InventoryView
+
+Admin --> UC_Stock
+Encargado --> UC_Stock
+Mesero --> UC_Stock
+Cocina --> UC_Stock
+Contadora --> UC_Stock
+
+Admin --> UC_Composition
+Encargado --> UC_Composition
+Cocina --> UC_Composition
+
+Admin --> UC_Production
+Encargado --> UC_Production
+Cocina --> UC_Production
+
+Admin --> UC_ProductionView
+Encargado --> UC_ProductionView
+Cocina --> UC_ProductionView
+Contadora --> UC_ProductionView
+
+@enduml

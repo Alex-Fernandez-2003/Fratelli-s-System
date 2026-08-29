@@ -300,6 +300,48 @@ El cliente no se considera usuario autenticado del MVP.
 
 Se modela como entidad de negocio que puede ser asociada opcionalmente a una venta.
 
+## 7.8. Casos de uso por área funcional
+
+Los casos de uso se dividen por área para conservar legibilidad. Muestran quién interactúa con cada capacidad; el detalle normativo permanece en los RF/RN y la matriz de autorización de `requirements/requisitos-funcionales.md`. No existe un diagrama global oficial porque concentrar todos los módulos ocultaba esas relaciones.
+
+### Acceso y administración
+
+![Diagrama de casos de uso: acceso y administración](images/diagrama-casos-uso-acceso-administracion.png)
+
+> **Fuente editable:** [`puml/diagrama-casos-uso-acceso-administracion.puml`](puml/diagrama-casos-uso-acceso-administracion.puml)
+
+### Catálogo, inventario y producción
+
+Agrupa el catálogo unificado, sus existencias y las capacidades que transforman insumos en preparaciones.
+
+![Diagrama de casos de uso: catálogo, inventario y producción](images/diagrama-casos-uso-catalogo-inventario-produccion.png)
+
+> **Fuente editable:** [`puml/diagrama-casos-uso-catalogo-inventario-produccion.puml`](puml/diagrama-casos-uso-catalogo-inventario-produccion.puml)
+
+### Pedidos, cocina y ventas
+
+Representa la cadena operativa desde la atención hasta la venta, conservando a Cocina como responsable de los estados de comanda.
+
+![Diagrama de casos de uso: pedidos, cocina y ventas](images/diagrama-casos-uso-pedidos-cocina-ventas.png)
+
+> **Fuente editable:** [`puml/diagrama-casos-uso-pedidos-cocina-ventas.puml`](puml/diagrama-casos-uso-pedidos-cocina-ventas.puml)
+
+### Proveedores, compras y gastos
+
+Separa la compra y su recepción de los gastos diarios, pues tienen reglas e impactos de inventario distintos.
+
+![Diagrama de casos de uso: proveedores, compras y gastos](images/diagrama-casos-uso-compras-gastos.png)
+
+> **Fuente editable:** [`puml/diagrama-casos-uso-compras-gastos.puml`](puml/diagrama-casos-uso-compras-gastos.puml)
+
+### Personal, turnos, caja y reportes
+
+Cubre asistencia, continuidad de turnos, cierre único de caja y consultas autorizadas.
+
+![Diagrama de casos de uso: personal, turnos, caja y reportes](images/diagrama-casos-uso-personal-turnos-reportes.png)
+
+> **Fuente editable:** [`puml/diagrama-casos-uso-personal-turnos-reportes.puml`](puml/diagrama-casos-uso-personal-turnos-reportes.puml)
+
 ---
 
 # 8. Contexto operativo
@@ -562,9 +604,11 @@ Cualquier ajuste posterior deberá tratarse mediante una regla específica que t
 
 ## 12.4. Diagrama de estados
 
-![Estados de pedido y comanda](images/estados-pedido-comanda.png)
+El ciclo de pedido y el de comanda se mantienen diferenciados, aunque sus transiciones de preparación se coordinan.
 
-> **Fuente editable:** [`puml/estados-pedido-comanda.puml`](puml/estados-pedido-comanda.puml)
+![Diagrama de estados: pedido y comanda](images/diagrama-estados-pedido-comanda.png)
+
+> **Fuente editable:** [`puml/diagrama-estados-pedido-comanda.puml`](puml/diagrama-estados-pedido-comanda.puml)
 
 ---
 
@@ -629,7 +673,15 @@ RECIBIDA
 CANCELADA
 ```
 
-## 14.2. Responsabilidades de compra
+## 14.2. Diagrama de estados
+
+El estado `RECIBIDA` es el único que habilita la afectación definitiva de inventario; no hay un flujo de recepción parcial estructurada en esta baseline.
+
+![Diagrama de estados: compra](images/diagrama-estados-compra.png)
+
+> **Fuente editable:** [`puml/diagrama-estados-compra.puml`](puml/diagrama-estados-compra.puml)
+
+## 14.3. Responsabilidades de compra
 
 Como baseline del MVP:
 
@@ -638,7 +690,7 @@ Como baseline del MVP:
 - `ADMINISTRADOR` mantiene facultades generales de gestión;
 - un mismo usuario puede acumular roles y, por tanto, responsabilidades.
 
-## 14.3. Afectación de inventario
+## 14.4. Afectación de inventario
 
 Una compra únicamente incrementará las existencias cuando haya sido verificada y marcada como:
 
@@ -650,7 +702,7 @@ Una compra `PENDIENTE` o `CANCELADA` no incrementará stock.
 
 Para productos de cocina, la verificación puede requerir pesar y/o porcionar antes de registrar la entrada de inventario. Para otros productos, como bebidas, la entrada puede registrarse inmediatamente después de verificar la recepción.
 
-## 14.4. Información mínima
+## 14.5. Información mínima
 
 La compra deberá contemplar:
 
@@ -665,7 +717,7 @@ La compra deberá contemplar:
 - respaldo cuando corresponda;
 - recepción/verificación.
 
-## 14.5. Compra incompleta o no aceptada
+## 14.6. Compra incompleta o no aceptada
 
 Si una compra llega incompleta o no puede aceptarse, se coordina con el proveedor y se realiza la devolución correspondiente. El caso ocurre de forma ocasional.
 
@@ -673,7 +725,7 @@ La compra no se tratará como `RECIBIDA` mientras el flujo básico no haya sido 
 
 La recepción parcial/rechazo parcial estructurado queda fuera de la baseline del MVP, salvo cambio de alcance posterior.
 
-## 14.6. Reglas avanzadas fuera de esta baseline
+## 14.7. Reglas avanzadas fuera de esta baseline
 
 No forman parte del MVP básico:
 
@@ -746,7 +798,19 @@ Fratelli trabaja con **dos turnos**, pero ambos utilizan **la misma caja** y se 
 
 Las personas conocen el turno al que fueron asignadas y comienzan a operar sin requerir dos cajas independientes.
 
-## 17.2. Continuidad entre turnos
+## 17.2. Ciclos de vida de turno y sesión de caja
+
+Los turnos y la sesión de caja tienen ciclos independientes: completar un turno no cierra la caja; el cierre final cambia el estado de la sesión compartida.
+
+![Diagrama de estados: turno](images/diagrama-estados-turno.png)
+
+> **Fuente editable:** [`puml/diagrama-estados-turno.puml`](puml/diagrama-estados-turno.puml)
+
+![Diagrama de estados: sesión de caja](images/diagrama-estados-sesion-caja.png)
+
+> **Fuente editable:** [`puml/diagrama-estados-sesion-caja.puml`](puml/diagrama-estados-sesion-caja.puml)
+
+## 17.3. Continuidad entre turnos
 
 El encargado deja un monto inicial/fondo que sirve como punto de partida para el turno siguiente.
 
@@ -756,7 +820,7 @@ La referencia a crédito se conserva como descripción del proceso actual, pero 
 
 Esta transferencia de información no equivale a un cierre independiente del primer turno.
 
-## 17.3. Información para el cierre
+## 17.4. Información para el cierre
 
 El sistema deberá disponer de información suficiente para presentar el cierre operativo, diferenciando al menos:
 
@@ -772,13 +836,13 @@ El sistema deberá disponer de información suficiente para presentar el cierre 
 
 PedidosYa no se mezcla automáticamente con efectivo o QR porque su dinero no ingresa de la misma forma a caja. Esto **no implica una integración técnica con PedidosYa**.
 
-## 17.4. Diferencias
+## 17.5. Diferencias
 
 Si el dinero disponible no coincide con lo esperado, deberá poder conservarse una observación y trazabilidad suficiente para contrastar la diferencia con el turno anterior.
 
 El MVP no inventará procedimientos contables adicionales.
 
-## 17.5. Registro y revisión del cierre
+## 17.6. Registro y revisión del cierre
 
 El `ENCARGADO` realiza operativamente el cierre.
 
@@ -1071,21 +1135,7 @@ La asistencia deberá funcionar sin biométrico físico.
 
 ---
 
-# 22. Estados de pedido y comanda
-
-El comportamiento inicial se representa mediante el siguiente diagrama.
-
-![Estados de pedido y comanda](images/estados-pedido-comanda.png)
-
-> **Fuente editable:** [`puml/estados-pedido-comanda.puml`](puml/estados-pedido-comanda.puml)
-
-El diagrama representa la baseline actual.
-
-Cualquier transición adicional deberá justificarse mediante una regla de negocio.
-
----
-
-# 23. Dependencias
+# 22. Dependencias
 
 ## DEP-SRS-01
 
@@ -1129,7 +1179,7 @@ Los requisitos del MVP deben cumplir la Definition of Ready antes de ser selecci
 
 ---
 
-# 24. Supuestos
+# 23. Supuestos
 
 ## SUP-SRS-01
 
@@ -1157,7 +1207,7 @@ La ausencia de biométrico o impresora no impedirá la demostración del MVP.
 
 ---
 
-# 25. Restricciones
+# 24. Restricciones
 
 ## RST-SRS-01 — Tiempo
 
@@ -1185,18 +1235,18 @@ No se inventarán valores cuantitativos de rendimiento o impacto sin evidencia.
 
 ---
 
-# 26. Información todavía pendiente o diferida
+# 25. Información todavía pendiente o diferida
 
 La segunda entrevista resolvió los vacíos que impedían refinar la composición, producción, compras, turnos y cierre básico. La información que continúa pendiente corresponde principalmente a evoluciones, decisiones técnicas o excepciones que **no bloquean el MVP actual**.
 
-## 26.1. Inventario y unidades
+## 25.1. Inventario y unidades
 
 - pueden aparecer nuevas conversiones de unidades si se incorporan ingredientes con unidades todavía no observadas;
 - los ajustes manuales administrativos podrán requerir una clasificación más amplia en una evolución posterior.
 
 La baseline actual ya contempla bajas/salidas con motivo y la conversión real `kg ↔ g` cuando corresponda.
 
-## 26.2. Compras y proveedores
+## 25.2. Compras y proveedores
 
 Fuera del flujo básico confirmado permanecen:
 
@@ -1208,7 +1258,7 @@ Fuera del flujo básico confirmado permanecen:
 - recepción parcial estructurada;
 - conciliación contable.
 
-## 26.3. Caja y canales
+## 25.3. Caja y canales
 
 La baseline de cierre ya define dos turnos, una caja, un único cierre, monto inicial, traspaso, diferencias y PedidosYa separado.
 
@@ -1218,7 +1268,7 @@ Quedan fuera del MVP:
 - integración directa con PedidosYa;
 - contabilidad/fiscalidad avanzada.
 
-## 26.4. Roles
+## 25.4. Roles
 
 El catálogo inicial está aprobado:
 
@@ -1233,7 +1283,7 @@ EMPLEADO
 
 La segunda entrevista confirma además que una misma persona puede cumplir varias responsabilidades; esto es compatible con el modelo de múltiples roles.
 
-## 26.5. Hardware
+## 25.5. Hardware
 
 Pendiente para Post-MVP:
 
@@ -1243,7 +1293,7 @@ Pendiente para Post-MVP:
 - protocolo;
 - máquina física que actuará como host del componente.
 
-## 26.6. Facturación
+## 25.6. Facturación
 
 Pendiente para una versión futura:
 
@@ -1255,9 +1305,9 @@ Pendiente para una versión futura:
 
 ---
 
-# 27. Trazabilidad inicial
+# 26. Trazabilidad inicial
 
-## 27.1. Necesidad → módulos
+## 26.1. Necesidad → módulos
 
 | Necesidad | Cobertura principal                           |
 | --------- | --------------------------------------------- |
@@ -1276,7 +1326,7 @@ Pendiente para una versión futura:
 | `N-013`   | Usuarios / roles / permisos                   |
 | `N-014`   | Trazabilidad                                  |
 
-## 27.2. Necesidad → requisitos funcionales principales
+## 26.2. Necesidad → requisitos funcionales principales
 
 | Necesidad | RF principales                                             |
 | --------- | ---------------------------------------------------------- |
@@ -1297,7 +1347,7 @@ Pendiente para una versión futura:
 
 ---
 
-# 28. Criterios de calidad de la SRS
+# 27. Criterios de calidad de la SRS
 
 La baseline actual busca cumplir los siguientes controles:
 
@@ -1314,7 +1364,7 @@ La baseline actual busca cumplir los siguientes controles:
 
 ---
 
-# 29. Criterio de salida
+# 28. Criterio de salida
 
 La SRS se considera suficientemente definida para continuar cuando:
 
@@ -1331,7 +1381,7 @@ El siguiente paso será elaborar los requisitos detallados.
 
 ---
 
-# 30. Próximos documentos
+# 29. Próximos documentos
 
 El siguiente artefacto será:
 
@@ -1350,7 +1400,7 @@ Estos documentos utilizarán los IDs establecidos en esta SRS.
 
 ---
 
-# 31. Control de cambios
+# 30. Control de cambios
 
 | Versión | Fecha      | Descripción                                                                       | Estado                                            |
 | ------- | ---------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |

@@ -228,23 +228,11 @@ No se añadirá evidencia decorativa que no demuestre una condición verificable
 
 ---
 
-# 8. Organización sugerida de evidencia
+# 8. Organización de evidencia
 
-Cuando una historia necesite archivos adicionales, se recomienda:
+Para mantener una única ubicación canónica, las capturas de ejecución se almacenan directamente en `docs/capturas/` con el prefijo de la HU. Los resultados técnicos, decisiones y enlaces necesarios se registran en el Markdown de la historia; no se crea `docs/evidence/historias/` ni una subcarpeta por HU.
 
-```text
-docs/evidence/historias/
-└── HU-XXX/
-    ├── README.md              # opcional
-    ├── captura-01.png
-    ├── captura-02.png
-    ├── resultado-prueba.txt
-    └── ...
-```
-
-El archivo de historia deberá enlazar la evidencia utilizada.
-
-Si una evidencia ya existe en otra ubicación válida del repositorio, se podrá referenciar sin duplicarla.
+La evidencia de relevamiento conserva su estructura propia en `docs/evidence/relevamiento/` y no sustituye evidencia de ejecución.
 
 ---
 

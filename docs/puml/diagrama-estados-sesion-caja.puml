@@ -1,0 +1,32 @@
+@startuml
+title Diagrama de estados — Sesión de caja
+
+hide empty description
+skinparam shadowing false
+
+state "OPEN" as Open
+state "CLOSED" as Closed
+
+[*] --> Open : abrir sesión de caja
+
+Open --> Closed : registrar cierre final\n/ cash closing
+
+Closed --> [*]
+
+note right of Open
+Representa la continuidad de caja para la jornada de negocio.
+Durante OPEN se agrupan ventas, gastos, turnos y demás
+información necesaria para el cierre.
+end note
+
+note right of Closed
+La sesión ya tiene cierre registrado y conserva
+los snapshots históricos del resultado del cierre.
+end note
+
+note bottom
+Existe una sola sesión de caja por jornada y como máximo
+un cierre por sesión. Fratelli trabaja con dos turnos,
+pero una sola caja y un único cierre final.
+end note
+@enduml

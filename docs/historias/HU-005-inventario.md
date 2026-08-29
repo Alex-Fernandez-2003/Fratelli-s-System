@@ -79,7 +79,3 @@ Implementada para MVP; no incluye edición, reversión ni exportación de movimi
 ![Captura modal para registrar entrada](../capturas/HU-005-up-register.png)
 
 ---
-
-## Estado de entrega
-
-Completado para MVP, ajustes visuales se harán luego

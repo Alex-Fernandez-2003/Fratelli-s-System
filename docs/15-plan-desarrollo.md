@@ -1879,15 +1879,12 @@ Capturas podrán guardarse en:
 docs/capturas/
 ```
 
-Ejemplos:
+Evidencias existentes del Sprint 0:
 
 ```text
-sprint-00-backend-health.png
-sprint-00-ui-kit.png
-sprint-00-database-update.png
-sprint-00-front-back-connection.png
-sprint-00-ci.png
-sprint-00-branches.png
+sprint-0-backend.png
+sprint-0-frontend.png
+sprint-0-uikit.png
 ```
 
 Sin subcarpetas.
@@ -2459,14 +2456,15 @@ docs/capturas/
 Convención:
 
 ```text
-HU-XXX-descripcion.png
+HU-XXX-descripcion-breve.ext
 ```
 
-Ejemplo:
+Ejemplos existentes:
 
 ```text
-HU-012-venta-confirmada.png
-HU-018-compra-recibida.png
+HU-003-formulario.png
+HU-009-orders.png
+HU-020-expenses.png
 ```
 
 ---

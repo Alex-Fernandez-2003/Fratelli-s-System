@@ -1391,23 +1391,33 @@ Application → Api
 
 # 70. Diagramas
 
-Se generan:
+Las vistas se separan por propósito para que la arquitectura no se confunda con el modelo de dominio ni con el despliegue. Los diagramas de componentes muestran responsabilidades y dependencias; el diagrama de contenedores conserva la vista de alto nivel y el de despliegue describe exclusivamente el ambiente HomeLab de demostración.
 
-```text
-docs/puml/arquitectura-contenedores.puml
-docs/puml/arquitectura-clean-backend.puml
-docs/puml/arquitectura-frontend.puml
-docs/puml/arquitectura-despliegue-homelab.puml
-```
+## 70.1. Vista de contenedores complementaria
 
-Renderizados:
+![Arquitectura de contenedores](images/arquitectura-contenedores.png)
 
-```text
-docs/images/arquitectura-contenedores.png
-docs/images/arquitectura-clean-backend.png
-docs/images/arquitectura-frontend.png
-docs/images/arquitectura-despliegue-homelab.png
-```
+> **Fuente editable:** [`puml/arquitectura-contenedores.puml`](puml/arquitectura-contenedores.puml)
+
+## 70.2. Componentes principales
+
+El backend representa las capas de Clean Architecture y sus dependencias hacia el dominio; el frontend muestra la organización por `app`, componentes reutilizables, *features* y clientes de integración.
+
+![Diagrama de componentes del backend](images/diagrama-componentes-backend.png)
+
+> **Fuente editable:** [`puml/diagrama-componentes-backend.puml`](puml/diagrama-componentes-backend.puml)
+
+![Diagrama de componentes del frontend](images/diagrama-componentes-frontend.png)
+
+> **Fuente editable:** [`puml/diagrama-componentes-frontend.puml`](puml/diagrama-componentes-frontend.puml)
+
+## 70.3. Despliegue de demostración
+
+La siguiente vista se limita a la topología HomeLab documentada en ADR-006: contenedores de frontend y backend, PostgreSQL existente y *reverse proxy* *same-origin*. No constituye una decisión de infraestructura productiva definitiva.
+
+![Diagrama de despliegue HomeLab](images/diagrama-despliegue-homelab.png)
+
+> **Fuente editable:** [`puml/diagrama-despliegue-homelab.puml`](puml/diagrama-despliegue-homelab.puml)
 
 ---
 
@@ -1422,6 +1432,7 @@ docs/adr/ADR-003-postgresql-ef-core.md
 docs/adr/ADR-004-identity-jwt-roles.md
 docs/adr/ADR-005-signalr-kds.md
 docs/adr/ADR-006-homelab-demo-deployment.md
+docs/adr/ADR-007-security-stamp-session-revocation.md
 ```
 
 ---

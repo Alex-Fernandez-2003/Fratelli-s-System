@@ -64,14 +64,10 @@ Implementada para MVP.
 
 ### Captura de la pantalla para registrar gastos
 
-![Captura de inventario](../capturas/HU-020-expenses.png)
+![Captura de registro de gastos](../capturas/HU-020-expenses.png)
 
 ---
 
 ### Captura de gasto registrado
 
-![Captura de vista mobile](../capturas/HU-020-registered-expense.png)
-
-## Estado de entrega
-
-Completado para MVP, cambios visuales se harán posteriormente
+![Captura de gasto registrado](../capturas/HU-020-registered-expense.png)

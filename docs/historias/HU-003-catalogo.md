@@ -70,7 +70,7 @@ Implementada para productos; la UI dedicada de categorías y unidades no está i
 
 ### Captura del formulario de creación
 
-![Captura del formulario](../capturas/HU-003-formulario.png.png)
+![Captura del formulario](../capturas/HU-003-formulario.png)
 
 ---
 

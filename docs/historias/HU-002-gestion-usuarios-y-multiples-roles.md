@@ -87,7 +87,3 @@ Completado para MVP; el ajuste visual menor permanece diferido.
 ![Captura modal para cambiar contraseña](../capturas/HU-002-modal-password.png)
 
 ---
-
-## Estado de entrega
-
-Completado para MVP, ajustes visuales se harán luego

@@ -1,0 +1,48 @@
+@startuml
+title Diagrama de casos de uso — Proveedores, compras y gastos
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "ADMINISTRADOR" as Admin
+actor "ENCARGADO" as Encargado
+actor "COCINA" as Cocina
+actor "CONTADORA" as Contadora
+
+rectangle "Proveedores, compras y gastos" {
+  usecase "Gestionar proveedores" as UC_Suppliers
+  usecase "Consultar proveedores" as UC_SuppliersView
+  usecase "Registrar / gestionar\ncompras" as UC_Purchases
+  usecase "Recibir compras" as UC_ReceivePurchases
+  usecase "Consultar compras" as UC_PurchasesView
+  usecase "Registrar gastos" as UC_Expenses
+  usecase "Consultar gastos" as UC_ExpensesView
+}
+
+Admin --> UC_Suppliers
+Encargado --> UC_Suppliers
+Cocina --> UC_SuppliersView
+Contadora --> UC_SuppliersView
+
+Admin --> UC_Purchases
+Encargado --> UC_Purchases
+Cocina --> UC_Purchases
+
+Admin --> UC_ReceivePurchases
+Encargado --> UC_ReceivePurchases
+Cocina --> UC_ReceivePurchases
+
+Admin --> UC_PurchasesView
+Encargado --> UC_PurchasesView
+Cocina --> UC_PurchasesView
+Contadora --> UC_PurchasesView
+
+Admin --> UC_Expenses
+Encargado --> UC_Expenses
+
+Admin --> UC_ExpensesView
+Encargado --> UC_ExpensesView
+Contadora --> UC_ExpensesView
+
+@enduml

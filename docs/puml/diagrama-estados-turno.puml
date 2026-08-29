@@ -1,0 +1,39 @@
+@startuml
+title Diagrama de estados — Turno
+
+hide empty description
+skinparam shadowing false
+
+state "PENDING" as Pending
+state "ACTIVE" as Active
+state "COMPLETED" as Completed
+
+[*] --> Pending : crear / planificar turno
+
+Pending --> Active : iniciar operación
+Active --> Completed : finalizar turno\n/ registrar traspaso cuando corresponda
+
+Completed --> [*]
+
+note right of Pending
+El turno existe dentro de la sesión de caja,
+pero aún no comenzó a operar.
+end note
+
+note right of Active
+El turno está en operación. Las ventas, pedidos, gastos
+y demás acciones del usuario se asocian al turno activo.
+end note
+
+note right of Completed
+El turno terminó su operación.
+Puede conservar montos de traspaso, notas y responsable
+de la entrega al siguiente turno.
+end note
+
+note bottom
+Los tipos MORNING y NIGHT son tipos de turno, no estados.
+No existe un cierre de caja independiente por turno:
+el cierre final pertenece a la sesión de caja.
+end note
+@enduml
