@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { PointerEvent, ReactNode } from 'react'
 import { Spinner } from '../atoms'
 import { EmptyState } from '../molecules'
 
@@ -77,10 +77,42 @@ export function Modal({
   onClose: () => void
 }) {
   const closeRef = useRef<HTMLButtonElement>(null)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const dragState = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(
+    null,
+  )
+
   useEffect(() => {
-    if (open) closeRef.current?.focus()
+    if (open) {
+      closeRef.current?.focus()
+      setOffset({ x: 0, y: 0 })
+    }
   }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const resetOnResize = () => setOffset({ x: 0, y: 0 })
+    window.addEventListener('resize', resetOnResize)
+    return () => window.removeEventListener('resize', resetOnResize)
+  }, [open])
+
   if (!open) return null
+
+  function startDrag(event: PointerEvent<HTMLElement>) {
+    dragState.current = { startX: event.clientX, startY: event.clientY, originX: offset.x, originY: offset.y }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  function onDrag(event: PointerEvent<HTMLElement>) {
+    if (!dragState.current) return
+    setOffset({
+      x: dragState.current.originX + (event.clientX - dragState.current.startX),
+      y: dragState.current.originY + (event.clientY - dragState.current.startY),
+    })
+  }
+  function endDrag() {
+    dragState.current = null
+  }
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
@@ -89,7 +121,8 @@ export function Modal({
       }}
     >
       <section
-        className="w-full max-w-lg rounded-lg border border-border bg-surface p-4"
+        className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg border border-border bg-surface"
+        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -97,8 +130,16 @@ export function Modal({
           if (event.key === 'Escape') onClose()
         }}
       >
-        <header className="flex items-start justify-between gap-4">
-          <h2 id="modal-title">{title}</h2>
+        <header
+          className="flex shrink-0 cursor-move touch-none items-start justify-between gap-4 border-b border-border p-4 select-none"
+          onPointerDown={startDrag}
+          onPointerMove={onDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+        >
+          <h2 id="modal-title" className="m-0">
+            {title}
+          </h2>
           <button
             ref={closeRef}
             type="button"
@@ -108,7 +149,7 @@ export function Modal({
             Cerrar
           </button>
         </header>
-        {children}
+        <div className="overflow-y-auto p-4">{children}</div>
       </section>
     </div>
   )
