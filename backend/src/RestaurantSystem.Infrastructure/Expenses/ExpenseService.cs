@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Expenses;
 using RestaurantSystem.Domain.Expenses;
+using RestaurantSystem.Infrastructure.Operations;
 
 namespace RestaurantSystem.Infrastructure.Expenses;
 
@@ -21,8 +22,8 @@ public sealed class ExpenseService(ApplicationDbContext db, IBusinessClock clock
             if (category is null) return (null, "NOT_FOUND");
             if (!category.IsActive) return (null, "EXPENSE_CATEGORY_INACTIVE");
         }
-        var shiftId = await db.Shifts.Where(x => x.Status == RestaurantSystem.Domain.Operations.ShiftStatus.ACTIVE).Select(x => (Guid?)x.Id).SingleOrDefaultAsync(ct);
-            var expense = new Expense { ShiftId = shiftId, ExpenseCategoryId = request.ExpenseCategoryId, Amount = request.Amount, CashSource = request.CashSource, Description = request.Description.Trim(), ExpenseDate = request.ExpenseDate, CreatedAt = clock.UtcNow, CreatedByUserId = actorUserId };
+        var shiftId = (await CurrentShiftQuery.ActiveAsync(db, clock, includeAssignments: false, forUpdate: false, ct))?.Id;
+        var expense = new Expense { ShiftId = shiftId, ExpenseCategoryId = request.ExpenseCategoryId, Amount = request.Amount, CashSource = request.CashSource, Description = request.Description.Trim(), ExpenseDate = request.ExpenseDate, CreatedAt = clock.UtcNow, CreatedByUserId = actorUserId };
         db.Expenses.Add(expense); await db.SaveChangesAsync(ct);
         var displayName = await db.Employees.AsNoTracking().Where(x => x.UserId == actorUserId).Select(x => x.FullName).FirstOrDefaultAsync(ct) ?? await db.Users.Where(x => x.Id == actorUserId).Select(x => x.UserName).FirstOrDefaultAsync(ct);
         return (new(expense.Id, expense.ExpenseCategoryId, category?.Name, expense.Amount, expense.CashSource, expense.Description, expense.ExpenseDate, expense.CreatedAt, expense.CreatedByUserId, displayName), null);

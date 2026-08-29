@@ -5163,6 +5163,8 @@ export interface components {
       unitCost: number | string
       /** Format: double */
       receivedQuantity: null | number | string
+      /** Format: uuid */
+      receivedUnitId: null | string
     }
     PurchaseLineRequest: {
       /** Format: uuid */

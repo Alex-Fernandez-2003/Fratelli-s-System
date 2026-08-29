@@ -24,7 +24,7 @@ public sealed record CancelPurchaseRequest(string? Reason);
 public sealed record ReceiptLineRequest(Guid PurchaseItemId, decimal ReceivedQuantity, Guid UnitId);
 public sealed record ReceivePurchaseRequest(IReadOnlyList<ReceiptLineRequest> Lines, string? Notes);
 public sealed record PurchaseDto(Guid Id, Guid SupplierId, PurchaseStatus Status, decimal Total, IReadOnlyList<PurchaseLineDto> Lines);
-public sealed record PurchaseLineDto(Guid Id, Guid ProductId, decimal OrderedQuantity, Guid UnitId, decimal UnitCost, decimal? ReceivedQuantity);
+public sealed record PurchaseLineDto(Guid Id, Guid ProductId, decimal OrderedQuantity, Guid UnitId, decimal UnitCost, decimal? ReceivedQuantity, Guid? ReceivedUnitId);
 public interface IOperationsService {
  Task<(CompositionDto? Value,string? Error)> ReplaceCompositionAsync(Guid productId,IReadOnlyList<CompositionLineRequest> lines,string actor,CancellationToken ct=default); Task<CompositionDto?> CompositionAsync(Guid productId,CancellationToken ct=default);
  Task<(decimal? Value,string? Error)> SetMinimumStockAsync(Guid productId,decimal? minStock,CancellationToken ct=default); Task<(ProductionRequirementsDto? Value,string? Error)> RequirementsAsync(Guid productId,decimal quantity,CancellationToken ct=default); Task<(ProductionDto? Value,string? Error)> ProduceAsync(CreateProductionRequest request,string actor,CancellationToken ct=default);
