@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Production;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Production;

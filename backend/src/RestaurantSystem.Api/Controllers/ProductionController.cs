@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Production;
 using RestaurantSystem.Domain.Production;
 

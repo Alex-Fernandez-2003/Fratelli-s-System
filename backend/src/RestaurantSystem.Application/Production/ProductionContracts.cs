@@ -1,10 +1,9 @@
 using System.Text.Json.Serialization;
+using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Production;
 
 namespace RestaurantSystem.Application.Production;
-
-public sealed record PagedResponse<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 
 public sealed record RecipeDto(
     Guid Id,
