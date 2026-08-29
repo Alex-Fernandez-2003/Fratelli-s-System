@@ -10,6 +10,7 @@ import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
+<<<<<<< Updated upstream
 import { SuppliersPage } from '../pages/proveedores/SuppliersPage'
 import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
@@ -21,6 +22,11 @@ import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
+=======
+import { SuppliersPage } from '../pages/proveedores/SuppliersPage' // <-- Importar la página de proveedores
+import { UiKitPage } from '../pages/UiKitPage'
+import { SUPPLIER_READ_ROLES } from '../features/proveedores/types' // <-- Importar roles
+>>>>>>> Stashed changes
 
 function Bootstrap() {
   return (
@@ -71,10 +77,17 @@ export function AppRoutes() {
   return (
     <Routes>
       {import.meta.env.DEV && <Route path="/dev/ui-kit" element={<UiKitPage />} />}
+<<<<<<< Updated upstream
 
       <Route path="/login" element={<LoginRoute />} />
 
       {/* Rutas protegidas por sesión */}
+=======
+      
+      <Route path="/login" element={<LoginRoute />} />
+      
+      {/* Rutas que requieren autenticación */}
+>>>>>>> Stashed changes
       <Route element={<RequireAuth />}>
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<InicioPage />} />
@@ -133,8 +146,19 @@ export function AppRoutes() {
           </Route>
         </Route>
       </Route>
+<<<<<<< Updated upstream
 
       {/* Manejo de errores y fallbacks */}
+=======
+      
+      {/* Rutas que requieren autenticación + roles específicos */}
+      <Route element={<RequireAuth />}>
+        <Route element={<RequireAnyRole roles={[...SUPPLIER_READ_ROLES]} />}>
+          <Route path="/proveedores" element={<SuppliersPage />} />
+        </Route>
+      </Route>
+      
+>>>>>>> Stashed changes
       <Route path="/403" element={<ForbiddenPage />} />
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
