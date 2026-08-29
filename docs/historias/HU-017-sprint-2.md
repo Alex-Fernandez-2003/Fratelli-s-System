@@ -1,4 +1,67 @@
-# HU-017 — Sprint 2 operational workflow
+# HU-017 — Registrar compras a proveedores
+
+## Resultado
+
+Implementada end-to-end: listado de compras con filtro por estado, registro de nueva compra con líneas de detalle, y cancelación de compras pendientes.
+
+## Reglas implementadas
+
+- `GET /api/v1/purchases`, `GET /api/v1/purchases/{id}`, `POST /api/v1/purchases` y `POST /api/v1/purchases/{id}/cancel` conforman el flujo.
+- Lectura de compras usa el rol `SupplierRead` del backend (incluye `CONTADORA`); escritura (crear/cancelar/recibir) usa `OperationsPurchase`, que excluye a `CONTADORA`.
+- Solo se puede cancelar una compra en estado `PENDIENTE`; la cancelación exige un motivo y no genera movimientos de inventario.
+- El total de una compra nueva se calcula en el cliente solo de forma referencial: el monto definitivo lo confirma el servidor.
+- Cada línea de compra exige producto, unidad, cantidad (> 0) y costo unitario (≥ 0) antes de habilitar el envío.
+
+## Frontend y validación
+
+El frontend agrega la sección **Compras** (`PurchasesPage`, `NewPurchasePage`) sobre `http-client` y React Query (`api.ts`), con listado paginado, filtro por estado, modal de cancelación con motivo obligatorio y formulario de alta con líneas dinámicas de producto/cantidad/unidad/costo. Los nombres de proveedor, producto y unidad se resuelven vía queries auxiliares (`useSuppliersForPurchase`, `useProductsForPurchase`, `useUnitsForPurchase`), ya que `PurchaseDto` solo trae IDs.
+
+## Visibilidad y roles
+
+La vista de Compras solo es visible en la navegación y accesible por ruta (`RequireAnyRole`) para `ADMINISTRADOR`, `ENCARGADO` y `COCINA` (`PURCHASE_WRITE_ROLES`). `CONTADORA` puede consultar compras vía API (policy `SupplierRead` del backend) pero no ve esta pantalla; tendrá su propia pantalla de historial más adelante.
+
+## Baseline revalidado
+
+_Pendiente de completar con el hash de `develop` correspondiente._
+
+## Evidencia real
+
+No se modifica ni incorpora evidencia técnica durante esta normalización.
+
+## Manifest de archivos del change
+
+### Frontend
+
+| Archivo |
+| --- |
+| `src/features/purchases/api.ts` |
+| `src/features/purchases/pages.tsx` |
+| `src/features/navigation.tsx` |
+| `src/routes/AppRoutes.tsx` |
+
+### Documentación
+
+| Archivo |
+| --- |
+| `docs/historias/HU-017-registrar-compras-proveedores.md` |
+
+## Estado de entrega
+
+Implementada; esta normalización no añade validación ni evidencia nueva.
+
+## Evidencias
+
+### Captura del listado de compras
+
+![Captura del listado de compras](../capturas/HU-017-compras.png)
+
+---
+
+### Captura de registro de nueva compra
+
+![Captura de registro de nueva compra](../capturas/HU-017-nueva-compra.png)
+
+
 
 ## Resultado
 
