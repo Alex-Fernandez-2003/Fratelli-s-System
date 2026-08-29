@@ -12,6 +12,11 @@ import type { CompositionLineRequest } from './types'
 
 function message(error: unknown) {
   if (error instanceof HttpError) {
+    const errors = (error.problem as { errors?: Record<string, string[]> }).errors
+    if (errors) {
+      const fieldMessages = Object.values(errors).flat()
+      if (fieldMessages.length) return fieldMessages.join(' ')
+    }
     return error.problem.detail ?? error.problem.title ?? 'No se pudo guardar la composición.'
   }
   return 'No se pudo guardar la composición. Intenta nuevamente.'
@@ -24,7 +29,7 @@ export function CompositionPage() {
 
   const productQuery = useProduct(id)
   const compositionQuery = useComposition(id)
-  const ingredientsQuery = useProductsList({ isActive: true, pageSize: 200 })
+  const ingredientsQuery = useProductsList({ isActive: true, pageSize: 100 })
   const unitsQuery = useUnitsList()
   const updateComposition = useUpdateComposition(id)
 
@@ -61,6 +66,11 @@ export function CompositionPage() {
       ) : productQuery.error || !productQuery.data ? (
         <Alert kind="error" title="No se pudo cargar el producto">
           Verifica el enlace o volvé al listado de productos.
+        </Alert>
+      ) : productQuery.data.productType !== 'PREPARATION' ? (
+        <Alert kind="error" title="Este producto no admite composición">
+          Solo los productos de tipo Preparación pueden tener una receta de ingredientes.
+          &ldquo;{productQuery.data.name}&rdquo; es de tipo {productQuery.data.productType}.
         </Alert>
       ) : (
         <CompositionEditor

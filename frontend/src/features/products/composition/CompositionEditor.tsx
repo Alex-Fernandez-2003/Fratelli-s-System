@@ -157,7 +157,8 @@ export function CompositionEditor({
       setCyclicWarning(product.name)
       return
     }
-    updateLine(key, { componentProductId: product.id })
+    const defaultUnitId = unitsById.has(product.inventoryUnitId) ? product.inventoryUnitId : ''
+    updateLine(key, { componentProductId: product.id, unitId: defaultUnitId })
   }
 
   function removeLine(key: string) {
@@ -214,7 +215,9 @@ export function CompositionEditor({
           {onChangeProduct && (
             <div className="w-full sm:w-64">
               <ProductCombobox
-                products={ingredientOptions.filter((p) => p.id !== parentProduct.id)}
+                products={ingredientOptions.filter(
+                  (p) => p.id !== parentProduct.id && p.productType === 'PREPARATION',
+                )}
                 placeholder="Buscar otro producto…"
                 onSelect={onChangeProduct}
               />
@@ -371,6 +374,15 @@ function CompositionRow({
         ? 'border-warning/60 bg-warning/10'
         : 'border-border'
   const allowedUnitsHint = issues.find((i) => i.code === 'UNIT_INCOMPATIBLE')?.allowedUnits
+  const selectedComponent = ingredientOptions.find((p) => p.id === line.componentProductId)
+  const componentUnit = selectedComponent
+    ? units.find((u) => u.id === selectedComponent.inventoryUnitId)
+    : undefined
+  const availableUnits = (
+    componentUnit
+      ? units.filter((u) => u.is_active && u.dimension === componentUnit.dimension)
+      : units.filter((u) => u.is_active)
+  )
 
   const ingredientField = (
     <ProductCombobox
@@ -393,13 +405,11 @@ function CompositionRow({
   const unitField = (
     <Select value={line.unitId} onChange={(e) => onChangeUnit(e.target.value)}>
       <option value="">Seleccionar…</option>
-      {units
-        .filter((u) => u.is_active)
-        .map((unit) => (
-          <option key={unit.id} value={unit.id}>
-            {unit.name} ({unit.symbol})
-          </option>
-        ))}
+      {availableUnits.map((unit) => (
+        <option key={unit.id} value={unit.id}>
+          {unit.name} ({unit.symbol})
+        </option>
+      ))}
     </Select>
   )
   const removeButton = (

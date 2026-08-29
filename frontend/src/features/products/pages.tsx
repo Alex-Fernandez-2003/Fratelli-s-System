@@ -356,7 +356,7 @@ export function ProductsPage() {
         >
           <Pencil size={16} />
         </IconButton>
-        {(product.productType === 'PREPARATION' || product.productType === 'SALE_ITEM') && (
+        {product.productType === 'PREPARATION' && (
           <Link
             to={`/productos/${product.id}/composicion`}
             aria-label={`Editar composición de ${product.name}`}

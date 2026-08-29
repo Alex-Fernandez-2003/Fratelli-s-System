@@ -99,6 +99,7 @@ export function Modal({
   if (!open) return null
 
   function startDrag(event: PointerEvent<HTMLElement>) {
+    if (event.target instanceof HTMLElement && event.target.closest('button')) return
     dragState.current = { startX: event.clientX, startY: event.clientY, originX: offset.x, originY: offset.y }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
