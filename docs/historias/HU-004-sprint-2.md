@@ -62,23 +62,23 @@ Implementada para MVP.
 
 ## Evidencias
 
-### 1. Lista de composición
-![Lista de composición](../capturas/HU-004-lista-composicion.png)
+### Composición de preparación (Desktop)
+![Composición de preparación](../capturas/HU-004-lista-Composición.png)
 
-### 2. Lista de composición con helado
-![Lista de composición con helado](../capturas/HU-004-lista-composicion-helado.png)
+### Composición de preparación (Mobile)
+![Composición de preparación mobile](../capturas/HU-004-responsibo-1.png)
 
-### 3. Agregar ingrediente
+### Lista de composición con helado
+![Lista de composición con helado](../capturas/HU-004-lista-Composición-helado.png)
+
+### Agregar ingrediente
 ![Agregar ingrediente](../capturas/HU-004-agregar-ingrediente.png)
 
-### 4. Vista responsiva - 1
-![Vista responsiva 1](../capturas/HU-004-responsivo-1.png)
+### Vista responsiva adicional
+![Vista responsiva adicional](../capturas/HU-004-responsibo-2.png)
 
-### 5. Vista responsiva - 2
-![Vista responsiva 2](../capturas/HU-004-responsivo-2.png)
+### Error: relación cíclica detectada
+![Relación cíclica detectada](../capturas/HU-004-Error-relación.png)
 
-### 6. Error de relación circular
-![Error de relación circular](../capturas/HU-004-error-relacion.png)
-
-### 7. Mensaje de guardado exitoso
-![Mensaje de guardado exitoso](../capturas/HU-004-mensaje-guardado.png)
+### Mensaje de guardado exitoso
+![Composición guardada exitosamente](../capturas/HU-004-mensaje-guardado.png)
