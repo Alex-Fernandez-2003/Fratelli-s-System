@@ -1,11 +1,11 @@
 # Sprint 2 backend → frontend handoff
 
-Frontend Sprint 2 is pending. All routes are under `/api/v1`, require Bearer auth, and derive business actors server-side. Do not send totals, price snapshots, inventory deltas, actor IDs, or Sale Shift IDs.
+HU-006 tiene su consumidor frontend completado; los demás consumidores Sprint 2 siguen según su propio estado. Todas las rutas están bajo `/api/v1`, requieren Bearer auth y derivan los actores de negocio en servidor. No enviar totales, snapshots de precio, deltas de inventario, actor IDs ni Sale Shift IDs.
 
 | HU | Capability | Routes | Primary roles / contract notes |
 |---|---|---|---|
 | HU-004 | Composition | `GET/PUT /products/{id}/composition` | GET CatalogRead; PUT CatalogWrite. Full replacement of `{componentProductId, quantityPerOutputUnit, unitId}`; no inventory movement. |
-| HU-006 | Minimum stock | `PUT /products/{id}/minimum-stock`; existing `GET /inventory/balances` | Manager/admin update; inventory-read roles query balances. `minStock: null` clears; `isLowStock` is derived. |
+| HU-006 | Visibilidad de stock bajo y resumen | existing `GET /inventory/balances`; `GET /inventory/summary` | Consumidor frontend completado en `/inventario`: tarjetas, alerta, filtro Stock bajo y Notificaciones. Summary es la única ruta añadida, read-only con `InventoryRead`; ADMINISTRADOR, ENCARGADO, MESERO, COCINA y CONTADORA leen, EMPLEADO-only no. `minStock: null` conserva la semántica existente; negativos son subconjunto de stock bajo. |
 | HU-007 | Production | `GET /products/{id}/production-requirements?quantity=`; `POST /productions` | Kitchen/manager/admin. `{productId, quantityProduced, notes?}`. The preview is non-authoritative; confirmation re-evaluates stock. 409 shortage is backend authority. |
 | HU-012 | Sale | `POST /sales` | Waiter/manager/admin. `{orderId, salesChannel, paymentMethod, acknowledgeStockShortage?}` only; Order must be ENTREGADO; values come from Order snapshots and Shift is resolved server-side. |
 | HU-013 | Sale shortage | `POST /sales` | First shortage response is 409 ProblemDetails with `code` and `shortages`; retry only with `acknowledgeStockShortage: true`; never echo client-calculated shortages. |

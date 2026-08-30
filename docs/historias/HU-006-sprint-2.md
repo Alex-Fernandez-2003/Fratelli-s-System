@@ -1,63 +1,70 @@
-# HU-006 — Sprint 2 operational workflow
+# HU-006 — Visibilidad de stock bajo y resumen de inventario
 
 ## Resultado
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**.
+**ENTREGADA** HU-006 extiende `/inventario` con un resumen global y una vista derivada de Notificaciones, sin crear un módulo paralelo.
 
-La implementación backend pertenece al change `implement-sprint-2-backend-operational-workflows`. No se modificó frontend ni se generaron contratos TypeScript.
+## Alcance entregado
 
-## Reglas implementadas
+- Único endpoint añadido: `GET /api/v1/inventory/summary`, de solo lectura y protegido por `InventoryRead`.
+- El resumen devuelve `totalProducts`, `lowStockCount`, `negativeStockCount`, `normalStockCount` y `lowStockItems`.
+- Existencias incorpora alerta global, tarjetas de Stock bajo, Negativos, Normal y Total productos, y filtro Stock bajo basado en el conjunto completo del Summary.
+- Notificaciones muestra las tarjetas derivadas de `lowStockItems`; `Ver detalles` activa esa pestaña.
+- OpenAPI runtime y `frontend/src/types/api.generated.ts` están sincronizados.
 
-Ver el mapa contractual específico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
+## Reglas y seguridad
 
-## Seguridad
-
-Las rutas requieren autenticación y políticas backend; los identificadores de actor se obtienen de los claims, no del request.
+- El universo es el de productos activos de Inventory; un producto sin balance materializado se trata como cantidad `0`.
+- Stock bajo incluye cantidad negativa o cantidad menor o igual al mínimo configurado. Negativos es un subconjunto informativo de Stock bajo; `normalStockCount = totalProducts - lowStockCount`.
+- Los saldos negativos se conservan, sin clamping. Los conteos son de productos, no una suma de cantidades heterogéneas.
+- `InventoryRead` permite ADMINISTRADOR, ENCARGADO, MESERO, COCINA y CONTADORA; EMPLEADO-only y anónimo no tienen acceso. Movimientos conserva su restricción de gestión para ADMINISTRADOR/ENCARGADO.
+- No hay migración, persistencia de notificaciones, segunda UI de MinStock, cambio de escritura Inventory ni ruptura de rutas existentes.
 
 ## Frontend y validación
 
-Frontend Sprint 2: **PENDIENTE**. No hay capturas ni cambios de `frontend/` en este change.
+- Release publish: **PASS**.
+- Backend: **58/58 PASS** (1 domain, 1 application, 56 integration), incluida PostgreSQL real mediante Testcontainers.
+- Runtime OpenAPI y TypeScript generado: **PASS** y sincronizados.
+- Frontend scoped Prettier, typecheck, lint y build: **PASS**; suite frontend: **68 tests PASS**.
+- El `format:check` global queda bloqueado exclusivamente por **17 archivos preexistentes y sin tocar**; no es una regresión de HU-006.
+- La evidencia automatizada cubre semántica negativa, autorización, estados de error/reintento y demás regresiones de comportamiento. Las capturas visuales no pretenden probar esos casos.
 
-## Baseline revalidado
+## Baseline
 
-- Branch/HEAD: `develop` / `8a8e3f6a82356020edd7a8b0d0508e259c68c287`.
-- Docker/Testcontainers disponible durante la validación final.
+La baseline local revalidada no tenía Summary, ruta generada, pestaña Notificaciones ni consulta global. La entrega conserva `/inventario`, balances, movimientos, permisos y foundations existentes.
 
-## Evidencia real
+## Manifest exacto del diff actual
 
-- `dotnet restore RestaurantSystem.slnx`: PASS.
-- `dotnet build RestaurantSystem.slnx --no-restore`: PASS.
-- `dotnet test RestaurantSystem.slnx --no-build`: PASS, 43/43 (incluye OperationsContractPostgresIntegrationTests).
-- La cadena EF se ejercitó sobre PostgreSQL disposable por la suite de integración; el script idempotente se generó correctamente.
-- `/openapi/v1.json` se sirvió en runtime y contiene las rutas Sprint 2 aplicables y las respuestas explícitas 400/401/403/404/409 de las mutaciones relevantes.
+Salida de `git diff --name-only` al preparar este cierre:
 
-## Manifest de archivos del change
+```text
+backend/src/RestaurantSystem.Api/Program.cs
+backend/src/RestaurantSystem.Application/Inventory/InventoryContracts.cs
+backend/src/RestaurantSystem.Infrastructure/Inventory/InventoryService.cs
+backend/tests/RestaurantSystem.IntegrationTests/InventoryExpensesPostgresIntegrationTests.cs
+docs/historias/HU-006-sprint-2.md
+frontend/src/features/inventory/api.test.ts
+frontend/src/features/inventory/api.ts
+frontend/src/features/inventory/pages.tsx
+frontend/src/lib/api/endpoints.ts
+frontend/src/routes/AppRoutes.test.tsx
+frontend/src/types/api.generated.ts
+```
 
-### Backend
+## Evidencia visual real
 
-- `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`
-- `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`
-- `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs`
+![Existencias desktop](../capturas/HU-006-low-stock.png)
 
-### Frontend y contrato generado
+`docs/capturas/HU-006-low-stock.png` muestra Existencias desktop con tarjetas de resumen, alerta global de stock bajo, filtro Stock bajo y pestaña Notificaciones.
 
-Ninguno.
+![Resumen móvil](../capturas/HU-006-mobile-page.png)
 
-### Documentación
+`docs/capturas/HU-006-mobile-page.png` muestra el layout estrecho/móvil de resumen, tarjetas y alerta de Inventory.
 
-- `docs/historias/HU-006-sprint-2-backend.md`
-- `docs/handoffs/sprint-2-backend-frontend-handoff.md`
+![Notificaciones](../capturas/HU-006-notifications.png)
 
-## Evidencias
-
-No se incorporaron screenshots ni capturas.
+`docs/capturas/HU-006-notifications.png` muestra la pestaña Notificaciones y las tarjetas de stock bajo.
 
 ## Estado de entrega
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**. La verificación SDD y el archive no se ejecutaron.
-
-### Revalidación posterior
-
-El 2026-08-28 se revalidaron `dotnet restore`, `dotnet build`, la suite backend completa (53/53, 0 fallos), la cadena de migraciones PostgreSQL y OpenAPI. La matriz PostgreSQL de autorización cubre cada ruta Sprint 2 para anónimo y los seis roles; no se modificó frontend, contratos generados ni capturas.
+Completo, con posibles cambios visuales posteriores.
