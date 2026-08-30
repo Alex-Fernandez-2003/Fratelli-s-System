@@ -23,6 +23,7 @@ import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inven
 import { ExpensesPage } from '../features/expenses/pages'
 import { NewPurchasePage, PurchasesPage } from '../features/purchases/pages'
 import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
+import { RegisterProductionPage } from '../features/production'
 
 function Bootstrap() {
   return (
@@ -100,6 +101,10 @@ export function AppRoutes() {
           </Route>
           <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
             <Route path="/productos/:id/composicion" element={<CompositionPage />} />
+          </Route>
+
+          <Route element={<RequireAnyRole roles={['COCINA', 'ENCARGADO', 'ADMINISTRADOR']} />}>
+            <Route path="/produccion/registrar" element={<RegisterProductionPage />} />
           </Route>
 
           {/* Inventario */}

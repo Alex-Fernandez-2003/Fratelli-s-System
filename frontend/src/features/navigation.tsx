@@ -72,6 +72,14 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     matches: startsWithRoute('/productos'),
   },
   {
+    id: 'produccion',
+    label: 'Produccion',
+    icon: ChefHat,
+    readRoles: ['COCINA', 'ENCARGADO', 'ADMINISTRADOR'],
+    target: '/produccion/registrar',
+    matches: startsWithRoute('/produccion'),
+  },
+  {
     id: 'inventario',
     label: 'Inventario',
     icon: Warehouse,
