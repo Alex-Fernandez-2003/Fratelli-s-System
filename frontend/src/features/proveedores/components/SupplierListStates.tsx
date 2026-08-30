@@ -12,7 +12,6 @@ export function SuppliersLoadingSkeleton() {
   )
 }
 
-<<<<<<< Updated upstream
 export function SuppliersEmptyState({
   onCreate,
   canWrite,
@@ -27,13 +26,6 @@ export function SuppliersEmptyState({
         Comienza agregando los proveedores de tu inventario para gestionar las compras y
         suministros.
       </p>
-=======
-export function SuppliersEmptyState({ onCreate, canWrite }: { onCreate: () => void; canWrite: boolean }) {
-  return (
-    <div className="p-4 text-center text-text-muted" role="status">
-      <p>No hay proveedores registrados</p>
-      <p>Comienza agregando los proveedores de tu inventario para gestionar las compras y suministros.</p>
->>>>>>> Stashed changes
       {canWrite && <Button onClick={onCreate}>+ Agregar primer proveedor</Button>}
     </div>
   )
@@ -44,13 +36,8 @@ export function SuppliersErrorState({ onRetry }: { onRetry: () => void }) {
     <div className="p-4 text-center text-danger" role="alert">
       <p>Error al cargar datos</p>
       <p>
-<<<<<<< Updated upstream
         Hubo un problema de conexión al intentar obtener la lista de proveedores. Verifica tu red e
         inténtalo nuevamente.
-=======
-        Hubo un problema de conexión al intentar obtener la lista de proveedores. Verifica tu red e inténtalo
-        nuevamente.
->>>>>>> Stashed changes
       </p>
       <Button onClick={onRetry}>Reintentar carga</Button>
     </div>

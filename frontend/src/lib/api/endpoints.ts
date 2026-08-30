@@ -17,7 +17,6 @@ export const endpoints = {
     logout: '/api/v1/auth/logout',
     me: '/api/v1/auth/me',
   },
-<<<<<<< Updated upstream
   attendance: {
     today: '/api/v1/attendance/employees/today',
     checkIn: (employeeId: string) => `/api/v1/attendance/employees/${employeeId}/check-in`,
@@ -142,8 +141,6 @@ export const endpoints = {
     create: () => '/api/v1/inventory/movements',
   },
   expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
-=======
->>>>>>> Stashed changes
   suppliers: {
     list: '/api/v1/suppliers',
     create: '/api/v1/suppliers',

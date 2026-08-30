@@ -97,8 +97,4 @@ export function PrimaryNav({ items }: { items: PrimaryNavItem[] }) {
       })}
     </ul>
   )
-<<<<<<< Updated upstream
 }
-=======
-}
->>>>>>> Stashed changes
