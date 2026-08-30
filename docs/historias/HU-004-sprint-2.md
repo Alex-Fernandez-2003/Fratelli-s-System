@@ -1,63 +1,84 @@
-# HU-004 — Sprint 2 operational workflow
+# HU-004 — Definir composición de platos y preparaciones
 
 ## Resultado
-
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**.
-
-La implementación backend pertenece al change `implement-sprint-2-backend-operational-workflows`. No se modificó frontend ni se generaron contratos TypeScript.
+Implementada end-to-end la gestión de composición de preparaciones en `/productos/:id/composicion`.
 
 ## Reglas implementadas
-
-Ver el mapa contractual específico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
+- Lectura: `ADMINISTRADOR` y `ENCARGADO` (política `CatalogRead`); escritura: `ADMINISTRADOR` y `ENCARGADO` (política `CatalogWrite`).
+- Solo productos de tipo **Preparación** pueden tener composición; el backend rechaza con `INVALID_COMPOSITION_PARENT` cualquier otro tipo (Ingrediente, Insumo, Producto de venta).
+- Un producto no puede ser ingrediente de sí mismo (relación cíclica); el backend la rechaza y el frontend la bloquea antes de intentar guardar.
+- No se permite el mismo ingrediente duplicado en dos líneas de la misma composición.
+- La unidad de cada línea debe ser dimensionalmente compatible con la unidad de inventario del ingrediente (masa/volumen/unidad); una unidad incompatible se rechaza.
+- `PUT /products/{id}/composition` reemplaza la composición completa (no es un merge parcial).
+- Modificar la composición **no genera movimientos de inventario**.
+- No se implementa costeo ni rendimiento esperado (fuera del alcance de esta historia).
 
 ## Seguridad
-
-Las rutas requieren autenticación y políticas backend; los identificadores de actor se obtienen de los claims, no del request.
+Los endpoints requieren JWT y aplican las políticas `CatalogRead` (lectura) y `CatalogWrite` (escritura).
 
 ## Frontend y validación
+La interfaz ofrece tabla desktop y tarjetas apiladas en mobile (responsive), con:
+- Autocompletado del ingrediente y autoselección de la unidad correcta al elegirlo, para evitar el error de unidad incompatible desde el inicio.
+- El selector de unidad solo muestra las unidades compatibles con el ingrediente ya elegido.
+- Bloqueo inmediato (modal) si se intenta agregar el producto padre como su propio ingrediente.
+- Aviso visible de error de validación (unidades incompatibles, ingrediente duplicado, falta de al menos un componente) antes de permitir guardar.
+- El botón de acceso a la composición solo aparece en la tabla de Productos para filas de tipo Preparación.
 
-Frontend Sprint 2: **PENDIENTE**. No hay capturas ni cambios de `frontend/` en este change.
+No se declara validación manual adicional a la evidencia real.
 
 ## Baseline revalidado
-
-- Branch/HEAD: `develop` / `8a8e3f6a82356020edd7a8b0d0508e259c68c287`.
-- Docker/Testcontainers disponible durante la validación final.
+`develop` revalidado en `<COMPLETAR: hash de commit>`.
 
 ## Evidencia real
-
-- `dotnet restore RestaurantSystem.slnx`: PASS.
-- `dotnet build RestaurantSystem.slnx --no-restore`: PASS.
-- `dotnet test RestaurantSystem.slnx --no-build`: PASS, 43/43 (incluye OperationsContractPostgresIntegrationTests).
-- La cadena EF se ejercitó sobre PostgreSQL disposable por la suite de integración; el script idempotente se generó correctamente.
-- `/openapi/v1.json` se sirvió en runtime y contiene las rutas Sprint 2 aplicables y las respuestas explícitas 400/401/403/404/409 de las mutaciones relevantes.
+<COMPLETAR: indicar si se modifica o incorpora evidencia técnica durante esta normalización>.
 
 ## Manifest de archivos del change
-
 ### Backend
-
-- `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`
-- `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`
-- `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs`
+| Archivo | Propósito |
+| --- | --- |
+| `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs` | Endpoints `GET`/`PUT` de composición. |
+| `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs` | Reglas de composición (padre válido, cíclico, duplicado, unidad compatible). |
+| `<COMPLETAR: entidad de dominio ProductComposition>` | Entidad de composición. |
+| `<COMPLETAR: migración que crea product_compositions>` | Migración de la tabla de composición. |
 
 ### Frontend y contrato generado
-
-Ninguno.
+| Archivo | Propósito |
+| --- | --- |
+| `frontend/src/features/products/composition/types.ts` | Tipos de la feature (basados en el contrato OpenAPI). |
+| `frontend/src/features/products/composition/validation.ts` | Reglas de validación en cliente (espejo de las reglas del backend). |
+| `frontend/src/features/products/composition/api.ts` | Hooks de lectura/escritura de composición. |
+| `frontend/src/features/products/composition/CompositionEditor.tsx` | Editor de ingredientes (tabla/tarjetas responsive). |
+| `frontend/src/features/products/composition/CompositionPage.tsx` | Página `/productos/:id/composicion`. |
+| `frontend/src/features/products/pages.tsx` | Acción "Editar composición" en la tabla de Productos. |
+| `frontend/src/routes/AppRoutes.tsx` | Ruta protegida por rol. |
 
 ### Documentación
+| Archivo | Propósito |
+| --- | --- |
+| `docs/historias/HU-004-sprint-2.md` | Historia y evidencia original. |
 
-- `docs/historias/HU-004-sprint-2-backend.md`
-- `docs/handoffs/sprint-2-backend-frontend-handoff.md`
+## Estado de entrega
+Implementada para MVP.
 
 ## Evidencias
 
-No se incorporaron screenshots ni capturas.
+### 1. Lista de composición
+![Lista de composición](../capturas/HU-004-lista-composicion.png)
 
-## Estado de entrega
+### 2. Lista de composición con helado
+![Lista de composición con helado](../capturas/HU-004-lista-composicion-helado.png)
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**. La verificación SDD y el archive no se ejecutaron.
+### 3. Agregar ingrediente
+![Agregar ingrediente](../capturas/HU-004-agregar-ingrediente.png)
 
-### Revalidación posterior
+### 4. Vista responsiva - 1
+![Vista responsiva 1](../capturas/HU-004-responsivo-1.png)
 
-El 2026-08-28 se revalidaron `dotnet restore`, `dotnet build`, la suite backend completa (53/53, 0 fallos), la cadena de migraciones PostgreSQL y OpenAPI. La matriz PostgreSQL de autorización cubre cada ruta Sprint 2 para anónimo y los seis roles; no se modificó frontend, contratos generados ni capturas.
+### 5. Vista responsiva - 2
+![Vista responsiva 2](../capturas/HU-004-responsivo-2.png)
+
+### 6. Error de relación circular
+![Error de relación circular](../capturas/HU-004-error-relacion.png)
+
+### 7. Mensaje de guardado exitoso
+![Mensaje de guardado exitoso](../capturas/HU-004-mensaje-guardado.png)
