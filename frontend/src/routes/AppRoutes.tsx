@@ -16,12 +16,11 @@ import { UiKitPage } from '../pages/UiKitPage'
 import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
 import { ProductsPage } from '../features/products/pages'
-import { CompositionPage } from '../features/products/composition/CompositionPage'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
-import { NewPurchasePage, PurchasesPage } from '../features/purchases/pages'
+import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
 import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 
 function Bootstrap() {
@@ -98,9 +97,6 @@ export function AppRoutes() {
           <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
           </Route>
-          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
-            <Route path="/productos/:id/composicion" element={<CompositionPage />} />
-          </Route>
 
           {/* Inventario */}
           <Route
@@ -134,9 +130,11 @@ export function AppRoutes() {
             <Route path="/proveedores" element={<SuppliersPage />} />
           </Route>
 
+
           <Route element={<RequireAnyRole roles={[...PURCHASE_WRITE_ROLES]} />}>
             <Route path="/compras" element={<PurchasesPage />} />
             <Route path="/compras/nueva" element={<NewPurchasePage />} />
+            <Route path="/compras/:id/recibir" element={<ReceivePurchasePage />} />
           </Route>
         </Route>
       </Route>
