@@ -21,6 +21,8 @@ import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
+import { NewPurchasePage, PurchasesPage } from '../features/purchases/pages'
+import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 
 function Bootstrap() {
   return (
@@ -130,6 +132,11 @@ export function AppRoutes() {
           {/* Proveedores */}
           <Route element={<RequireAnyRole roles={[...SUPPLIER_READ_ROLES]} />}>
             <Route path="/proveedores" element={<SuppliersPage />} />
+          </Route>
+
+          <Route element={<RequireAnyRole roles={[...PURCHASE_WRITE_ROLES]} />}>
+            <Route path="/compras" element={<PurchasesPage />} />
+            <Route path="/compras/nueva" element={<NewPurchasePage />} />
           </Route>
         </Route>
       </Route>
