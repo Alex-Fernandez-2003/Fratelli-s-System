@@ -16,6 +16,7 @@ import { UiKitPage } from '../pages/UiKitPage'
 import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
 import { ProductsPage } from '../features/products/pages'
+import { CompositionPage } from '../features/products/composition/CompositionPage'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
@@ -94,6 +95,9 @@ export function AppRoutes() {
           {/* Productos */}
           <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
+            <Route path="/productos/:id/composicion" element={<CompositionPage />} />
           </Route>
 
           {/* Inventario */}
