@@ -139,6 +139,7 @@ export const endpoints = {
       } = {},
     ) => withQuery('/api/v1/inventory/movements', params),
     create: () => '/api/v1/inventory/movements',
+    summary: () => '/api/v1/inventory/summary',
   },
   expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
   suppliers: {

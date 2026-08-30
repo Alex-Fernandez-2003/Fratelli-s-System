@@ -8,7 +8,7 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { Badge, Button, Card, Input, Select, StatusDot } from '@/components/atoms'
 import { FormField, FormError } from '@/components/molecules'
 import { Modal, PageHeader } from '@/components/organisms'
@@ -21,6 +21,7 @@ import {
   type MovementType,
   type ProductType,
   useBalances,
+  useInventorySummary,
   useManualMovement,
   useMovements,
 } from './api'
@@ -100,11 +101,18 @@ function Pagination({
 
 function InventoryNavigation() {
   const { user } = useAuth()
+  const { search } = useLocation()
+  const notifications = new URLSearchParams(search).get('tab') === 'notificaciones'
   const manager = canManage(user?.roles ?? [])
   return (
     <nav className="flex border-b border-border" aria-label="Secciones de inventario">
       <Link
-        className="border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange"
+        className={
+          !notifications
+            ? 'border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange'
+            : 'px-4 py-3 text-text-muted hover:text-text'
+        }
+        aria-current={!notifications ? 'page' : undefined}
         to="/inventario"
       >
         Existencias
@@ -114,6 +122,17 @@ function InventoryNavigation() {
           Movimientos
         </Link>
       )}
+      <Link
+        className={
+          notifications
+            ? 'border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange'
+            : 'px-4 py-3 text-text-muted hover:text-text'
+        }
+        aria-current={notifications ? 'page' : undefined}
+        to="/inventario?tab=notificaciones"
+      >
+        Notificaciones
+      </Link>
     </nav>
   )
 }
@@ -256,16 +275,128 @@ function MovementDialog({ mode, onClose }: { mode: 'ENTRY' | 'WRITE_OFF'; onClos
   )
 }
 
+function InventorySummary({
+  summary,
+  onDetails,
+}: {
+  summary: ReturnType<typeof useInventorySummary>
+  onDetails: () => void
+}) {
+  if (summary.isLoading && !summary.data)
+    return <p role="status">Cargando resumen de inventario…</p>
+  if (summary.error && !summary.data)
+    return (
+      <Card>
+        <p role="alert">No se pudo cargar el resumen de inventario.</p>
+        <Button onClick={() => void summary.refetch()}>Reintentar</Button>
+      </Card>
+    )
+  if (!summary.data) return null
+  return (
+    <div className="grid gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ['Stock bajo', summary.data.lowStockCount],
+          ['Negativos', summary.data.negativeStockCount],
+          ['Normal', summary.data.normalStockCount],
+          ['Total productos', summary.data.totalProducts],
+        ].map(([label, value]) => (
+          <Card key={String(label)}>
+            <span className="text-text-muted">{label}</span>
+            <strong className="block text-2xl">{value}</strong>
+          </Card>
+        ))}
+      </div>
+      {Number(summary.data.lowStockCount) > 0 && (
+        <Card className="border-warning bg-warning/10" role="alert">
+          <TriangleAlert className="mr-2 inline" size={18} aria-hidden="true" />
+          Hay {summary.data.lowStockCount} productos con stock bajo.{' '}
+          <Button variant="outline" size="sm" onClick={onDetails}>
+            Ver detalles
+          </Button>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+function InventoryNotifications({ summary }: { summary: ReturnType<typeof useInventorySummary> }) {
+  if (summary.isLoading && !summary.data)
+    return <p role="status">Cargando notificaciones de inventario…</p>
+  if (summary.error && !summary.data)
+    return (
+      <Card>
+        <p role="alert">No se pudieron cargar las notificaciones de inventario.</p>
+        <Button onClick={() => void summary.refetch()}>Reintentar</Button>
+      </Card>
+    )
+  const items = [...(summary.data?.lowStockItems ?? [])].sort(
+    (a, b) =>
+      Number(a.currentQuantity) - Number(b.currentQuantity) ||
+      a.productName.localeCompare(b.productName),
+  )
+  if (!items.length)
+    return (
+      <Card className="text-center">
+        <strong>No hay productos con stock bajo.</strong>
+        <p className="text-text-muted">
+          Las existencias actuales están por encima de los mínimos configurados.
+        </p>
+      </Card>
+    )
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {items.map((item) => {
+        const state = stateFor(item)
+        return (
+          <Card
+            key={item.productId}
+            className={state.tone === 'danger' ? 'border-danger' : 'border-warning'}
+          >
+            <div className="flex justify-between gap-2">
+              <strong>{item.productName}</strong>
+              <StatusDot label={state.label} tone={state.tone} />
+            </div>
+            <Badge>{labelForType(item.productType)}</Badge>
+            <p className={Number(item.currentQuantity) < 0 ? 'mt-3 text-danger' : 'mt-3'}>
+              {decimal(item.currentQuantity)} {item.inventoryUnitSymbol}
+            </p>
+            <p className="text-sm text-text-muted">
+              Stock mínimo: {item.minStock == null ? '—' : decimal(item.minStock)}
+            </p>
+          </Card>
+        )
+      })}
+    </div>
+  )
+}
+
 export function InventoryBalancesPage() {
-  const [filters, setFilters] = useState({ page: 1, pageSize: 20, search: '', productType: '' })
+  const [filters, setFilters] = useState({
+    page: 1,
+    pageSize: 20,
+    search: '',
+    productType: '',
+    lowStockOnly: false,
+  })
   const [dialog, setDialog] = useState<'ENTRY' | 'WRITE_OFF' | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const summary = useInventorySummary()
+  const notifications = searchParams.get('tab') === 'notificaciones'
   const { user } = useAuth()
   const manager = canManage(user?.roles ?? [])
   const query = useBalances({
     ...filters,
     productType: (filters.productType || undefined) as ProductType | undefined,
   })
-  const items = query.data?.items ?? []
+  const lowStockItems = (summary.data?.lowStockItems ?? []).filter(
+    (item) =>
+      (!filters.search || item.productName.toLowerCase().includes(filters.search.toLowerCase())) &&
+      (!filters.productType || item.productType === filters.productType),
+  )
+  const items = filters.lowStockOnly
+    ? lowStockItems.slice((filters.page - 1) * filters.pageSize, filters.page * filters.pageSize)
+    : (query.data?.items ?? [])
   return (
     <div className="grid gap-6">
       <PageHeader
@@ -285,123 +416,150 @@ export function InventoryBalancesPage() {
         }
       />
       <InventoryNavigation />
-      <Card className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem_auto]">
-        <FormField label="Buscar producto" leadingIcon={<Search size={16} />}>
-          <Input
-            value={filters.search}
-            placeholder="Buscar producto..."
-            onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-          />
-        </FormField>
-        <FormField label="Tipo de producto">
-          <Select
-            value={filters.productType}
-            onChange={(e) => setFilters({ ...filters, productType: e.target.value, page: 1 })}
-          >
-            <option value="">Todos</option>
-            {PRODUCT_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-        <Button
-          variant="outline"
-          aria-label="Actualizar existencias"
-          onClick={() => void query.refetch()}
-          leftIcon={<RefreshCw size={16} />}
-        >
-          Actualizar
-        </Button>
-      </Card>
-      {query.isLoading && !query.data ? (
-        <p role="status">Cargando inventario…</p>
-      ) : query.error && !query.data ? (
-        <Card>
-          <p role="alert">No se pudo cargar el inventario.</p>
-          <Button onClick={() => void query.refetch()}>Reintentar</Button>
-        </Card>
-      ) : !items.length ? (
-        <Card className="text-center">
-          <Package className="mx-auto mb-3 text-text-muted" />
-          <strong>
-            {filters.search || filters.productType
-              ? 'No hay resultados para estos filtros.'
-              : 'No hay productos disponibles en el catálogo.'}
-          </strong>
-        </Card>
+      {notifications ? (
+        <InventoryNotifications summary={summary} />
       ) : (
-        <Card>
-          <div className="hidden md:block">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border text-left text-sm text-text-muted">
-                  <th className="p-3">Producto</th>
-                  <th>Tipo</th>
-                  <th>Existencia actual</th>
-                  <th>Unidad</th>
-                  <th>Stock mínimo</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
+        <>
+          <InventorySummary
+            summary={summary}
+            onDetails={() => setSearchParams({ tab: 'notificaciones' })}
+          />
+          <Card className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem_auto]">
+            <FormField label="Buscar producto" leadingIcon={<Search size={16} />}>
+              <Input
+                value={filters.search}
+                placeholder="Buscar producto..."
+                onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
+              />
+            </FormField>
+            <FormField label="Tipo de producto">
+              <Select
+                value={filters.productType}
+                onChange={(e) => setFilters({ ...filters, productType: e.target.value, page: 1 })}
+              >
+                <option value="">Todos</option>
+                {PRODUCT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <Button
+              variant={filters.lowStockOnly ? 'primary' : 'outline'}
+              onClick={() =>
+                setFilters({ ...filters, lowStockOnly: !filters.lowStockOnly, page: 1 })
+              }
+            >
+              Stock bajo
+            </Button>
+            <Button
+              variant="outline"
+              aria-label="Actualizar existencias"
+              onClick={() => {
+                void query.refetch()
+                void summary.refetch()
+              }}
+              leftIcon={<RefreshCw size={16} />}
+            >
+              Actualizar
+            </Button>
+          </Card>
+          {query.isLoading && !query.data ? (
+            <p role="status">Cargando inventario…</p>
+          ) : query.error && !query.data ? (
+            <Card>
+              <p role="alert">No se pudo cargar el inventario.</p>
+              <Button onClick={() => void query.refetch()}>Reintentar</Button>
+            </Card>
+          ) : !items.length ? (
+            <Card className="text-center">
+              <Package className="mx-auto mb-3 text-text-muted" />
+              <strong>
+                {filters.search || filters.productType
+                  ? 'No hay resultados para estos filtros.'
+                  : 'No hay productos disponibles en el catálogo.'}
+              </strong>
+            </Card>
+          ) : (
+            <Card>
+              <div className="hidden md:block">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border text-left text-sm text-text-muted">
+                      <th className="p-3">Producto</th>
+                      <th>Tipo</th>
+                      <th>Existencia actual</th>
+                      <th>Unidad</th>
+                      <th>Stock mínimo</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item) => {
+                      const state = stateFor(item)
+                      return (
+                        <tr key={item.productId} className="border-b border-border">
+                          <td className="p-3 font-bold">{item.productName}</td>
+                          <td>
+                            <Badge>{labelForType(item.productType)}</Badge>
+                          </td>
+                          <td className={Number(item.currentQuantity) < 0 ? 'text-danger' : ''}>
+                            {decimal(item.currentQuantity)}
+                          </td>
+                          <td>{item.inventoryUnitSymbol}</td>
+                          <td>{item.minStock == null ? '—' : decimal(item.minStock)}</td>
+                          <td>
+                            <StatusDot label={state.label} tone={state.tone} />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="grid gap-3 md:hidden">
                 {items.map((item) => {
                   const state = stateFor(item)
                   return (
-                    <tr key={item.productId} className="border-b border-border">
-                      <td className="p-3 font-bold">{item.productName}</td>
-                      <td>
+                    <Card
+                      key={item.productId}
+                      className={Number(item.currentQuantity) < 0 ? 'border-danger' : ''}
+                    >
+                      <div className="flex justify-between gap-2">
+                        <strong>{item.productName}</strong>
                         <Badge>{labelForType(item.productType)}</Badge>
-                      </td>
-                      <td className={Number(item.currentQuantity) < 0 ? 'text-danger' : ''}>
-                        {decimal(item.currentQuantity)}
-                      </td>
-                      <td>{item.inventoryUnitSymbol}</td>
-                      <td>{item.minStock == null ? '—' : decimal(item.minStock)}</td>
-                      <td>
+                      </div>
+                      <div className="mt-3 text-2xl font-bold">
+                        {decimal(item.currentQuantity)}{' '}
+                        <span className="text-base font-normal">{item.inventoryUnitSymbol}</span>
+                      </div>
+                      <div className="mt-2 flex justify-between text-sm text-text-muted">
+                        <span>
+                          Stock mínimo: {item.minStock == null ? '—' : decimal(item.minStock)}
+                        </span>
                         <StatusDot label={state.label} tone={state.tone} />
-                      </td>
-                    </tr>
+                      </div>
+                    </Card>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
-          <div className="grid gap-3 md:hidden">
-            {items.map((item) => {
-              const state = stateFor(item)
-              return (
-                <Card
-                  key={item.productId}
-                  className={Number(item.currentQuantity) < 0 ? 'border-danger' : ''}
-                >
-                  <div className="flex justify-between gap-2">
-                    <strong>{item.productName}</strong>
-                    <Badge>{labelForType(item.productType)}</Badge>
-                  </div>
-                  <div className="mt-3 text-2xl font-bold">
-                    {decimal(item.currentQuantity)}{' '}
-                    <span className="text-base font-normal">{item.inventoryUnitSymbol}</span>
-                  </div>
-                  <div className="mt-2 flex justify-between text-sm text-text-muted">
-                    <span>
-                      Stock mínimo: {item.minStock == null ? '—' : decimal(item.minStock)}
-                    </span>
-                    <StatusDot label={state.label} tone={state.tone} />
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-          <Pagination
-            page={filters.page}
-            totalPages={Number(query.data?.totalPages ?? 1)}
-            totalCount={Number(query.data?.totalCount ?? 0)}
-            pageSize={filters.pageSize}
-            onChange={(page) => setFilters({ ...filters, page })}
-          />
-        </Card>
+              </div>
+              <Pagination
+                page={filters.page}
+                totalPages={
+                  filters.lowStockOnly
+                    ? Math.max(1, Math.ceil(lowStockItems.length / filters.pageSize))
+                    : Number(query.data?.totalPages ?? 1)
+                }
+                totalCount={
+                  filters.lowStockOnly ? lowStockItems.length : Number(query.data?.totalCount ?? 0)
+                }
+                pageSize={filters.pageSize}
+                onChange={(page) => setFilters({ ...filters, page })}
+              />
+            </Card>
+          )}
+        </>
       )}
       {dialog && <MovementDialog mode={dialog} onClose={() => setDialog(null)} />}
     </div>

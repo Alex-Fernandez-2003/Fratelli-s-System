@@ -2024,6 +2024,59 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/inventory/summary': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['InventorySummaryDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/inventory/movements': {
     parameters: {
       query?: never
@@ -4863,6 +4916,17 @@ export interface components {
       | 'ADJUSTMENT'
     /** @enum {unknown} */
     InventoryReferenceType: 'MANUAL' | 'SALE' | 'PURCHASE' | 'PRODUCTION' | null
+    InventorySummaryDto: {
+      /** Format: int32 */
+      totalProducts: number | string
+      /** Format: int32 */
+      lowStockCount: number | string
+      /** Format: int32 */
+      negativeStockCount: number | string
+      /** Format: int32 */
+      normalStockCount: number | string
+      lowStockItems: components['schemas']['InventoryBalanceDto'][]
+    }
     KitchenCommandDto: {
       /** Format: uuid */
       id: string

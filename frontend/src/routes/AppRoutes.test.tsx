@@ -51,20 +51,51 @@ describe('AppRoutes', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/inicio')
   })
 
-  it('sends an authenticated role mismatch to the generic Forbidden route', () => {
+  it.each(['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA'])(
+    'allows the %s inventory read role through the shared guard',
+    () => {
+      auth.status = 'authenticated'
+      auth.hasAnyRole.mockReturnValue(true)
+      render(
+        <MemoryRouter initialEntries={['/inventario']}>
+          <Routes>
+            <Route
+              element={
+                <RequireAnyRole
+                  roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA']}
+                />
+              }
+            >
+              <Route path="/inventario" element={<p>Inventory page</p>} />
+            </Route>
+            <Route path="/403" element={<p>Forbidden page</p>} />
+          </Routes>
+        </MemoryRouter>,
+      )
+      expect(screen.getByText('Inventory page')).toBeInTheDocument()
+    },
+  )
+
+  it('sends an EMPLEADO-only authenticated user to the generic Forbidden route', () => {
     auth.status = 'authenticated'
     auth.hasAnyRole.mockReturnValue(false)
     render(
-      <MemoryRouter initialEntries={['/admin']}>
+      <MemoryRouter initialEntries={['/inventario']}>
         <Routes>
-          <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
-            <Route path="/admin" element={<p>Admin page</p>} />
+          <Route
+            element={
+              <RequireAnyRole
+                roles={['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA']}
+              />
+            }
+          >
+            <Route path="/inventario" element={<p>Inventory page</p>} />
           </Route>
           <Route path="/403" element={<p>Forbidden page</p>} />
         </Routes>
       </MemoryRouter>,
     )
     expect(screen.getByText('Forbidden page')).toBeInTheDocument()
-    expect(screen.queryByText('Admin page')).not.toBeInTheDocument()
+    expect(screen.queryByText('Inventory page')).not.toBeInTheDocument()
   })
 })
