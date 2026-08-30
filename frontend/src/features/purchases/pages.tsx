@@ -37,7 +37,9 @@ const message = (error: unknown) =>
     ? 'No se pudo completar la operación. Revisá el estado de la compra o intentá nuevamente.'
     : 'No se pudo completar la operación. Intentá nuevamente.'
 
-
+/* -------------------------------------------------------------------------- */
+/* Listado                                                                     */
+/* -------------------------------------------------------------------------- */
 
 export function PurchasesPage() {
   const { hasAnyRole } = useAuth()
@@ -247,7 +249,9 @@ export function PurchasesPage() {
   )
 }
 
-
+/* -------------------------------------------------------------------------- */
+/* Nueva compra                                                                */
+/* -------------------------------------------------------------------------- */
 
 type LineDraft = {
   key: string
@@ -278,11 +282,20 @@ export function NewPurchasePage() {
   const products = productsQuery.data?.items ?? []
   const units = unitsQuery.data?.items ?? []
 
-
+  /**
+   * Mapas auxiliares para resolver la dimensión (MASS/VOLUME/COUNT) de la
+   * unidad base de cada producto. El backend solo permite convertir entre
+   * unidades de la MISMA dimensión (ver UnitDto.dimension); mezclar
+   * dimensiones dispara 400 INVALID_UNIT_CONVERSION en POST /purchases.
+   */
   const unitById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units])
   const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products])
 
-
+  /**
+   * Unidades habilitadas para una línea según el producto seleccionado:
+   * misma dimensión que la unidad base (inventoryUnitId) del producto.
+   * Sin producto seleccionado, se muestra el catálogo completo.
+   */
   function unitsForProduct(productId: string) {
     if (!productId) return units
     const product = productById.get(productId)
@@ -305,7 +318,11 @@ export function NewPurchasePage() {
     setLines((prev) => prev.map((line) => (line.key === key ? { ...line, ...patch } : line)))
   }
 
-
+  /**
+   * Cambiar de producto puede invalidar la unidad ya elegida en la línea
+   * (dimensión distinta). Si deja de ser compatible, se resetea unitId
+   * para forzar una nueva selección dentro de las unidades permitidas.
+   */
   function updateLineProduct(key: string, productId: string) {
     setLines((prev) =>
       prev.map((line) => {
@@ -321,17 +338,35 @@ export function NewPurchasePage() {
     setLines((prev) => (prev.length > 1 ? prev.filter((line) => line.key !== key) : prev))
   }
 
+  /**
+   * Productos ya elegidos en otras líneas (excluyendo la línea actual).
+   * El backend prohíbe repetir el mismo producto dentro de una compra;
+   * se usa para ocultar esas opciones en el <Select> de cada línea y
+   * evitar que el duplicado se pueda seleccionar desde la UI.
+   */
+  function productsUsedInOtherLines(currentKey: string) {
+    return new Set(
+      lines.filter((line) => line.key !== currentKey && line.productId).map((line) => line.productId),
+    )
+  }
+
   async function submit() {
     if (!supplierId) {
       setFormError('Seleccioná un proveedor.')
       return
     }
+    const seenProductIds = new Set<string>()
     const parsedLines: PurchaseLineRequest[] = []
     for (const line of lines) {
       if (!line.productId || !line.unitId || !line.quantity || !line.unitCost) {
         setFormError('Completá producto, unidad, cantidad y costo en todas las líneas.')
         return
       }
+      if (seenProductIds.has(line.productId)) {
+        setFormError('No podés repetir el mismo producto en la misma compra. Sumá la cantidad en una sola línea.')
+        return
+      }
+      seenProductIds.add(line.productId)
       const quantity = Number(line.quantity)
       const unitCost = Number(line.unitCost)
       if (quantity <= 0) {
@@ -392,6 +427,10 @@ export function NewPurchasePage() {
 
           {lines.map((line, index) => {
             const availableUnits = unitsForProduct(line.productId)
+            const usedElsewhere = productsUsedInOtherLines(line.key)
+            const availableProducts = products.filter(
+              (product) => product.id === line.productId || !usedElsewhere.has(product.id),
+            )
             return (
               <div key={line.key} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end">
                 <FormField label={index === 0 ? 'Producto' : undefined}>
@@ -400,7 +439,7 @@ export function NewPurchasePage() {
                     onChange={(e) => updateLineProduct(line.key, e.target.value)}
                   >
                     <option value="">Seleccionar</option>
-                    {products.map((product) => (
+                    {availableProducts.map((product) => (
                       <option key={product.id} value={product.id}>
                         {product.name}
                       </option>
