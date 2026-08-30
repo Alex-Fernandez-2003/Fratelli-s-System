@@ -53,7 +53,25 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         return new(rows.Select(x => Balance(x.p, x.b, x.u)).ToArray(), page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
     }
 
-    public async Task<PagedResponse<InventoryMovementDto>> MovementsAsync(int page, int pageSize, Guid? productId, InventoryMovementType? movementType, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+        public async Task<InventorySummaryDto> SummaryAsync(CancellationToken ct = default)
+        {
+            var q = from p in db.Products.AsNoTracking()
+                    join b in db.InventoryBalances.AsNoTracking() on p.Id equals b.ProductId into balances
+                    from b in balances.DefaultIfEmpty()
+                    join u in db.Units.AsNoTracking() on p.InventoryUnitId equals u.Id
+                    where p.IsActive
+                    select new { p, b, u };
+            var total = await q.CountAsync(ct);
+            var negatives = await q.CountAsync(x => (x.b == null ? 0m : x.b.Quantity) < 0m, ct);
+            var low = q.Where(x => (x.b == null ? 0m : x.b.Quantity) < 0m || (x.p.MinStock != null && (x.b == null ? 0m : x.b.Quantity) <= x.p.MinStock));
+            var lowCount = await low.CountAsync(ct);
+            var items = (await low.OrderBy(x => x.p.Name).ThenBy(x => x.p.Id).ToListAsync(ct))
+                .Select(x => Balance(x.p, x.b, x.u))
+                .ToArray();
+            return new(total, lowCount, negatives, total - lowCount, items);
+        }
+
+        public async Task<PagedResponse<InventoryMovementDto>> MovementsAsync(int page, int pageSize, Guid? productId, InventoryMovementType? movementType, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         if (from > to) throw new ArgumentException("Invalid date range");
         var q = db.InventoryMovements.AsNoTracking().AsQueryable();
@@ -88,7 +106,7 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         var result = movements.Select(x => new InventoryMovementDto(x.Id,x.ProductId,products[x.ProductId].Name,x.MovementType,x.QuantityDelta,products[x.ProductId].InventoryUnitId,"","","",x.Reason,x.ReferenceType,x.ReferenceId,x.CreatedAt,x.CreatedByUserId,null)).ToArray(); return (new InventoryBatchResult(result, []), null);
     }
 
-    private static InventoryBalanceDto Balance(Product p, InventoryBalance? b, Unit u) { var quantity = b?.Quantity ?? 0m; return new(p.Id, p.Name, p.ProductType, u.Id, u.Code, u.Name, u.Symbol, quantity, p.MinStock, p.MinStock is not null && quantity <= p.MinStock.Value, p.IsActive); }
+    private static InventoryBalanceDto Balance(Product p, InventoryBalance? b, Unit u) { var quantity = b?.Quantity ?? 0m; return new(p.Id, p.Name, p.ProductType, u.Id, u.Code, u.Name, u.Symbol, quantity, p.MinStock, quantity < 0m || (p.MinStock is not null && quantity <= p.MinStock.Value), p.IsActive); }
     private async Task<InventoryMovementDto?> MovementAsync(Guid id, CancellationToken ct)
     {
         var m = await db.InventoryMovements.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct); if (m is null) return null;
