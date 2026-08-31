@@ -66,4 +66,4 @@ Use `authApi` para login, refresh y logout crudos. Las features usan `httpClient
 
 La validación final incluye navegación por teclado y viewports de 360 px, ~403 px, tablet y desktop, además de Login → Inicio → F5, recuperación `401`, denegación de rol y logout recuperable; las capturas reales están vinculadas en la [HU-001](../docs/historias/HU-001-iniciar-cerrar-sesion.md).
 
-Consulte [el manual de desarrollo](docs/manual-de-uso.md) para los límites de componentes, el flujo OpenAPI, las rutas y las prohibiciones de alcance.
+Consulte [la arquitectura del proyecto](../docs/10-arquitectura.md) para los límites de componentes, el flujo OpenAPI, las rutas y las prohibiciones de alcance.

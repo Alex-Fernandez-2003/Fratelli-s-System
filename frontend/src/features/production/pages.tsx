@@ -14,13 +14,10 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../auth/AuthProvider'
 import { productionApi } from './api'
-import type {
-  ProductionRequirementDto,
-} from './api'
+import type { ProductionRequirementDto } from './api'
 import { Button } from '../../components/atoms'
 import { Input, Select, Textarea } from '../../components/atoms'
 import { FormField } from '../../components/molecules'
-import { AppShell } from '../../components/templates'
 import { Alert } from '../../components/molecules'
 
 type View = 'form' | 'confirming' | 'success'
@@ -100,26 +97,23 @@ export function RegisterProductionPage() {
   const canSubmit = selectedProductId && quantityNum > 0 && !createMutation.isPending
 
   return (
-    <AppShell
-      header={
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <ChefHat size={24} className="text-brand-orange" />
-            <div>
-              <h1 className="text-lg font-bold">Registrar Produccion</h1>
-              <p className="text-sm text-text-muted">
-                Registra la produccion de un producto, se descontaran los ingredientes
-                automaticamente.
-              </p>
-            </div>
+    <div className="grid gap-6">
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <ChefHat size={24} className="text-brand-orange" />
+          <div>
+            <h1 className="text-lg font-bold">Registrar Produccion</h1>
+            <p className="text-sm text-text-muted">
+              Registra la produccion de un producto, se descontaran los ingredientes
+              automaticamente.
+            </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-text-muted">
-            <Clock size={14} />
-            <span>{new Date().toLocaleString('es-BO')}</span>
-          </div>
-        </header>
-      }
-    >
+        </div>
+        <div className="flex items-center gap-2 text-sm text-text-muted">
+          <Clock size={14} />
+          <span>{new Date().toLocaleString('es-BO')}</span>
+        </div>
+      </header>
       {view === 'form' && (
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <div className="space-y-6">
@@ -291,7 +285,7 @@ export function RegisterProductionPage() {
           onRegisterAnother={handleReset}
         />
       )}
-    </AppShell>
+    </div>
   )
 }
 
@@ -341,8 +335,8 @@ function ConfirmModal({
         </div>
         <h2 className="mb-2 text-xl font-bold">Confirmar Registro de Produccion</h2>
         <p className="mb-6 text-sm text-text-muted">
-          Se registrara un evento de produccion, se descontaran los ingredientes del
-          inventario y se generara el lote de Produccion.
+          Se registrara un evento de produccion, se descontaran los ingredientes del inventario y se
+          generara el lote de Produccion.
         </p>
 
         <div className="mb-2 rounded-lg bg-surface-elevated px-4 py-3">
@@ -392,9 +386,7 @@ function SuccessView({
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-success/15">
           <CheckCircle2 size={32} className="text-success" />
         </div>
-        <h2 className="mb-2 text-xl font-bold text-success">
-          ¡Produccion Registrada!
-        </h2>
+        <h2 className="mb-2 text-xl font-bold text-success">¡Produccion Registrada!</h2>
         <p className="mb-6 text-sm text-text-muted">
           La produccion se ha registrado correctamente.
         </p>

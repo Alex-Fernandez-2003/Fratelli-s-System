@@ -8,7 +8,7 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Badge, Button, Card, Input, Select, StatusDot } from '@/components/atoms'
 import { FormField, FormError } from '@/components/molecules'
 import { Modal, PageHeader } from '@/components/organisms'
@@ -99,39 +99,44 @@ function Pagination({
   )
 }
 
-function InventoryNavigation() {
-  const { user } = useAuth()
-  const { search } = useLocation()
-  const notifications = new URLSearchParams(search).get('tab') === 'notificaciones'
-  const manager = canManage(user?.roles ?? [])
+function InventoryNavigation({ active }: { active: 'balances' | 'movements' | 'notifications' }) {
+  const summary = useInventorySummary()
+  const lowStockCount = Number(summary.data?.lowStockCount ?? 0)
+  const linkClass = (current: boolean) =>
+    current
+      ? 'border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange'
+      : 'px-4 py-3 text-text-muted hover:text-text'
   return (
     <nav className="flex border-b border-border" aria-label="Secciones de inventario">
       <Link
-        className={
-          !notifications
-            ? 'border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange'
-            : 'px-4 py-3 text-text-muted hover:text-text'
-        }
-        aria-current={!notifications ? 'page' : undefined}
+        className={linkClass(active === 'balances')}
+        aria-current={active === 'balances' ? 'page' : undefined}
         to="/inventario"
       >
         Existencias
       </Link>
-      {manager && (
-        <Link className="px-4 py-3 text-text-muted hover:text-text" to="/inventario/movimientos">
-          Movimientos
-        </Link>
-      )}
       <Link
-        className={
-          notifications
-            ? 'border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange'
-            : 'px-4 py-3 text-text-muted hover:text-text'
-        }
-        aria-current={notifications ? 'page' : undefined}
+        className={linkClass(active === 'movements')}
+        aria-current={active === 'movements' ? 'page' : undefined}
+        to="/inventario/movimientos"
+      >
+        Movimientos
+      </Link>
+      <Link
+        className={linkClass(active === 'notifications')}
+        aria-current={active === 'notifications' ? 'page' : undefined}
         to="/inventario?tab=notificaciones"
       >
         Notificaciones
+        {lowStockCount > 0 && (
+          <span
+            data-testid="low-stock-badge"
+            className="ml-2 rounded-full bg-warning/20 px-1.5 py-0.5 text-xs"
+            aria-hidden="true"
+          >
+            {lowStockCount}
+          </span>
+        )}
       </Link>
     </nav>
   )
@@ -415,7 +420,7 @@ export function InventoryBalancesPage() {
           ) : undefined
         }
       />
-      <InventoryNavigation />
+      <InventoryNavigation active={notifications ? 'notifications' : 'balances'} />
       {notifications ? (
         <InventoryNotifications summary={summary} />
       ) : (
@@ -579,14 +584,7 @@ export function InventoryMovementsPage() {
         title="Movimientos de inventario"
         description="Historial detallado de entradas, salidas y ajustes de stock."
       />
-      <nav className="flex border-b border-border" aria-label="Secciones de inventario">
-        <Link className="px-4 py-3 text-text-muted" to="/inventario">
-          Existencias
-        </Link>
-        <span className="border-b-2 border-brand-orange px-4 py-3 font-bold text-brand-orange">
-          Movimientos
-        </span>
-      </nav>
+      <InventoryNavigation active="movements" />
       <Card className="grid gap-3 md:grid-cols-4">
         <FormField label="Producto">
           <Select

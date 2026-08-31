@@ -16,6 +16,7 @@ export type HandoverRequest = components['schemas']['HandoverRequest']
 
 /** ADMIN/ENCARGADO mutan y leen el contexto operativo completo (docs handoff Sprint 2). */
 export const SHIFT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
+export const SHIFT_OWN_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO'] as const
 
 export const shiftKeys = {
   context: ['shifts', 'context'] as const,

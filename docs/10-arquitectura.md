@@ -670,10 +670,10 @@ Debe explicar:
 - puertos;
 - proxy;
 
-Al crear el scaffold deberá existir un manual de uso para los desarrolladores:
+La guía para desarrolladores se mantiene en:
 
 ```text
-frontend/docs/manual-de-uso.md
+frontend/README.md
 ```
 
 Debe explicar:
@@ -1138,7 +1138,7 @@ No se almacenan credenciales reales en Git.
 Desarrollo:
 
 ```text
-http://localhost:5173
+http://localhost:8087
 ```
 
 si el acceso directo lo requiere.

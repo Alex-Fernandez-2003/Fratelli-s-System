@@ -26,7 +26,7 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "inventory_expenses_" + Guid.NewGuid().ToString("N") }.ConnectionString;
         await postgres.MigrateAsync(cs);
         await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
-        var admin = await Token(client, "admin.test"); var manager = await Token(client, "encargado.test"); var waiter = await Token(client, "mesero.test"); var accountant = await Token(client, "contadora.test");
+        var admin = await Token(client, "admin.test"); var manager = await Token(client, "encargado.test"); var waiter = await Token(client, "mesero.test"); var kitchen = await Token(client, "cocina.test"); var accountant = await Token(client, "contadora.test"); var employee = await Token(client, "empleado.test");
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options; Guid productId; Guid inactiveId; Guid categoryId;
         await using (var db = new ApplicationDbContext(options))
         {
@@ -37,7 +37,8 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/inventory/balances")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/balances", waiter)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/balances", accountant)).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", waiter)).StatusCode);
+        foreach (var inventoryReader in new[] { admin, manager, waiter, kitchen, accountant }) Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", inventoryReader)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", employee)).StatusCode);
         var entry = await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", manager, new { productId, type = "ENTRY", quantity = 10m, reason = " received " }); Assert.Equal(HttpStatusCode.Created, entry.StatusCode);
         var writeoff = await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", admin, new { productId, type = "WRITE_OFF", quantity = 13m, reason = "waste" }); Assert.Equal(HttpStatusCode.Created, writeoff.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", admin, new { productId, type = "SALE", quantity = 1m, reason = "x" })).StatusCode);

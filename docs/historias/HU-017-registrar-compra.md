@@ -1,6 +1,10 @@
 # HU-017 — Registrar compras a proveedores
 
-## Resultado
+## Estado actual
+
+HU-017 figura como implementada end-to-end en el cierre de [Sprint 2](../sprints/sprint-02.md). La [verificación final de Sprint 2](../openspec/changes/finalize-sprint-2-routing-permissions-and-documentation/verify-report.md) aprobó los gates técnicos; no declara una Sprint Review ni aceptación de Product Owner.
+
+## Registro de implementación frontend (histórico)
 
 Implementada end-to-end: listado de compras con filtro por estado, registro de nueva compra con líneas de detalle, y cancelación de compras pendientes.
 
@@ -18,7 +22,7 @@ El frontend agrega la sección **Compras** (`PurchasesPage`, `NewPurchasePage`) 
 
 ## Visibilidad y roles
 
-La vista de Compras solo es visible en la navegación y accesible por ruta (`RequireAnyRole`) para `ADMINISTRADOR`, `ENCARGADO` y `COCINA` (`PURCHASE_WRITE_ROLES`). `CONTADORA` puede consultar compras vía API (policy `SupplierRead` del backend) pero no ve esta pantalla; tendrá su propia pantalla de historial más adelante.
+La vista de Compras usa `PURCHASE_READ_ROLES`: `ADMINISTRADOR`, `ENCARGADO`, `COCINA` y `CONTADORA`. `CONTADORA` puede consultar la lista, pero no recibe controles ni rutas de crear, cancelar o recibir, que continúan bajo `PURCHASE_WRITE_ROLES` y la validación de alcance existente para COCINA.
 
 ## Baseline revalidado
 
@@ -61,9 +65,7 @@ Implementada; esta normalización no añade validación ni evidencia nueva.
 
 ![Captura de registro de nueva compra](../capturas/HU-017-nueva-compra.png)
 
-
-
-## Resultado
+## Snapshot de entrega backend (histórico)
 
 **BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**.
 
@@ -71,7 +73,7 @@ La implementación backend pertenece al change `implement-sprint-2-backend-opera
 
 ## Reglas implementadas
 
-Ver el mapa contractual específico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
+El mapa contractual de ese momento se conserva como contexto histórico; para el resultado vigente consulte [Sprint 2](../sprints/sprint-02.md) y la [verificación final](../openspec/changes/finalize-sprint-2-routing-permissions-and-documentation/verify-report.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
 
 ## Seguridad
 
@@ -111,7 +113,7 @@ Ninguno.
 ### Documentación
 
 - `docs/historias/HU-017-sprint-2-backend.md`
-- `docs/handoffs/sprint-2-backend-frontend-handoff.md`
+- Referencia vigente: [`docs/sprints/sprint-02.md`](../sprints/sprint-02.md) y [verificación final de Sprint 2](../openspec/changes/finalize-sprint-2-routing-permissions-and-documentation/verify-report.md).
 
 ## Evidencias
 

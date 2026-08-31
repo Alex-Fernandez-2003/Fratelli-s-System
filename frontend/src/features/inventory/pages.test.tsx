@@ -2,16 +2,17 @@ import '@testing-library/jest-dom/vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { InventoryBalancesPage } from './pages'
+import { InventoryBalancesPage, InventoryMovementsPage } from './pages'
 
-const { useBalances, useInventorySummary, useManualMovement } = vi.hoisted(() => ({
+const { useBalances, useInventorySummary, useManualMovement, useMovements } = vi.hoisted(() => ({
   useBalances: vi.fn(),
   useInventorySummary: vi.fn(),
   useManualMovement: vi.fn(),
+  useMovements: vi.fn(),
 }))
 const { useAuth } = vi.hoisted(() => ({ useAuth: vi.fn() }))
 
-vi.mock('./api', () => ({ useBalances, useInventorySummary, useManualMovement }))
+vi.mock('./api', () => ({ useBalances, useInventorySummary, useManualMovement, useMovements }))
 vi.mock('@/features/auth/AuthProvider', () => ({ useAuth }))
 
 const lowItem = {
@@ -40,12 +41,8 @@ const healthyBalance = {
 }
 const refetch = vi.fn()
 
-function renderPage(path = '/inventario') {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <InventoryBalancesPage />
-    </MemoryRouter>,
-  )
+function renderPage(path = '/inventario', page = <InventoryBalancesPage />) {
+  return render(<MemoryRouter initialEntries={[path]}>{page}</MemoryRouter>)
 }
 
 beforeEach(() => {
@@ -70,6 +67,12 @@ beforeEach(() => {
     refetch,
   })
   useManualMovement.mockReturnValue({ mutateAsync: vi.fn(), isPending: false })
+  useMovements.mockReturnValue({
+    data: { items: [], totalPages: 1, totalCount: 0 },
+    isLoading: false,
+    error: null,
+    refetch,
+  })
 })
 
 describe('InventoryBalancesPage HU-006', () => {
@@ -230,14 +233,14 @@ describe('InventoryBalancesPage HU-006', () => {
   })
 
   it.each(['MESERO', 'COCINA', 'CONTADORA'])(
-    'keeps Notifications but hides Movimientos and management actions for %s',
+    'keeps all inventory reading destinations but hides management actions for %s',
     (role) => {
       useAuth.mockReturnValue({ user: { roles: [role] } })
 
       renderPage()
 
       expect(screen.getByRole('link', { name: 'Notificaciones' })).toBeInTheDocument()
-      expect(screen.queryByRole('link', { name: 'Movimientos' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Movimientos' })).toBeInTheDocument()
       expect(screen.queryByRole('button', { name: 'Registrar entrada' })).not.toBeInTheDocument()
     },
   )
@@ -247,5 +250,45 @@ describe('InventoryBalancesPage HU-006', () => {
 
     expect(screen.getByRole('link', { name: 'Movimientos' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Registrar entrada' })).toBeInTheDocument()
+  })
+
+  it.each([
+    [0, false],
+    [1, true],
+    [37, true],
+  ])(
+    'uses the global low-stock count %i for the Notifications badge',
+    (lowStockCount, hasBadge) => {
+      useInventorySummary.mockReturnValue({
+        data: {
+          totalProducts: 40,
+          lowStockCount,
+          negativeStockCount: 0,
+          normalStockCount: 40 - lowStockCount,
+          lowStockItems: [lowItem],
+        },
+        isLoading: false,
+        error: null,
+        refetch,
+      })
+
+      renderPage()
+
+      const notifications = screen.getByRole('link', { name: 'Notificaciones' })
+      expect(notifications).toHaveTextContent('Notificaciones')
+      if (hasBadge)
+        expect(notifications.querySelector('[data-testid="low-stock-badge"]')).toHaveTextContent(
+          String(lowStockCount),
+        )
+      else expect(notifications.querySelector('[data-testid="low-stock-badge"]')).toBeNull()
+    },
+  )
+
+  it('uses shared navigation with Movimientos active', () => {
+    renderPage('/inventario/movimientos', <InventoryMovementsPage />)
+
+    expect(screen.getByRole('link', { name: 'Existencias' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Notificaciones' })).toBeInTheDocument()
+    expect(screen.getByText('Movimientos')).toHaveAttribute('aria-current', 'page')
   })
 })

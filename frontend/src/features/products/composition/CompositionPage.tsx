@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PageHeader } from '@/components/organisms'
 import { Alert } from '@/components/molecules'
-import { Spinner } from '@/components/atoms'
+import { Card, Spinner } from '@/components/atoms'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { canManageProducts } from '@/features/navigation'
 import { HttpError } from '@/lib/api/http-client'
 import { useUnitsList, useProductsList } from '../api'
 import { useComposition, useProduct, useUpdateComposition } from './api'
@@ -25,6 +27,8 @@ function message(error: unknown) {
 export function CompositionPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const canManage = canManageProducts(user?.roles ?? [])
   const [savedNotice, setSavedNotice] = useState(false)
 
   const productQuery = useProduct(id)
@@ -59,7 +63,9 @@ export function CompositionPage() {
 
       <PageHeader title="Composición de preparación" />
 
-      {savedNotice && <Alert kind="success">¡Operación exitosa! Composición guardada exitosamente.</Alert>}
+      {savedNotice && (
+        <Alert kind="success">¡Operación exitosa! Composición guardada exitosamente.</Alert>
+      )}
 
       {loading ? (
         <Spinner label="Cargando composición" />
@@ -69,10 +75,10 @@ export function CompositionPage() {
         </Alert>
       ) : productQuery.data.productType !== 'PREPARATION' ? (
         <Alert kind="error" title="Este producto no admite composición">
-          Solo los productos de tipo Preparación pueden tener una receta de ingredientes.
-          &ldquo;{productQuery.data.name}&rdquo; es de tipo {productQuery.data.productType}.
+          Solo los productos de tipo Preparación pueden tener una receta de ingredientes. &ldquo;
+          {productQuery.data.name}&rdquo; es de tipo {productQuery.data.productType}.
         </Alert>
-      ) : (
+      ) : canManage ? (
         <CompositionEditor
           parentProduct={productQuery.data}
           initialLines={compositionQuery.data?.lines ?? []}
@@ -83,6 +89,22 @@ export function CompositionPage() {
           saving={updateComposition.isPending}
           serverError={updateComposition.error ? message(updateComposition.error) : undefined}
         />
+      ) : (
+        <Card className="grid gap-3">
+          <p className="text-text-muted">Tenés acceso de solo lectura a esta composición.</p>
+          {(compositionQuery.data?.lines ?? []).map((line) => (
+            <div
+              key={line.componentProductId}
+              className="flex justify-between gap-3 border-b border-border pb-2"
+            >
+              <span>{line.componentProductName}</span>
+              <span>
+                {line.quantityPerOutputUnit}{' '}
+                {unitsQuery.data?.items.find((unit) => unit.id === line.unitId)?.symbol ?? ''}
+              </span>
+            </div>
+          ))}
+        </Card>
       )}
     </div>
   )

@@ -34,40 +34,75 @@ La vista de Produccion solo es visible en la navegacion y accesible por ruta (`R
 
 - Branch/HEAD: `develop` / `9cec685`.
 
-## Evidencia real
+## Evidencia real de esta reconciliación
 
-- Frontend: `tsc --noEmit` PASS
-- Frontend: `eslint` PASS
-- Frontend: `vite build` PASS
-- Backend: `dotnet build` PASS
+- `pnpm test -- src/features/navigation.test.ts src/features/inventory/pages.test.tsx src/routes/AppRoutes.test.tsx`: PASS, 83 tests.
+- `pnpm typecheck`: PASS.
+- `dotnet test tests/RestaurantSystem.IntegrationTests/RestaurantSystem.IntegrationTests.csproj --filter FullyQualifiedName~OperationsAuthorizationMatrixPostgresIntegrationTests`: PASS, 1 test.
 
-## Manifest de archivos del change
+## Manifest factual
 
-### Frontend
+### Backend
 
-| Archivo |
-| --- |
-| `src/features/production/api.ts` |
-| `src/features/production/pages.tsx` |
-| `src/features/production/index.ts` |
-| `src/features/navigation.tsx` |
-| `src/routes/AppRoutes.tsx` |
+- `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`
+- `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`
+- `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`
+- `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`
+- `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs`
+- `backend/tests/RestaurantSystem.IntegrationTests/OperationsAuthorizationMatrixPostgresIntegrationTests.cs`
 
-### Documentacion
+### Frontend y contrato generado
+
+- `frontend/src/features/production/api.ts`
+- `frontend/src/features/production/index.ts`
+- `frontend/src/features/production/pages.tsx`
+- `frontend/src/routes/AppRoutes.tsx`
+- `frontend/src/features/navigation.tsx`
+- `frontend/src/types/api.generated.ts`
+
+### Documentación
 
 - `docs/historias/HU-007-spri.md`
-- `docs/handoffs/sprint-2-backend-frontend-handoff.md`
+- `docs/openspec/changes/finalize-sprint-2-routing-permissions-and-documentation/`
 
 ## Evidencias
 
-![Captura del formulario de registro de produccion](../capturas/HU-007-formulario.png)
+### Registrar Produccion (Desktop)
 
----
+El formulario de producción en escritorio muestra el producto, la cantidad, la vista previa de ingredientes, disponibilidad suficiente y la acción de confirmar.
 
-### Captura de confirmacion y exito
+![Registrar producción Desktop](../capturas/HU-007-register-production.png)
 
-![Captura de confirmacion y exito](../capturas/HU-007-confirmacion-exito.png)
+### Registrar Produccion (Mobile)
+
+La vista responsive muestra el producto seleccionado, la cantidad, la acción disponible y el aviso de faltantes de ingredientes.
+
+![Registrar producción mobile](../capturas/HU-007-mobile.png)
+
+### Registrar producción (Stock insuficiente)
+
+La vista previa de ingredientes en escritorio informa existencias insuficientes e identifica los faltantes.
+
+![Registrar producción con stock insuficiente](../capturas/HU-007-low-stock-production.png)
+
+### Registrar Produccion (Modal de confirmación)
+
+El modal identifica Pre-Pizza, la cantidad `1.00` y la acción de confirmar el registro.
+
+![modal para confirmar registro](../capturas/HU-007-confirm-modal.png)
+
+### Registrar Produccion (Advertencia bajo stock)
+
+El diálogo de confirmación presenta el código `PRODUCTION_STOCK_INSUFFICIENT`; esta captura no acredita por sí sola la atomicidad del backend.
+
+![advertencia al confirmar registro con bajo stock](../capturas/HU-007-confirm-modal-low-stock.png)
+
+### Registrar Produccion (Confirmación)
+
+El estado exitoso indica que la producción fue registrada para Pre-Pizza, cantidad `10.00`, y muestra el lote generado.
+
+![Confirmar registro de producción](../capturas/HU-007-success-modal.png)
 
 ## Estado de entrega
 
-**FRONTEND IMPLEMENTADO**. Ruta: `/produccion/registrar`.
+La implementación técnica, el manifest, la evidencia visual manual, la documentación y la validación end-to-end están completos.

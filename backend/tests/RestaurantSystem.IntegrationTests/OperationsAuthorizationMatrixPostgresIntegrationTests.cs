@@ -21,9 +21,14 @@ public sealed class OperationsAuthorizationMatrixPostgresIntegrationTests(Postgr
 
         var routes = new[]
         {
+            new Route(HttpMethod.Post, "/api/v1/products", new { }, "admin", "encargado"),
+            new Route(HttpMethod.Put, "/api/v1/products/00000000-0000-0000-0000-000000000001", new { }, "admin", "encargado"),
+            new Route(HttpMethod.Delete, "/api/v1/products/00000000-0000-0000-0000-000000000001", null, "admin", "encargado"),
             new Route(HttpMethod.Get, "/api/v1/products/00000000-0000-0000-0000-000000000001/composition", null, "admin", "encargado", "mesero", "cocina"),
             new Route(HttpMethod.Put, "/api/v1/products/00000000-0000-0000-0000-000000000001/composition", Array.Empty<object>(), "admin", "encargado"),
             new Route(HttpMethod.Put, "/api/v1/products/00000000-0000-0000-0000-000000000001/minimum-stock", new { minStock = 1m }, "admin", "encargado"),
+            new Route(HttpMethod.Get, "/api/v1/inventory/movements?page=1&pageSize=1", null, "admin", "encargado", "mesero", "cocina", "contadora"),
+            new Route(HttpMethod.Post, "/api/v1/inventory/movements", new { productId = Guid.Empty, type = "ENTRY", quantity = 1m, reason = "test" }, "admin", "encargado"),
             new Route(HttpMethod.Get, "/api/v1/products/00000000-0000-0000-0000-000000000001/production-requirements?quantity=1", null, "admin", "encargado", "cocina"),
             new Route(HttpMethod.Post, "/api/v1/productions", new { productId = Guid.Empty, quantityProduced = 1m }, "admin", "encargado", "cocina"),
             new Route(HttpMethod.Post, "/api/v1/sales", new { orderId = Guid.Empty, salesChannel = "DIRECT", paymentMethod = "CASH" }, "admin", "encargado", "mesero"),

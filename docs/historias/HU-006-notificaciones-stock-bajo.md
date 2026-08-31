@@ -17,7 +17,8 @@
 - El universo es el de productos activos de Inventory; un producto sin balance materializado se trata como cantidad `0`.
 - Stock bajo incluye cantidad negativa o cantidad menor o igual al mínimo configurado. Negativos es un subconjunto informativo de Stock bajo; `normalStockCount = totalProducts - lowStockCount`.
 - Los saldos negativos se conservan, sin clamping. Los conteos son de productos, no una suma de cantidades heterogéneas.
-- `InventoryRead` permite ADMINISTRADOR, ENCARGADO, MESERO, COCINA y CONTADORA; EMPLEADO-only y anónimo no tienen acceso. Movimientos conserva su restricción de gestión para ADMINISTRADOR/ENCARGADO.
+- `InventoryRead` e `InventoryHistory` permiten ADMINISTRADOR, ENCARGADO, MESERO, COCINA y CONTADORA; EMPLEADO-only y anónimo no tienen acceso. Los movimientos manuales conservan `InventoryManage` para ADMINISTRADOR/ENCARGADO.
+- Existencias, Movimientos y Notificaciones reutilizan una sola navegación; Notificaciones muestra el `lowStockCount` global solo cuando es mayor que cero.
 - No hay migración, persistencia de notificaciones, segunda UI de MinStock, cambio de escritura Inventory ni ruptura de rutas existentes.
 
 ## Frontend y validación

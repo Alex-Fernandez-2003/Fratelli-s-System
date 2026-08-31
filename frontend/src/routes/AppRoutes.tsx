@@ -17,15 +17,16 @@ import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
 import { CheckoutPage } from '../features/sales/pages'
 import { ProductsPage } from '../features/products/pages'
+import { CompositionPage } from '../features/products/composition/CompositionPage'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
 import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
-import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
+import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { RegisterProductionPage } from '../features/production'
 import { ShiftsPage } from '../features/shifts/ShiftsPage'
-import { SHIFT_MANAGE_ROLES } from '../features/shifts/api'
+import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
 
 function Bootstrap() {
@@ -102,6 +103,7 @@ export function AppRoutes() {
           {/* Productos */}
           <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
+            <Route path="/productos/:id/composicion" element={<CompositionPage />} />
           </Route>
 
           <Route element={<RequireAnyRole roles={['COCINA', 'ENCARGADO', 'ADMINISTRADOR']} />}>
@@ -117,9 +119,9 @@ export function AppRoutes() {
             }
           >
             <Route path="/inventario" element={<InventoryBalancesPage />} />
+            <Route path="/inventario/movimientos" element={<InventoryMovementsPage />} />
           </Route>
           <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
-            <Route path="/inventario/movimientos" element={<InventoryMovementsPage />} />
             <Route path="/gastos" element={<ExpensesPage />} />
           </Route>
 
@@ -140,15 +142,18 @@ export function AppRoutes() {
             <Route path="/proveedores" element={<SuppliersPage />} />
           </Route>
 
-
-          <Route element={<RequireAnyRole roles={[...PURCHASE_WRITE_ROLES]} />}>
+          <Route element={<RequireAnyRole roles={[...PURCHASE_READ_ROLES]} />}>
             <Route path="/compras" element={<PurchasesPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...PURCHASE_WRITE_ROLES]} />}>
             <Route path="/compras/nueva" element={<NewPurchasePage />} />
             <Route path="/compras/:id/recibir" element={<ReceivePurchasePage />} />
           </Route>
 
           {/* Turnos / Caja */}
-          <Route path="/mi-turno" element={<MyShiftPage />} />
+          <Route element={<RequireAnyRole roles={[...SHIFT_OWN_READ_ROLES]} />}>
+            <Route path="/mi-turno" element={<MyShiftPage />} />
+          </Route>
           <Route element={<RequireAnyRole roles={[...SHIFT_MANAGE_ROLES]} />}>
             <Route path="/turnos" element={<ShiftsPage />} />
           </Route>
