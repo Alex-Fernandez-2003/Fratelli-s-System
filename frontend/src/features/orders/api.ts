@@ -6,7 +6,9 @@ import type { components, paths } from '@/types/api.generated'
 type Order = components['schemas']['OrderDto']
 type OrderStatus = components['schemas']['OrderStatus']
 type OrderPage = components['schemas']['PagedResponseOfOrderDto']
-type CreateOrder = paths['/api/v1/orders']['post']['requestBody']['content']['application/json']
+type CreateOrder = paths['/api/v1/orders']['post']['requestBody']['content']['application/json'] & {
+  acknowledgeStockShortage?: boolean
+} & { acknowledgeStockShortage?: boolean }
 type AssignOrder =
   paths['/api/v1/orders/{id}/assignment']['put']['requestBody']['content']['application/json']
 type CancelOrder =

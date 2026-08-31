@@ -15,6 +15,7 @@ import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
 import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
+import { CheckoutPage } from '../features/sales/pages'
 import { ProductsPage } from '../features/products/pages'
 import { CompositionPage } from '../features/products/composition/CompositionPage'
 import { UsersPage } from '../features/users/pages/UsersPage'
@@ -92,6 +93,7 @@ export function AppRoutes() {
             <Route path="/pedidos" element={<OrdersPage />} />
             <Route path="/pedidos/nuevo" element={<NewOrderPage />} />
             <Route path="/pedidos/:id" element={<OrderDetailPage />} />
+            <Route path="/pedidos/:id/cobrar" element={<CheckoutPage />} />
           </Route>
 
           {/* Productos */}

@@ -4809,6 +4809,8 @@ export interface components {
       tableReference: null | string
       notes: null | string
       items: components['schemas']['CreateOrderItemRequest'][]
+      /** @default false */
+      acknowledgeStockShortage: null | boolean
     }
     CreateProductionRequest: {
       /** Format: uuid */
@@ -5274,6 +5276,12 @@ export interface components {
       /** Format: double */
       total: number | string
       items: components['schemas']['SaleItemDto'][]
+      salesChannel: components['schemas']['SalesChannel']
+      paymentMethod: components['schemas']['PaymentMethod']
+      /** Format: date-time */
+      confirmedAt: string
+      confirmedByUserId: string
+      confirmedByDisplayName: null | string
     }
     SaleItemDto: {
       /** Format: uuid */
