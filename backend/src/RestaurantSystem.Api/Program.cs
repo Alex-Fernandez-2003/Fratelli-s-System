@@ -20,6 +20,7 @@ using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Inventory;
 using RestaurantSystem.Domain.Expenses;
 using RestaurantSystem.Domain.Orders;
+using RestaurantSystem.Domain.Operations;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Identity;
 using RestaurantSystem.Infrastructure.Attendance;
@@ -96,19 +97,30 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(PolicyNames.SupplierDeactivate, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.AttendanceManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.AttendanceSelf, p => p.RequireAuthenticatedUser());
+    options.AddPolicy("AttendanceAdministrative", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Accountant));
     options.AddPolicy(PolicyNames.AttendanceHubAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.UsersManage, p => p.RequireRole(RoleNames.Administrator));
     options.AddPolicy(PolicyNames.OrdersAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter));
     options.AddPolicy(PolicyNames.KitchenAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
     options.AddPolicy(PolicyNames.KitchenManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen));
+    options.AddPolicy("CustomerRead", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter));
+    options.AddPolicy("CustomerWrite", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter));
+    options.AddPolicy("CustomerStatusManage", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("ProductionHistory", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen, RoleNames.Accountant));
+    options.AddPolicy("SalesHistory", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Accountant));
+        options.AddPolicy("PurchaseHistory", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen, RoleNames.Accountant));
     options.AddPolicy(PolicyNames.KitchenHubAccess, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen));
     options.AddPolicy(PolicyNames.InventoryRead, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen, RoleNames.Accountant));
     options.AddPolicy(PolicyNames.InventoryManage, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.InventoryHistory, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Waiter, RoleNames.Kitchen, RoleNames.Accountant));
     options.AddPolicy(PolicyNames.ExpenseWrite, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
     options.AddPolicy(PolicyNames.ExpenseCategoryRead, p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("ExpenseHistory", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Accountant));
     options.AddPolicy("OperationsPurchase", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Kitchen));
     options.AddPolicy("OperationsShiftManage", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("WorkScheduleManage", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("CashManage", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager));
+    options.AddPolicy("CashHistory", p => p.RequireRole(RoleNames.Administrator, RoleNames.Manager, RoleNames.Accountant));
 });
 var app = builder.Build(); app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -201,11 +213,13 @@ inventory.MapGet("/movements", async (IInventoryService s, int page = 1, int pag
 inventory.MapPost("/movements", async (RecordManualInventoryMovementRequest r, ClaimsPrincipal p, IInventoryService s, CancellationToken ct) => { var x = await s.RecordManualAsync(r, p.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return x.Error is null ? Results.Created($"/api/v1/inventory/movements/{x.Value!.Id}", x.Value) : InventoryError(x.Error); }).RequireAuthorization(PolicyNames.InventoryManage).Produces<InventoryMovementDto>(201).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 var expenses = catalog.MapGroup("/expenses");
 catalog.MapGet("/expense-categories", async (IExpenseService s, CancellationToken ct) => Results.Ok(await s.CategoriesAsync(ct))).RequireAuthorization(PolicyNames.ExpenseCategoryRead).Produces<IReadOnlyList<ExpenseCategoryDto>>(200).ProducesProblem(401).ProducesProblem(403);
+expenses.MapGet("", async (IExpenseService s, int page = 1, int pageSize = 20, DateOnly? from = null, DateOnly? to = null, Guid? categoryId = null, CashSource? cashSource = null, string? responsible = null, Guid? shiftId = null, ShiftType? shiftType = null, CancellationToken ct = default) => !Paging(page, pageSize) || from > to ? Results.ValidationProblem(new Dictionary<string, string[]> { ["expenses"] = ["Invalid paging or date range"] }) : Results.Ok(await s.HistoryAsync(page, pageSize, from, to, categoryId, cashSource, responsible, shiftId, shiftType, ct))).RequireAuthorization("ExpenseHistory").Produces<ExpenseHistoryPage>(200).ProducesValidationProblem(400).ProducesProblem(401).ProducesProblem(403);
 expenses.MapPost("", async (CreateExpenseRequest r, ClaimsPrincipal p, IExpenseService s, CancellationToken ct) => { var x = await s.CreateAsync(r, p.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return x.Error is null ? Results.Created($"/api/v1/expenses/{x.Value!.Id}", x.Value) : ExpenseError(x.Error); }).RequireAuthorization(PolicyNames.ExpenseWrite).Produces<ExpenseDto>(201).ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 var attendance = catalog.MapGroup("/attendance");
 attendance.MapPost("/employees/{employeeId:guid}/check-in", async (Guid employeeId, ClaimsPrincipal principal, IAttendanceService service, CancellationToken ct) => { var result = await service.CheckInAsync(employeeId, principal.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return result.Error is null ? Results.Created($"/api/v1/attendance/employees/{employeeId}", result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceRecordDto>(201).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 attendance.MapPost("/employees/{employeeId:guid}/check-out", async (Guid employeeId, ClaimsPrincipal principal, IAttendanceService service, CancellationToken ct) => { var result = await service.CheckOutAsync(employeeId, principal.FindFirstValue(ClaimTypes.NameIdentifier)!, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceRecordDto>(200).ProducesProblem(401).ProducesProblem(403).ProducesProblem(404).ProducesProblem(409);
 attendance.MapGet("/employees/today", async (IAttendanceService service, CancellationToken ct) => Results.Ok(await service.TodayAsync(ct))).RequireAuthorization(PolicyNames.AttendanceManage).Produces<AttendanceTodayResponse>(200).ProducesProblem(401).ProducesProblem(403);
+attendance.MapGet("/admin", async (Guid? employeeId, DateOnly? from, DateOnly? to, ShiftType? shiftType, AttendanceLifecycle? outcome, bool? late, int page = 1, int pageSize = 20, IAttendanceService service = null!, CancellationToken ct = default) => { var result = await service.AdministrativeAsync(employeeId, from, to, shiftType, outcome, late, page, pageSize, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization("AttendanceAdministrative").Produces<AdministrativeAttendancePage>(200).ProducesValidationProblem(400).ProducesProblem(401).ProducesProblem(403);
 attendance.MapGet("/me", async (DateOnly? from, DateOnly? to, int page = 1, int pageSize = 20, ClaimsPrincipal principal = null!, IAttendanceService service = null!, CancellationToken ct = default) => { var result = await service.MineAsync(principal.FindFirstValue(ClaimTypes.NameIdentifier)!, from, to, page, pageSize, ct); return result.Error is null ? Results.Ok(result.Value) : AttendanceError(result.Error); }).RequireAuthorization(PolicyNames.AttendanceSelf).Produces<AttendancePage>(200).ProducesProblem(400).ProducesProblem(401).ProducesProblem(404);
 static OrderActor Actor(ClaimsPrincipal principal) => new(principal.FindFirstValue(ClaimTypes.NameIdentifier)!, principal.FindAll(ClaimTypes.Role).Select(x => x.Value).ToHashSet(StringComparer.Ordinal));
 static IResult OrderError(string error, object? shortages = null) => error switch

@@ -20,8 +20,7 @@ export function useProduct(productId: string | undefined) {
 export function useComposition(productId: string | undefined) {
   return useQuery({
     queryKey: ['products', productId, 'composition'],
-    queryFn: () =>
-      httpClient.get<Composition>(endpoints.products.composition(productId as string)),
+    queryFn: () => httpClient.get<Composition>(endpoints.products.composition(productId as string)),
     enabled: Boolean(productId),
   })
 }
@@ -30,10 +29,7 @@ export function useUpdateComposition(productId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (lines: CompositionLineRequest[]) =>
-      httpClient.put<Composition>(
-        endpoints.products.updateComposition(productId as string),
-        lines,
-      ),
+      httpClient.put<Composition>(endpoints.products.updateComposition(productId as string), lines),
     onSuccess: (data) => {
       queryClient.setQueryData(['products', productId, 'composition'], data)
     },

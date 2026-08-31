@@ -9,10 +9,22 @@ export type ProductionDto = components['schemas']['ProductionDto']
 export type CreateProductionRequest = components['schemas']['CreateProductionRequest']
 
 export const productionApi = {
-  listProducts: (params: { page?: number; pageSize?: number; search?: string; productType?: string; isActive?: boolean } = {}) =>
-    httpClient.get<{ items: ProductDto[]; page: number; pageSize: number; totalCount: number; totalPages: number }>(
-      endpoints.products.list(params),
-    ),
+  listProducts: (
+    params: {
+      page?: number
+      pageSize?: number
+      search?: string
+      productType?: string
+      isActive?: boolean
+    } = {},
+  ) =>
+    httpClient.get<{
+      items: ProductDto[]
+      page: number
+      pageSize: number
+      totalCount: number
+      totalPages: number
+    }>(endpoints.products.list(params)),
 
   getRequirements: (productId: string, quantity: number) =>
     httpClient.get<ProductionRequirementsDto>(

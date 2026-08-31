@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Domain.Attendance;
+using RestaurantSystem.Domain.Identity;
+using RestaurantSystem.Domain.Operations;
 
 namespace RestaurantSystem.Infrastructure.Attendance;
 
@@ -28,7 +30,7 @@ public sealed class SignalRAttendanceNotifier(IHubContext<AttendanceHub> hub) : 
         hub.Clients.All.SendAsync("AttendanceUpdated", record, cancellationToken);
 }
 
-public sealed class AttendanceService(ApplicationDbContext db, IBusinessClock clock, IAttendanceNotifier notifier, ILogger<AttendanceService> logger) : IAttendanceService
+public sealed class AttendanceService(ApplicationDbContext db, IBusinessClock clock, AttendanceDerivationService derivation, IAttendanceNotifier notifier, ILogger<AttendanceService> logger) : IAttendanceService
 {
     public async Task<(AttendanceRecordDto? Value, string? Error)> CheckInAsync(Guid employeeId, string actorUserId, CancellationToken ct = default)
     {
@@ -74,6 +76,30 @@ public sealed class AttendanceService(ApplicationDbContext db, IBusinessClock cl
         return (new AttendancePage(records.Select(Map).ToArray(), page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)), null);
     }
 
-    private async Task Notify(AttendanceRecordDto record, CancellationToken ct) { try { await notifier.AttendanceUpdatedAsync(record, ct); } catch (Exception ex) { logger.LogError(ex, "Attendance notifier failed after commit"); } }
-    private static AttendanceRecordDto Map(AttendanceRecord x) => new(x.Id, x.EmployeeId, x.BusinessDate, x.CheckInAt, x.CheckInByUserId, x.CheckOutAt, x.CheckOutByUserId);
+        public async Task<(AdministrativeAttendancePage? Value, string? Error)> AdministrativeAsync(Guid? employeeId, DateOnly? from, DateOnly? to, ShiftType? shiftType, AttendanceLifecycle? outcome, bool? late, int page, int pageSize, CancellationToken ct = default)
+        {
+            if (from > to || page < 1 || pageSize is < 1 or > 100) return (null, "Invalid attendance query");
+            var query = from assignment in db.ShiftAssignments.AsNoTracking()
+                        join shift in db.Shifts.AsNoTracking() on assignment.ShiftId equals shift.Id
+                        join session in db.CashSessions.AsNoTracking() on shift.CashSessionId equals session.Id
+                        join employee in db.Employees.AsNoTracking() on assignment.EmployeeId equals employee.Id
+                        join record in db.AttendanceRecords.AsNoTracking() on new { assignment.EmployeeId, session.BusinessDate } equals new { record.EmployeeId, record.BusinessDate } into records
+                        from record in records.DefaultIfEmpty()
+                        select new { Assignment = assignment, Shift = shift, Session = session, Employee = employee, Record = record };
+            if (employeeId is not null) query = query.Where(x => x.Employee.Id == employeeId);
+            if (from is not null) query = query.Where(x => x.Session.BusinessDate >= from);
+            if (to is not null) query = query.Where(x => x.Session.BusinessDate <= to);
+            if (shiftType is not null) query = query.Where(x => x.Shift.Type == shiftType);
+            var rows = (await query.ToListAsync(ct)).Select(x => MapAdministrative(x.Assignment, x.Shift, x.Session, x.Employee, x.Record, derivation.Derive(new(x.Session, x.Shift, x.Assignment, x.Record))));
+            if (outcome is not null) rows = rows.Where(x => x.Outcome == outcome);
+            if (late is not null) rows = rows.Where(x => x.IsLate == late);
+            var all = rows.OrderByDescending(x => x.BusinessDate).ThenByDescending(x => x.PlannedStart).ThenByDescending(x => x.EmployeeId).ToArray();
+            var summary = new AdministrativeAttendanceSummary(all.Length, all.Count(x => x.Outcome == AttendanceLifecycle.OPEN), all.Count(x => x.Outcome == AttendanceLifecycle.CLOSED), all.Sum(x => x.WorkedMinutes ?? 0), all.Count(x => x.IsLate), all.Count(x => x.Outcome == AttendanceLifecycle.ABSENT));
+            var employees = all.GroupBy(x => new { x.EmployeeId, x.FullName }).Select(x => new EmployeeAttendanceSummary(x.Key.EmployeeId, x.Key.FullName, x.Sum(r => r.WorkedMinutes ?? 0), x.Count(r => r.IsLate), x.Count(r => r.Outcome == AttendanceLifecycle.ABSENT), x.Count(r => r.Outcome is AttendanceLifecycle.OPEN or AttendanceLifecycle.CLOSED))).OrderBy(x => x.FullName).ToArray();
+            return (new AdministrativeAttendancePage(all.Skip((page - 1) * pageSize).Take(pageSize).ToArray(), page, pageSize, all.Length, all.Length == 0 ? 0 : (int)Math.Ceiling(all.Length / (double)pageSize), summary, employees), null);
+        }
+
+        private static AdministrativeAttendanceRow MapAdministrative(ShiftAssignment assignment, Shift shift, CashSession session, Employee employee, AttendanceRecord? record, AttendanceDerivationResult derived) => new(employee.Id, employee.FullName, session.BusinessDate, shift.Type, derived.PlannedStart!.Value, derived.PlannedEnd!.Value, record?.CheckInAt, record?.CheckOutAt, derived.Lifecycle, derived.WorkedMinutes, derived.IsLate, derived.LateMinutes);
+        private async Task Notify(AttendanceRecordDto record, CancellationToken ct) { try { await notifier.AttendanceUpdatedAsync(record, ct); } catch (Exception ex) { logger.LogError(ex, "Attendance notifier failed after commit"); } }
+        private static AttendanceRecordDto Map(AttendanceRecord x) => new(x.Id, x.EmployeeId, x.BusinessDate, x.CheckInAt, x.CheckInByUserId, x.CheckOutAt, x.CheckOutByUserId);
 }

@@ -10,6 +10,7 @@ using RestaurantSystem.Application.Inventory;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Expenses;
 using RestaurantSystem.Domain.Inventory;
+using RestaurantSystem.Domain.Operations;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Attendance;
 using RestaurantSystem.Infrastructure.Expenses;
@@ -96,6 +97,47 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         var b = new InventoryService(second).RecordManualAsync(new(productId, InventoryMovementType.WRITE_OFF, 7, "b"), actor);
         var result = await Task.WhenAll(a, b); Assert.All(result, x => Assert.Null(x.Error));
         await using var verify = new ApplicationDbContext(options); Assert.Single(await verify.InventoryBalances.Where(x => x.ProductId == productId).ToListAsync()); Assert.Equal(2, await verify.InventoryMovements.CountAsync(x => x.ProductId == productId)); Assert.Equal(-3m, await verify.InventoryBalances.Where(x => x.ProductId == productId).Select(x => x.Quantity).SingleAsync());
+    }
+
+    [Fact]
+    public async Task Expense_history_is_authorized_filtered_newest_first_paginated_and_aggregated_over_the_full_filtered_set()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "expense_history_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient();
+        var admin = await Token(client, "admin.test"); var manager = await Token(client, "encargado.test"); var accountant = await Token(client, "contadora.test"); var waiter = await Token(client, "mesero.test");
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
+        Guid foodCategory; Guid morningShift; Guid nightShift;
+        await using (var db = new ApplicationDbContext(options))
+        {
+            var adminId = (await db.Users.SingleAsync(x => x.UserName == "admin.test")).Id;
+            var managerId = (await db.Users.SingleAsync(x => x.UserName == "encargado.test")).Id;
+            var food = new ExpenseCategory { Name = "Food", CreatedAt = DateTimeOffset.UtcNow };
+            var supplies = new ExpenseCategory { Name = "Supplies", CreatedAt = DateTimeOffset.UtcNow };
+            var session = new CashSession { BusinessDate = new DateOnly(2026, 8, 30), OpenedAt = DateTimeOffset.UtcNow, OpenedByUserId = adminId };
+            var morning = new Shift { Type = ShiftType.MORNING, Status = ShiftStatus.ACTIVE };
+            var night = new Shift { Type = ShiftType.NIGHT, Status = ShiftStatus.PENDING };
+            session.Shifts.Add(morning); session.Shifts.Add(night); db.AddRange(food, supplies, session); await db.SaveChangesAsync();
+            var waiterUser = await db.Users.SingleAsync(x => x.UserName == "mesero.test"); var managerRole = await db.Roles.SingleAsync(x => x.Name == "ENCARGADO");
+            db.UserRoles.Add(new Microsoft.AspNetCore.Identity.IdentityUserRole<string> { UserId = waiterUser.Id, RoleId = managerRole.Id }); await db.SaveChangesAsync();
+            foodCategory = food.Id; morningShift = morning.Id; nightShift = night.Id;
+            db.Expenses.AddRange(
+                new Expense { ExpenseCategoryId = food.Id, ShiftId = morning.Id, Amount = 10m, CashSource = CashSource.CASH_DRAWER, Description = "old", ExpenseDate = new DateOnly(2026, 8, 28), CreatedAt = new DateTimeOffset(2026, 8, 28, 10, 0, 0, TimeSpan.Zero), CreatedByUserId = adminId },
+                new Expense { ExpenseCategoryId = food.Id, ShiftId = morning.Id, Amount = 20m, CashSource = CashSource.PETTY_CASH, Description = "middle", ExpenseDate = new DateOnly(2026, 8, 29), CreatedAt = new DateTimeOffset(2026, 8, 29, 10, 0, 0, TimeSpan.Zero), CreatedByUserId = adminId },
+                new Expense { ExpenseCategoryId = food.Id, ShiftId = night.Id, Amount = 30m, CashSource = CashSource.CASH_DRAWER, Description = "new", ExpenseDate = new DateOnly(2026, 8, 30), CreatedAt = new DateTimeOffset(2026, 8, 30, 10, 0, 0, TimeSpan.Zero), CreatedByUserId = adminId },
+                new Expense { ExpenseCategoryId = supplies.Id, ShiftId = night.Id, Amount = 40m, CashSource = CashSource.PETTY_CASH, Description = "other", ExpenseDate = new DateOnly(2026, 8, 30), CreatedAt = new DateTimeOffset(2026, 8, 30, 11, 0, 0, TimeSpan.Zero), CreatedByUserId = managerId });
+            await db.SaveChangesAsync();
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/expenses?page=1&pageSize=2")).StatusCode);
+        foreach (var token in new[] { admin, manager, accountant }) Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/expenses?page=1&pageSize=2", token)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/expenses?page=1&pageSize=2", waiter)).StatusCode);
+        var waiterManager = await Token(client, "mesero.test"); Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/expenses?page=1&pageSize=2", waiterManager)).StatusCode);
+        var page = await (await Send(client, HttpMethod.Get, $"/api/v1/expenses?page=1&pageSize=1&categoryId={foodCategory}&from=2026-08-28&to=2026-08-30", admin)).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(3, page.GetProperty("totalCount").GetInt32()); Assert.Equal(60m, page.GetProperty("totalAmount").GetDecimal()); Assert.Equal(40m, page.GetProperty("cashDrawerTotal").GetDecimal()); Assert.Equal(20m, page.GetProperty("pettyCashTotal").GetDecimal());
+        Assert.Equal("new", page.GetProperty("items")[0].GetProperty("description").GetString());
+        var filtered = await (await Send(client, HttpMethod.Get, $"/api/v1/expenses?page=1&pageSize=20&cashSource=CASH_DRAWER&shiftType=NIGHT&shiftId={nightShift}&responsible=admin.test", admin)).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Single(filtered.GetProperty("items").EnumerateArray()); Assert.Equal(30m, filtered.GetProperty("totalAmount").GetDecimal()); Assert.Equal("CASH_DRAWER", filtered.GetProperty("items")[0].GetProperty("cashSource").GetString());
+        await using var check = new ApplicationDbContext(options); Assert.Equal(4, await check.Expenses.CountAsync());
     }
 
     private static Guid Product(ApplicationDbContext db, Guid unit, string actor, string name, decimal? minStock, bool active) { var p = new Product { Name = name, ProductType = ProductType.INGREDIENT, InventoryUnitId = unit, MinStock = minStock, IsActive = active, CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor, UpdatedByUserId = actor }; db.Products.Add(p); return p.Id; }

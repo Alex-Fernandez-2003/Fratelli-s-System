@@ -115,7 +115,10 @@ export function CompositionEditor({
   const [cyclicWarning, setCyclicWarning] = useState<string | null>(null)
   const [attemptedSave, setAttemptedSave] = useState(false)
 
-  const productsById = useMemo(() => new Map(ingredientOptions.map((p) => [p.id, p])), [ingredientOptions])
+  const productsById = useMemo(
+    () => new Map(ingredientOptions.map((p) => [p.id, p])),
+    [ingredientOptions],
+  )
   const unitsById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units])
   const parentUnit = unitsById.get(parentProduct.inventoryUnitId)
 
@@ -144,9 +147,13 @@ export function CompositionEditor({
     return map
   }, [lines, parentProduct.id, productsById, unitsById])
 
-  const filledLines = lines.filter((l) => l.componentProductId || l.quantityPerOutputUnit || l.unitId)
+  const filledLines = lines.filter(
+    (l) => l.componentProductId || l.quantityPerOutputUnit || l.unitId,
+  )
   const hasAnyIssue = [...issuesByKey.values()].some((issues) => issues.length > 0)
-  const hasAtLeastOneComponent = lines.some((l) => l.componentProductId && !issuesByKey.get(l.key)?.length)
+  const hasAtLeastOneComponent = lines.some(
+    (l) => l.componentProductId && !issuesByKey.get(l.key)?.length,
+  )
 
   function updateLine(key: string, patch: Partial<CompositionLineDraft>) {
     setLines((prev) => prev.map((line) => (line.key === key ? { ...line, ...patch } : line)))
@@ -162,7 +169,9 @@ export function CompositionEditor({
   }
 
   function removeLine(key: string) {
-    setLines((prev) => (prev.length === 1 ? [emptyDraft(newKey())] : prev.filter((l) => l.key !== key)))
+    setLines((prev) =>
+      prev.length === 1 ? [emptyDraft(newKey())] : prev.filter((l) => l.key !== key),
+    )
   }
 
   function addLine() {
@@ -208,7 +217,9 @@ export function CompositionEditor({
             </span>
             <div>
               <h2 className="m-0">{parentProduct.name}</h2>
-              <Badge>{PRODUCT_TYPE_LABEL[parentProduct.productType] ?? parentProduct.productType}</Badge>
+              <Badge>
+                {PRODUCT_TYPE_LABEL[parentProduct.productType] ?? parentProduct.productType}
+              </Badge>
               {isDirty && <Badge tone="warning">Cambios sin guardar</Badge>}
             </div>
           </div>
@@ -228,9 +239,7 @@ export function CompositionEditor({
         <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
           <div>
             <span className="block text-sm text-text-muted">Unidad principal</span>
-            <strong>
-              {parentUnit ? `${parentUnit.name} (${parentUnit.symbol})` : '—'}
-            </strong>
+            <strong>{parentUnit ? `${parentUnit.name} (${parentUnit.symbol})` : '—'}</strong>
           </div>
           <div>
             <span className="block text-sm text-text-muted">Ingredientes agregados</span>
@@ -238,8 +247,8 @@ export function CompositionEditor({
           </div>
         </div>
         <p className="m-0 text-xs text-text-muted">
-          El costo estimado y el rendimiento no forman parte del alcance actual del backend
-          (HU-004 no implementa costeo ni rendimiento esperado), por lo que no se muestran aquí.
+          El costo estimado y el rendimiento no forman parte del alcance actual del backend (HU-004
+          no implementa costeo ni rendimiento esperado), por lo que no se muestran aquí.
         </p>
       </Card>
 
@@ -277,7 +286,9 @@ export function CompositionEditor({
                   ingredientOptions={ingredientOptions}
                   units={units}
                   onSelectIngredient={(product) => selectIngredient(line.key, product)}
-                  onChangeQuantity={(value) => updateLine(line.key, { quantityPerOutputUnit: value })}
+                  onChangeQuantity={(value) =>
+                    updateLine(line.key, { quantityPerOutputUnit: value })
+                  }
                   onChangeUnit={(unitId) => updateLine(line.key, { unitId })}
                   onRemove={() => removeLine(line.key)}
                 />
@@ -311,7 +322,12 @@ export function CompositionEditor({
       </Card>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={resetChanges} disabled={!isDirty || saving}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={resetChanges}
+          disabled={!isDirty || saving}
+        >
           Cancelar cambios
         </Button>
         <Button type="button" onClick={handleSave} loading={saving} leftIcon={<Save size={16} />}>
@@ -326,8 +342,8 @@ export function CompositionEditor({
       >
         <div className="grid gap-3">
           <p className="m-0">
-            No se puede agregar <strong>&ldquo;{cyclicWarning}&rdquo;</strong> como ingrediente de sí
-            mismo. Esto generaría un bucle infinito en el cálculo de stock.
+            No se puede agregar <strong>&ldquo;{cyclicWarning}&rdquo;</strong> como ingrediente de
+            sí mismo. Esto generaría un bucle infinito en el cálculo de stock.
           </p>
           <div className="flex justify-end">
             <Button type="button" onClick={() => setCyclicWarning(null)}>
@@ -378,11 +394,9 @@ function CompositionRow({
   const componentUnit = selectedComponent
     ? units.find((u) => u.id === selectedComponent.inventoryUnitId)
     : undefined
-  const availableUnits = (
-    componentUnit
-      ? units.filter((u) => u.is_active && u.dimension === componentUnit.dimension)
-      : units.filter((u) => u.is_active)
-  )
+  const availableUnits = componentUnit
+    ? units.filter((u) => u.is_active && u.dimension === componentUnit.dimension)
+    : units.filter((u) => u.is_active)
 
   const ingredientField = (
     <ProductCombobox
@@ -418,8 +432,15 @@ function CompositionRow({
     </IconButton>
   )
   const issueMessages = blocking.map((issue, index) => (
-    <span key={index} className={`flex items-center gap-1 text-xs ${tone === 'warning' ? 'text-warning' : 'text-danger'}`}>
-      {tone === 'warning' ? <RotateCcw size={12} aria-hidden="true" /> : <AlertTriangle size={12} aria-hidden="true" />}
+    <span
+      key={index}
+      className={`flex items-center gap-1 text-xs ${tone === 'warning' ? 'text-warning' : 'text-danger'}`}
+    >
+      {tone === 'warning' ? (
+        <RotateCcw size={12} aria-hidden="true" />
+      ) : (
+        <AlertTriangle size={12} aria-hidden="true" />
+      )}
       {issue.message}
     </span>
   ))

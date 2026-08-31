@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RestaurantSystem.Infrastructure;
@@ -11,9 +12,11 @@ using RestaurantSystem.Infrastructure;
 namespace RestaurantSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831112258_AddCustomerSaleSnapshots")]
+    partial class AddCustomerSaleSnapshots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -691,10 +694,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("HourlyRate")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -825,101 +824,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RestaurantSystem.Domain.Operations.CashClosing", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly>("BusinessDate")
-                        .HasColumnType("date");
-
-                    b.Property<decimal>("CashDrawerExpensesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("CashRemovedAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("CashSalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<Guid>("CashSessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("ClosedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ClosedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("DeclaredCash")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("Difference")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("DirectSalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("ExpectedCash")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("ExpensesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("ExternalSalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<string>("Observation")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<decimal>("OpeningAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("PedidosYaSalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("PettyCashExpensesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("PettyCashOpeningAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("QrSalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal>("SalesTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BusinessDate");
-
-                    b.HasIndex("CashSessionId")
-                        .IsUnique();
-
-                    b.HasIndex("ClosedByUserId");
-
-                    b.ToTable("cash_closings", "public");
-                });
-
             modelBuilder.Entity("RestaurantSystem.Domain.Operations.CashSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -928,14 +832,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
 
                     b.Property<DateOnly>("BusinessDate")
                         .HasColumnType("date");
-
-                    b.Property<decimal?>("CashAmountCarriedForward")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal?>("CashRemovedAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
 
                     b.Property<bool>("IsOpen")
                         .HasColumnType("boolean");
@@ -946,14 +842,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                     b.Property<string>("OpenedByUserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<decimal?>("OpeningAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<decimal?>("PettyCashOpeningAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)");
 
                     b.HasKey("Id");
 
@@ -1361,15 +1249,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("EffectiveLateToleranceMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("EffectivePlannedEnd")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<TimeOnly>("EffectivePlannedStart")
-                        .HasColumnType("time without time zone");
-
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid");
 
@@ -1384,38 +1263,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("shift_assignments", "public");
-                });
-
-            modelBuilder.Entity("RestaurantSystem.Domain.Operations.WorkSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LateToleranceMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("PlannedEnd")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<TimeOnly>("PlannedStart")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<string>("ShiftType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShiftType")
-                        .IsUnique();
-
-                    b.ToTable("work_schedules", "public", t =>
-                        {
-                            t.HasCheckConstraint("CK_work_schedules_late_tolerance", "\"LateToleranceMinutes\" >= 0");
-
-                            t.HasCheckConstraint("CK_work_schedules_time_range", "\"PlannedStart\" <> \"PlannedEnd\"");
-                        });
                 });
 
             modelBuilder.Entity("RestaurantSystem.Domain.Orders.KitchenCommand", b =>
@@ -1827,21 +1674,6 @@ namespace RestaurantSystem.Infrastructure.Migrations
                     b.HasOne("RestaurantSystem.Domain.Catalog.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("RestaurantSystem.Domain.Operations.CashClosing", b =>
-                {
-                    b.HasOne("RestaurantSystem.Domain.Operations.CashSession", null)
-                        .WithMany()
-                        .HasForeignKey("CashSessionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("ClosedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

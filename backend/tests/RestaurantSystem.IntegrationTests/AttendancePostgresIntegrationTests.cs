@@ -3,13 +3,17 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.Extensions.Logging.Abstractions;
 using RestaurantSystem.Application.Attendance;
+using RestaurantSystem.Domain.Attendance;
+using RestaurantSystem.Domain.Operations;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Attendance;
+using RestaurantSystem.Infrastructure.Identity;
 using Xunit;
 
 namespace RestaurantSystem.IntegrationTests;
@@ -56,6 +60,88 @@ public sealed class AttendancePostgresIntegrationTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task Own_history_is_employee_scoped_filters_paginated_and_returns_not_found_without_employee_link()
+    {
+        var database = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "attendance_self_history_" + Guid.NewGuid().ToString("N") };
+        await postgres.MigrateAsync(database.ConnectionString);
+        await using var factory = new AuthWebApplicationFactory(database.ConnectionString, "Development");
+        using var client = factory.CreateClient();
+        await client.GetAsync("/health");
+
+        Guid employeeId;
+        await using (var db = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(database.ConnectionString).Options))
+        {
+            var employeeUser = await db.Users.SingleAsync(x => x.UserName == "empleado.test");
+            var otherEmployeeUser = await db.Users.SingleAsync(x => x.UserName == "mesero.test");
+            var employee = await db.Employees.SingleAsync(x => x.UserId == employeeUser.Id);
+            var otherEmployee = await db.Employees.SingleAsync(x => x.UserId == otherEmployeeUser.Id);
+            employeeId = employee.Id;
+            db.AttendanceRecords.AddRange(
+                new AttendanceRecord { EmployeeId = employee.Id, BusinessDate = new DateOnly(2026, 8, 29), CheckInAt = new DateTimeOffset(2026, 8, 29, 8, 0, 0, TimeSpan.Zero), CheckInByUserId = employee.UserId, CheckOutAt = new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero), CheckOutByUserId = employee.UserId },
+                new AttendanceRecord { EmployeeId = employee.Id, BusinessDate = new DateOnly(2026, 8, 30), CheckInAt = new DateTimeOffset(2026, 8, 30, 8, 0, 0, TimeSpan.Zero), CheckInByUserId = employee.UserId, CheckOutAt = new DateTimeOffset(2026, 8, 30, 12, 0, 0, TimeSpan.Zero), CheckOutByUserId = employee.UserId },
+                new AttendanceRecord { EmployeeId = otherEmployee.Id, BusinessDate = new DateOnly(2026, 8, 30), CheckInAt = new DateTimeOffset(2026, 8, 30, 9, 0, 0, TimeSpan.Zero), CheckInByUserId = otherEmployee.UserId, CheckOutAt = new DateTimeOffset(2026, 8, 30, 13, 0, 0, TimeSpan.Zero), CheckOutByUserId = otherEmployee.UserId });
+            var userWithoutEmployee = await db.Users.SingleAsync(x => x.UserName == "cocina.test");
+            db.Employees.Remove(await db.Employees.SingleAsync(x => x.UserId == userWithoutEmployee.Id));
+            await db.SaveChangesAsync();
+        }
+
+        var employeeToken = Token(await (await Login(client, "empleado.test")).Content.ReadFromJsonAsync<JsonElement>());
+        var selfResponse = await Send(client, HttpMethod.Get, "/api/v1/attendance/me?from=2026-08-29&to=2026-08-30&page=1&pageSize=1", employeeToken);
+        Assert.Equal(HttpStatusCode.OK, selfResponse.StatusCode);
+        var page = await selfResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(2, page.GetProperty("totalCount").GetInt32());
+        Assert.Single(page.GetProperty("items").EnumerateArray());
+        Assert.Equal(new DateOnly(2026, 8, 30), DateOnly.Parse(page.GetProperty("items")[0].GetProperty("businessDate").GetString()!));
+        Assert.All(page.GetProperty("items").EnumerateArray(), item => Assert.Equal(employeeId, item.GetProperty("employeeId").GetGuid()));
+
+        var noEmployeeToken = Token(await (await Login(client, "cocina.test")).Content.ReadFromJsonAsync<JsonElement>());
+        Assert.Equal(HttpStatusCode.NotFound, (await Send(client, HttpMethod.Get, "/api/v1/attendance/me?page=1&pageSize=20", noEmployeeToken)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Administrative_attendance_derives_assignment_rows_and_full_filter_summaries()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "attendance_admin_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
+        await using (var db = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options))
+        {
+            var employees = await db.Employees.OrderBy(x => x.UserId).Take(4).ToArrayAsync();
+            var actor = employees[0].UserId; var date = new DateOnly(2026, 8, 20);
+            var session = new CashSession { BusinessDate = date, OpenedAt = DateTimeOffset.UtcNow, OpenedByUserId = actor };
+            var completed = new Shift { CashSessionId = session.Id, Type = ShiftType.MORNING, Status = ShiftStatus.COMPLETED };
+            var active = new Shift { CashSessionId = session.Id, Type = ShiftType.NIGHT, Status = ShiftStatus.ACTIVE };
+            db.CashSessions.Add(session); db.Shifts.AddRange(completed, active);
+            db.ShiftAssignments.AddRange(
+                new ShiftAssignment { ShiftId = completed.Id, EmployeeId = employees[0].Id, AssignedAt = DateTimeOffset.UtcNow, AssignedByUserId = actor, EffectivePlannedStart = new TimeOnly(8, 0), EffectivePlannedEnd = new TimeOnly(12, 0), EffectiveLateToleranceMinutes = 10 },
+                new ShiftAssignment { ShiftId = completed.Id, EmployeeId = employees[1].Id, AssignedAt = DateTimeOffset.UtcNow, AssignedByUserId = actor, EffectivePlannedStart = new TimeOnly(8, 0), EffectivePlannedEnd = new TimeOnly(12, 0), EffectiveLateToleranceMinutes = 10 },
+                new ShiftAssignment { ShiftId = active.Id, EmployeeId = employees[2].Id, AssignedAt = DateTimeOffset.UtcNow, AssignedByUserId = actor, EffectivePlannedStart = new TimeOnly(18, 0), EffectivePlannedEnd = new TimeOnly(22, 0), EffectiveLateToleranceMinutes = 10 },
+                new ShiftAssignment { ShiftId = completed.Id, EmployeeId = employees[3].Id, AssignedAt = DateTimeOffset.UtcNow, AssignedByUserId = actor, EffectivePlannedStart = new TimeOnly(8, 0), EffectivePlannedEnd = new TimeOnly(12, 0), EffectiveLateToleranceMinutes = 10 });
+            db.AttendanceRecords.AddRange(
+                new AttendanceRecord { EmployeeId = employees[0].Id, BusinessDate = date, CheckInAt = new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero), CheckOutAt = new DateTimeOffset(2026, 8, 20, 16, 0, 0, TimeSpan.Zero), CheckInByUserId = actor, CheckOutByUserId = actor },
+                new AttendanceRecord { EmployeeId = employees[1].Id, BusinessDate = date, CheckInAt = new DateTimeOffset(2026, 8, 20, 12, 11, 0, TimeSpan.Zero), CheckOutAt = new DateTimeOffset(2026, 8, 20, 16, 11, 0, TimeSpan.Zero), CheckInByUserId = actor, CheckOutByUserId = actor },
+                new AttendanceRecord { EmployeeId = employees[2].Id, BusinessDate = date, CheckInAt = new DateTimeOffset(2026, 8, 20, 22, 0, 0, TimeSpan.Zero), CheckInByUserId = actor });
+            await db.SaveChangesAsync();
+        }
+        var admin = Token(await (await Login(client, "admin.test")).Content.ReadFromJsonAsync<JsonElement>());
+        var page = await Send(client, HttpMethod.Get, "/api/v1/attendance/admin?from=2026-08-20&to=2026-08-20&page=1&pageSize=2", admin);
+        Assert.True(page.StatusCode == HttpStatusCode.OK, await page.Content.ReadAsStringAsync()); var body = await page.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.GetProperty("summary").GetProperty("totalRecords").GetInt32() == 4 && body.GetProperty("summary").GetProperty("closedCount").GetInt32() == 2 && body.GetProperty("summary").GetProperty("openCount").GetInt32() == 1 && body.GetProperty("summary").GetProperty("lateCount").GetInt32() == 1 && body.GetProperty("summary").GetProperty("absenceCount").GetInt32() == 1 && body.GetProperty("summary").GetProperty("totalWorkedMinutes").GetInt32() == 480, body.GetRawText());
+        Assert.Equal(2, body.GetProperty("items").GetArrayLength()); Assert.Equal(4, body.GetProperty("employeeSummaries").GetArrayLength());
+        var absent = await Send(client, HttpMethod.Get, "/api/v1/attendance/admin?from=2026-08-20&to=2026-08-20&outcome=ABSENT&page=1&pageSize=20", admin);
+        Assert.Equal(HttpStatusCode.OK, absent.StatusCode); var absentBody = await absent.Content.ReadFromJsonAsync<JsonElement>(); Assert.Single(absentBody.GetProperty("items").EnumerateArray()); Assert.Equal(1, absentBody.GetProperty("summary").GetProperty("absenceCount").GetInt32());
+        var lateOnly = await Send(client, HttpMethod.Get, "/api/v1/attendance/admin?from=2026-08-20&to=2026-08-20&late=true&page=1&pageSize=20", admin); var lateBody = await lateOnly.Content.ReadFromJsonAsync<JsonElement>(); Assert.Equal(HttpStatusCode.OK, lateOnly.StatusCode); Assert.Equal(1, lateBody.GetProperty("totalCount").GetInt32()); Assert.Equal(1, lateBody.GetProperty("employeeSummaries")[0].GetProperty("lateCount").GetInt32());
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/attendance/admin?page=1&pageSize=1")).StatusCode);
+        var waiter = Token(await (await Login(client, "mesero.test")).Content.ReadFromJsonAsync<JsonElement>()); Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/attendance/admin?page=1&pageSize=1", waiter)).StatusCode);
+        await using (var db = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options))
+        {
+            var waiterUser = await db.Users.SingleAsync(x => x.UserName == "mesero.test"); var managerRole = await db.Roles.SingleAsync(x => x.Name == RoleNames.Manager);
+            db.UserRoles.Add(new IdentityUserRole<string> { UserId = waiterUser.Id, RoleId = managerRole.Id }); await db.SaveChangesAsync();
+        }
+        var multiRole = Token(await (await Login(client, "mesero.test")).Content.ReadFromJsonAsync<JsonElement>()); Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/attendance/admin?page=1&pageSize=1", multiRole)).StatusCode);
+    }
+
+    [Fact]
     public async Task Concurrent_checkins_allow_exactly_one_open_record()
     {
         var database = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "attendance_race_" + Guid.NewGuid().ToString("N") };
@@ -76,7 +162,7 @@ public sealed class AttendancePostgresIntegrationTests(PostgresFixture postgres)
         await using var factory = new AuthWebApplicationFactory(database.ConnectionString, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(database.ConnectionString).Options;
         await using var db = new ApplicationDbContext(options); var employee = await db.Employees.OrderBy(x => x.UserId).FirstAsync();
-        var service = new AttendanceService(db, new TestClock(), new ThrowingNotifier(), NullLogger<AttendanceService>.Instance);
+        var clock = new TestClock(); var service = new AttendanceService(db, clock, new AttendanceDerivationService(clock), new ThrowingNotifier(), NullLogger<AttendanceService>.Instance);
         var result = await service.CheckInAsync(employee.Id, employee.UserId);
         Assert.Null(result.Error); Assert.True(await db.AttendanceRecords.AnyAsync(x => x.Id == result.Value!.Id));
     }

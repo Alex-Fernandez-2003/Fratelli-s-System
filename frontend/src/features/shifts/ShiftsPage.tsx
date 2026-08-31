@@ -59,9 +59,7 @@ function ShiftCard({
           <dd className="font-bold">{shift.employeeIds.length} personas</dd>
         </div>
         {shift.employeeIds.length > 0 && (
-          <dd className="text-text-muted">
-            {shift.employeeIds.map(employeeNames).join(', ')}
-          </dd>
+          <dd className="text-text-muted">{shift.employeeIds.map(employeeNames).join(', ')}</dd>
         )}
       </dl>
 
@@ -103,13 +101,7 @@ function ShiftCard({
   )
 }
 
-function AssignmentsModal({
-  shift,
-  onClose,
-}: {
-  shift: ShiftDto | null
-  onClose: () => void
-}) {
+function AssignmentsModal({ shift, onClose }: { shift: ShiftDto | null; onClose: () => void }) {
   const attendance = useAttendanceToday(!!shift)
   const update = useUpdateShiftAssignments()
   const [selected, setSelected] = useState<string[]>([])
@@ -345,8 +337,8 @@ function HandoverSection({ shift }: { shift: ShiftDto }) {
 
       <Modal open={confirming} title="Confirmar traspaso" onClose={() => setConfirming(false)}>
         <p>
-          Vas a finalizar el <strong>{SHIFT_TYPE_LABEL[shift.type]}</strong>. Esta acción no se puede
-          deshacer: el turno pasará a Completado y el siguiente turno quedará Activo.
+          Vas a finalizar el <strong>{SHIFT_TYPE_LABEL[shift.type]}</strong>. Esta acción no se
+          puede deshacer: el turno pasará a Completado y el siguiente turno quedará Activo.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
@@ -369,12 +361,15 @@ export function ShiftsPage() {
   const handoverRef = useRef<HTMLDivElement>(null)
 
   const employeeNames = useMemo(() => {
-    const map = new Map((attendance.data?.items ?? []).map((item) => [item.employeeId, item.fullName]))
+    const map = new Map(
+      (attendance.data?.items ?? []).map((item) => [item.employeeId, item.fullName]),
+    )
     return (id: string) => map.get(id) ?? 'Empleado sin identificar'
   }, [attendance.data])
 
   const activeShift = context.data?.shifts.find((shift) => shift.status === 'ACTIVE')
-  const notOpenedToday = context.isError && context.error instanceof HttpError && context.error.status === 404
+  const notOpenedToday =
+    context.isError && context.error instanceof HttpError && context.error.status === 404
 
   return (
     <div className="grid gap-6">
@@ -424,9 +419,17 @@ export function ShiftsPage() {
               <Badge>Fecha operativa · {formatBusinessDateLong(context.data.businessDate)}</Badge>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <StatCard label="Monto inicial caja" value="—" trend="Disponible con el cierre (HU-026)" />
+              <StatCard
+                label="Monto inicial caja"
+                value="—"
+                trend="Disponible con el cierre (HU-026)"
+              />
               <StatCard label="Caja chica" value="—" trend="Disponible con el cierre (HU-026)" />
-              <StatCard label="Total estimado en caja" value="—" trend="Disponible con el cierre (HU-027)" />
+              <StatCard
+                label="Total estimado en caja"
+                value="—"
+                trend="Disponible con el cierre (HU-027)"
+              />
             </div>
             <Button
               type="button"

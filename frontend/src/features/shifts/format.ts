@@ -54,7 +54,10 @@ export function shiftErrorMessage(error: unknown): string {
   if (error instanceof HttpError) {
     if (error.status === 403) return 'No tenés permisos para realizar esta acción.'
     if (error.status === 404) return 'No se encontró el turno indicado.'
-    if (error.status === 409) return error.problem.detail ?? 'La operación entra en conflicto con el estado actual del turno.'
+    if (error.status === 409)
+      return (
+        error.problem.detail ?? 'La operación entra en conflicto con el estado actual del turno.'
+      )
   }
   return 'No se pudo completar la operación. Intentá nuevamente.'
 }

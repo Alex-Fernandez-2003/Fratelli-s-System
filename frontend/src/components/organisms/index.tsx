@@ -78,9 +78,12 @@ export function Modal({
 }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const dragState = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(
-    null,
-  )
+  const dragState = useRef<{
+    startX: number
+    startY: number
+    originX: number
+    originY: number
+  } | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -100,7 +103,12 @@ export function Modal({
 
   function startDrag(event: PointerEvent<HTMLElement>) {
     if (event.target instanceof HTMLElement && event.target.closest('button')) return
-    dragState.current = { startX: event.clientX, startY: event.clientY, originX: offset.x, originY: offset.y }
+    dragState.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: offset.x,
+      originY: offset.y,
+    }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
   function onDrag(event: PointerEvent<HTMLElement>) {

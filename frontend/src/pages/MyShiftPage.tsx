@@ -17,7 +17,8 @@ const SHIFT_ICON = { MORNING: Sun, NIGHT: Moon } as const
 export function MyShiftPage() {
   const { user } = useAuth()
   const shift = useMyShift()
-  const notAssignedToday = shift.isError && shift.error instanceof HttpError && shift.error.status === 404
+  const notAssignedToday =
+    shift.isError && shift.error instanceof HttpError && shift.error.status === 404
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

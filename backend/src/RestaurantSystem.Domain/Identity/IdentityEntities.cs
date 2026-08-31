@@ -6,6 +6,7 @@ public sealed class Employee
     public required string UserId { get; set; }
     public required string FullName { get; set; }
     public bool IsActive { get; set; } = true;
+    public decimal HourlyRate { get; set; } = 20.00m;
 }
 
 public sealed class UserSession

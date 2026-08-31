@@ -1,8 +1,25 @@
-import { ChevronLeft, ChevronRight, Package, PackageCheck, Plus, Trash2, XCircle } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Package,
+  PackageCheck,
+  Plus,
+  Trash2,
+  XCircle,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, Modal, PageHeader } from '@/components/organisms'
-import { Badge, Button, Card, IconButton, Input, Select, StatusDot, Spinner } from '@/components/atoms'
+import {
+  Badge,
+  Button,
+  Card,
+  IconButton,
+  Input,
+  Select,
+  StatusDot,
+  Spinner,
+} from '@/components/atoms'
 import { FormError, FormField } from '@/components/molecules'
 import { HttpError } from '@/lib/api/http-client'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -50,7 +67,11 @@ export function PurchasesPage() {
   const navigate = useNavigate()
   const canWrite = hasAnyRole([...PURCHASE_WRITE_ROLES])
 
-  const [filters, setFilters] = useState<{ page: number; pageSize: number; status: PurchaseStatus | '' }>({
+  const [filters, setFilters] = useState<{
+    page: number
+    pageSize: number
+    status: PurchaseStatus | ''
+  }>({
     page: 1,
     pageSize: 20,
     status: '',
@@ -67,7 +88,8 @@ export function PurchasesPage() {
   const suppliersQuery = useSuppliersForPurchase()
   const cancel = useCancelPurchase()
 
-  const supplierName = (id: string) => suppliersQuery.data?.items.find((s) => s.id === id)?.name ?? '—'
+  const supplierName = (id: string) =>
+    suppliersQuery.data?.items.find((s) => s.id === id)?.name ?? '—'
 
   const columns = [
     {
@@ -93,9 +115,7 @@ export function PurchasesPage() {
     {
       id: 'status',
       header: 'Estado',
-      cell: (purchase: PurchaseDto) => (
-        <Badge>{STATUS_LABEL[purchase.status]}</Badge>
-      ),
+      cell: (purchase: PurchaseDto) => <Badge>{STATUS_LABEL[purchase.status]}</Badge>,
     },
   ]
 
@@ -177,7 +197,11 @@ export function PurchasesPage() {
           </div>
         ) : !query.data?.items.length ? (
           <div className="text-center">
-            <p>{filters.status ? 'No hay resultados para este filtro.' : 'Todavía no hay compras registradas.'}</p>
+            <p>
+              {filters.status
+                ? 'No hay resultados para este filtro.'
+                : 'Todavía no hay compras registradas.'}
+            </p>
           </div>
         ) : (
           <>
@@ -193,8 +217,13 @@ export function PurchasesPage() {
               {query.data.items.map((purchase) => (
                 <Card key={purchase.id} className="grid gap-2">
                   <strong>{supplierName(purchase.supplierId)}</strong>
-                  <span>{purchase.lines.length} ítems — {Number(purchase.total).toFixed(2)} Bs.</span>
-                  <StatusDot label={STATUS_LABEL[purchase.status]} tone={STATUS_TONE[purchase.status]} />
+                  <span>
+                    {purchase.lines.length} ítems — {Number(purchase.total).toFixed(2)} Bs.
+                  </span>
+                  <StatusDot
+                    label={STATUS_LABEL[purchase.status]}
+                    tone={STATUS_TONE[purchase.status]}
+                  />
                   {actions(purchase)}
                 </Card>
               ))}
@@ -231,8 +260,9 @@ export function PurchasesPage() {
 
       <Modal open={!!cancelTarget} title="Cancelar compra" onClose={() => setCancelTarget(null)}>
         <p>
-          Vas a cancelar la compra a <strong>{cancelTarget && supplierName(cancelTarget.supplierId)}</strong>.
-          Esta acción no genera movimientos de inventario y solo es posible mientras la compra esté Pendiente.
+          Vas a cancelar la compra a{' '}
+          <strong>{cancelTarget && supplierName(cancelTarget.supplierId)}</strong>. Esta acción no
+          genera movimientos de inventario y solo es posible mientras la compra esté Pendiente.
         </p>
         <FormField label="Motivo de la cancelación" required error={cancelError}>
           <Input value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
@@ -361,7 +391,9 @@ export function NewPurchasePage() {
    */
   function productsUsedInOtherLines(currentKey: string) {
     return new Set(
-      lines.filter((line) => line.key !== currentKey && line.productId).map((line) => line.productId),
+      lines
+        .filter((line) => line.key !== currentKey && line.productId)
+        .map((line) => line.productId),
     )
   }
 
@@ -378,7 +410,9 @@ export function NewPurchasePage() {
         return
       }
       if (seenProductIds.has(line.productId)) {
-        setFormError('No podés repetir el mismo producto en la misma compra. Sumá la cantidad en una sola línea.')
+        setFormError(
+          'No podés repetir el mismo producto en la misma compra. Sumá la cantidad en una sola línea.',
+        )
         return
       }
       seenProductIds.add(line.productId)
@@ -447,7 +481,10 @@ export function NewPurchasePage() {
               (product) => product.id === line.productId || !usedElsewhere.has(product.id),
             )
             return (
-              <div key={line.key} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end">
+              <div
+                key={line.key}
+                className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end"
+              >
                 <FormField label={index === 0 ? 'Producto' : undefined}>
                   <Select
                     value={line.productId}
@@ -478,7 +515,9 @@ export function NewPurchasePage() {
                     onChange={(e) => updateLine(line.key, { unitId: e.target.value })}
                     disabled={!line.productId}
                   >
-                    <option value="">{line.productId ? 'Unidad' : 'Elegí un producto primero'}</option>
+                    <option value="">
+                      {line.productId ? 'Unidad' : 'Elegí un producto primero'}
+                    </option>
                     {availableUnits.map((unit) => (
                       <option key={unit.id} value={unit.id}>
                         {unit.symbol}
@@ -596,7 +635,8 @@ export function ReceivePurchasePage() {
 
   const unitById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units])
   const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products])
-  const supplierName = (supplierId: string) => suppliers.find((s) => s.id === supplierId)?.name ?? '—'
+  const supplierName = (supplierId: string) =>
+    suppliers.find((s) => s.id === supplierId)?.name ?? '—'
 
   /**
    * Unidades habilitadas para recibir una línea: misma dimensión que la
@@ -638,7 +678,11 @@ export function ReceivePurchasePage() {
 
   function updateLine(purchaseItemId: string, patch: Partial<ReceiveLineDraft>) {
     setLines((prev) =>
-      prev ? prev.map((line) => (line.purchaseItemId === purchaseItemId ? { ...line, ...patch } : line)) : prev,
+      prev
+        ? prev.map((line) =>
+            line.purchaseItemId === purchaseItemId ? { ...line, ...patch } : line,
+          )
+        : prev,
     )
   }
 
@@ -650,11 +694,17 @@ export function ReceivePurchasePage() {
     for (const line of lines) {
       const quantity = Number(line.receivedQuantity)
       if (!line.unitId || !line.receivedQuantity || quantity <= 0) {
-        setFormError('Completá una cantidad recibida mayor a cero y una unidad en todas las líneas.')
+        setFormError(
+          'Completá una cantidad recibida mayor a cero y una unidad en todas las líneas.',
+        )
         setConfirmOpen(false)
         return
       }
-      parsedLines.push({ purchaseItemId: line.purchaseItemId, receivedQuantity: quantity, unitId: line.unitId })
+      parsedLines.push({
+        purchaseItemId: line.purchaseItemId,
+        receivedQuantity: quantity,
+        unitId: line.unitId,
+      })
     }
 
     const request: ReceivePurchaseRequest = { lines: parsedLines, notes: notes.trim() || null }
@@ -684,7 +734,11 @@ export function ReceivePurchasePage() {
         <PageHeader title="Recibir compra" />
         <Card className="grid gap-3 p-5 text-center">
           <p>No se pudo cargar esta compra.</p>
-          <Button type="button" onClick={() => navigate('/compras')} className="justify-self-center">
+          <Button
+            type="button"
+            onClick={() => navigate('/compras')}
+            className="justify-self-center"
+          >
             Volver al listado
           </Button>
         </Card>
@@ -701,7 +755,8 @@ export function ReceivePurchasePage() {
           <div>
             <h2 className="text-lg font-bold">¡Compra recibida con éxito!</h2>
             <p className="text-text-muted">
-              El inventario ya fue actualizado con los insumos recibidos y están disponibles para uso en cocina.
+              El inventario ya fue actualizado con los insumos recibidos y están disponibles para
+              uso en cocina.
             </p>
           </div>
           <div className="flex gap-2">
@@ -723,10 +778,14 @@ export function ReceivePurchasePage() {
         <PageHeader title="Recibir compra" />
         <Card className="grid gap-3 p-5 text-center">
           <p>
-            Esta compra ya está en estado <strong>{STATUS_LABEL[purchase.status]}</strong> y no puede volver a
-            recibirse.
+            Esta compra ya está en estado <strong>{STATUS_LABEL[purchase.status]}</strong> y no
+            puede volver a recibirse.
           </p>
-          <Button type="button" onClick={() => navigate('/compras')} className="justify-self-center">
+          <Button
+            type="button"
+            onClick={() => navigate('/compras')}
+            className="justify-self-center"
+          >
             Volver al listado
           </Button>
         </Card>
@@ -774,14 +833,18 @@ export function ReceivePurchasePage() {
                         min={0}
                         step="0.0001"
                         value={line.receivedQuantity}
-                        onChange={(e) => updateLine(line.purchaseItemId, { receivedQuantity: e.target.value })}
+                        onChange={(e) =>
+                          updateLine(line.purchaseItemId, { receivedQuantity: e.target.value })
+                        }
                         className="w-28"
                       />
                     </td>
                     <td className="py-2">
                       <Select
                         value={line.unitId}
-                        onChange={(e) => updateLine(line.purchaseItemId, { unitId: e.target.value })}
+                        onChange={(e) =>
+                          updateLine(line.purchaseItemId, { unitId: e.target.value })
+                        }
                         className="w-28"
                       >
                         {availableUnits.map((unit) => (
@@ -819,7 +882,9 @@ export function ReceivePurchasePage() {
                 type="checkbox"
                 checked={checklist[index]}
                 onChange={(e) =>
-                  setChecklist((prev) => prev.map((value, i) => (i === index ? e.target.checked : value)))
+                  setChecklist((prev) =>
+                    prev.map((value, i) => (i === index ? e.target.checked : value)),
+                  )
                 }
                 className="mt-0.5"
               />
@@ -829,8 +894,9 @@ export function ReceivePurchasePage() {
         </fieldset>
 
         <p className="rounded-md border border-border bg-surface-elevated/60 p-3 text-sm">
-          <strong>Advertencia:</strong> si la entrega está incompleta o en mal estado, no marques la compra como
-          recibida. Usá &quot;No aceptar / cancelar compra&quot; para rechazarla mediante una cancelación con motivo.
+          <strong>Advertencia:</strong> si la entrega está incompleta o en mal estado, no marques la
+          compra como recibida. Usá &quot;No aceptar / cancelar compra&quot; para rechazarla
+          mediante una cancelación con motivo.
         </p>
 
         {formError && <FormError>{formError}</FormError>}
@@ -863,10 +929,15 @@ export function ReceivePurchasePage() {
         </div>
       </Card>
 
-      <Modal open={confirmOpen} title="Confirmar recepción de compra" onClose={() => setConfirmOpen(false)}>
+      <Modal
+        open={confirmOpen}
+        title="Confirmar recepción de compra"
+        onClose={() => setConfirmOpen(false)}
+      >
         <p>
-          Al confirmar, la compra pasará a estado <strong>Recibida</strong> y las existencias de los productos
-          aceptados se incrementarán automáticamente en el inventario. Esta acción es crítica y no se puede deshacer.
+          Al confirmar, la compra pasará a estado <strong>Recibida</strong> y las existencias de los
+          productos aceptados se incrementarán automáticamente en el inventario. Esta acción es
+          crítica y no se puede deshacer.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
@@ -880,8 +951,8 @@ export function ReceivePurchasePage() {
 
       <Modal open={rejectOpen} title="No aceptar compra" onClose={() => setRejectOpen(false)}>
         <p>
-          No existe un rechazo parcial estructurado en esta versión: no aceptar una compra la cancela por completo.
-          Coordiná la devolución con el proveedor fuera del sistema.
+          No existe un rechazo parcial estructurado en esta versión: no aceptar una compra la
+          cancela por completo. Coordiná la devolución con el proveedor fuera del sistema.
         </p>
         <FormField label="Motivo de la cancelación" required error={rejectError}>
           <Input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />

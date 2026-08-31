@@ -89,7 +89,7 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
         var created = await Send(client, HttpMethod.Post, "/api/v1/orders", token, new { items = new[] { new { productId = product, quantity = 2m } } });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode); var orderId = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"/api/v1/orders/{orderId}/deliver", token)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, "/api/v1/shifts/open", token)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, "/api/v1/shifts/open", token, new { openingAmount = 0m, pettyCashOpeningAmount = 0m })).StatusCode);
         await using (var lowerStock = new ApplicationDbContext(options)) { (await lowerStock.InventoryBalances.SingleAsync(x => x.ProductId == product)).Quantity = 1m; await lowerStock.SaveChangesAsync(); }
 
         var request = new { orderId, salesChannel = "DIRECT", paymentMethod = "CASH", acknowledgeStockShortage = false };
