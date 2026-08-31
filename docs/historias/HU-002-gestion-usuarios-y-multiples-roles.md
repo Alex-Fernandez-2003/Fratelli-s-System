@@ -34,33 +34,29 @@ La ruta `/usuarios` usa contrato OpenAPI generado, `httpClient`, TanStack Query,
 
 ### Backend
 
-| Archivo |
-| --- |
-| `backend/src/RestaurantSystem.Api/Program.cs` |
-| `backend/src/RestaurantSystem.Application/Users/UserContracts.cs` |
-| `backend/src/RestaurantSystem.Infrastructure/Users/UserManagementService.cs` |
+| Archivo                                                                                        |
+| ---------------------------------------------------------------------------------------------- |
+| `backend/src/RestaurantSystem.Api/Program.cs`                                                  |
+| `backend/src/RestaurantSystem.Application/Users/UserContracts.cs`                              |
+| `backend/src/RestaurantSystem.Infrastructure/Users/UserManagementService.cs`                   |
 | `backend/src/RestaurantSystem.Infrastructure/Migrations/20260825172249_AddUserAccountAudit.cs` |
 
 ### Frontend y contrato generado
 
-| Archivo |
-| --- |
-| `frontend/src/features/users/api/queries.ts` |
+| Archivo                                           |
+| ------------------------------------------------- |
+| `frontend/src/features/users/api/queries.ts`      |
 | `frontend/src/features/users/pages/UsersPage.tsx` |
-| `frontend/src/features/navigation.tsx` |
-| `frontend/src/routes/AppRoutes.tsx` |
-| `frontend/src/types/api.generated.ts` |
+| `frontend/src/features/navigation.tsx`            |
+| `frontend/src/routes/AppRoutes.tsx`               |
+| `frontend/src/types/api.generated.ts`             |
 
 ### Documentación
 
-| Archivo |
-| --- |
-| `docs/adr/ADR-007-security-stamp-session-revocation.md` |
+| Archivo                                                       |
+| ------------------------------------------------------------- |
+| `docs/adr/ADR-007-security-stamp-session-revocation.md`       |
 | `docs/historias/HU-002-gestion-usuarios-y-multiples-roles.md` |
-
-## Estado de entrega
-
-Completado para MVP; el ajuste visual menor permanece diferido.
 
 ## Evidencias
 
@@ -87,3 +83,7 @@ Completado para MVP; el ajuste visual menor permanece diferido.
 ![Captura modal para cambiar contraseña](../capturas/HU-002-modal-password.png)
 
 ---
+
+## Estado de entrega
+
+Completado para MVP; el ajuste visual menor permanece diferido.
