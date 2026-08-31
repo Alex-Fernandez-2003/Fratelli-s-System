@@ -23,6 +23,7 @@ import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inven
 import { ExpensesPage } from '../features/expenses/pages'
 import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
 import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
+import { RegisterProductionPage } from '../features/production'
 import { ShiftsPage } from '../features/shifts/ShiftsPage'
 import { SHIFT_MANAGE_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
@@ -101,6 +102,10 @@ export function AppRoutes() {
           {/* Productos */}
           <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
+          </Route>
+
+          <Route element={<RequireAnyRole roles={['COCINA', 'ENCARGADO', 'ADMINISTRADOR']} />}>
+            <Route path="/produccion/registrar" element={<RegisterProductionPage />} />
           </Route>
 
           {/* Inventario */}
