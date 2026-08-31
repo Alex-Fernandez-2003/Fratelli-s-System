@@ -1,63 +1,73 @@
-# HU-007 — Sprint 2 operational workflow
+# HU-007 — Registrar produccion y generar lote
 
 ## Resultado
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**.
+**FRONTEND IMPLEMENTADO**.
 
-La implementación backend pertenece al change `implement-sprint-2-backend-operational-workflows`. No se modificó frontend ni se generaron contratos TypeScript.
+La implementacion backend ya existia en develop (endpoints `GET /products/{id}/production-requirements` y `POST /productions`). El frontend agrega la pagina de registro de produccion con formulario, modal de confirmacion y pantalla de exito.
 
 ## Reglas implementadas
 
-Ver el mapa contractual específico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
+Ver el mapa contractual especifico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario unico se mantienen en backend.
 
 ## Seguridad
 
-Las rutas requieren autenticación y políticas backend; los identificadores de actor se obtienen de los claims, no del request.
+Las rutas requieren autenticacion y politicas backend (`KitchenManage`); los identificadores de actor se obtienen de los claims, no del request. Solo COCINA, ENCARGADO y ADMINISTRADOR pueden acceder.
 
-## Frontend y validación
+## Frontend y validacion
 
-Frontend Sprint 2: **PENDIENTE**. No hay capturas ni cambios de `frontend/` en este change.
+El frontend agrega la pagina **Registrar Produccion** (`RegisterProductionPage`) sobre `http-client` y React Query (`api.ts`), con:
+
+- Selector de producto tipo PREPARATION con busqueda
+- Campo de cantidad y notas
+- Vista previa de ingredientes a consumir con stock actual vs requerido
+- Modal de confirmacion con warning icon y resumen
+- Pantalla de exito con check verde, nombre, cantidad, fecha y responsable
+- Responsive con Tailwind CSS y lucide-react
+- Ruta `/produccion/registrar` protegida por roles COCINA/ENCARGADO/ADMINISTRADOR
+
+## Visibilidad y roles
+
+La vista de Produccion solo es visible en la navegacion y accesible por ruta (`RequireAnyRole`) para `COCINA`, `ENCARGADO` y `ADMINISTRADOR`. Los demas roles (MESERO, CONTADORA, etc.) no ven esta pagina.
 
 ## Baseline revalidado
 
-- Branch/HEAD: `develop` / `8a8e3f6a82356020edd7a8b0d0508e259c68c287`.
-- Docker/Testcontainers disponible durante la validación final.
+- Branch/HEAD: `develop` / `9cec685`.
 
 ## Evidencia real
 
-- `dotnet restore RestaurantSystem.slnx`: PASS.
-- `dotnet build RestaurantSystem.slnx --no-restore`: PASS.
-- `dotnet test RestaurantSystem.slnx --no-build`: PASS, 43/43 (incluye OperationsContractPostgresIntegrationTests).
-- La cadena EF se ejercitó sobre PostgreSQL disposable por la suite de integración; el script idempotente se generó correctamente.
-- `/openapi/v1.json` se sirvió en runtime y contiene las rutas Sprint 2 aplicables y las respuestas explícitas 400/401/403/404/409 de las mutaciones relevantes.
+- Frontend: `tsc --noEmit` PASS
+- Frontend: `eslint` PASS
+- Frontend: `vite build` PASS
+- Backend: `dotnet build` PASS
 
 ## Manifest de archivos del change
 
-### Backend
+### Frontend
 
-- `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`
-- `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`
-- `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs`
+| Archivo |
+| --- |
+| `src/features/production/api.ts` |
+| `src/features/production/pages.tsx` |
+| `src/features/production/index.ts` |
+| `src/features/navigation.tsx` |
+| `src/routes/AppRoutes.tsx` |
 
-### Frontend y contrato generado
+### Documentacion
 
-Ninguno.
-
-### Documentación
-
-- `docs/historias/HU-007-sprint-2-backend.md`
+- `docs/historias/HU-007-spri.md`
 - `docs/handoffs/sprint-2-backend-frontend-handoff.md`
 
 ## Evidencias
 
-No se incorporaron screenshots ni capturas.
+![Captura del formulario de registro de produccion](../capturas/HU-007-formulario.png)
+
+---
+
+### Captura de confirmacion y exito
+
+![Captura de confirmacion y exito](../capturas/HU-007-confirmacion-exito.png)
 
 ## Estado de entrega
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**. La verificación SDD y el archive no se ejecutaron.
-
-### Revalidación posterior
-
-El 2026-08-28 se revalidaron `dotnet restore`, `dotnet build`, la suite backend completa (53/53, 0 fallos), la cadena de migraciones PostgreSQL y OpenAPI. La matriz PostgreSQL de autorización cubre cada ruta Sprint 2 para anónimo y los seis roles; no se modificó frontend, contratos generados ni capturas.
+**FRONTEND IMPLEMENTADO**. Ruta: `/produccion/registrar`.
