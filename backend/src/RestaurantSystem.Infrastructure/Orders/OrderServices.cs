@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Orders;
+    using RestaurantSystem.Application.Inventory;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Identity;
 using RestaurantSystem.Domain.Orders;
@@ -31,26 +32,28 @@ internal static class OrderRules
     internal static bool ValidArea(string? area) => area is "KITCHEN" or "BAR" or "NONE";
 }
 
-public sealed class OrderService(ApplicationDbContext db, IKitchenRealtimeNotifier notifier, ILogger<OrderService> logger) : IOrderService
+public sealed class OrderService(ApplicationDbContext db, IInventoryAvailability availability, IKitchenRealtimeNotifier notifier, ILogger<OrderService> logger) : IOrderService
 {
-    public async Task<(OrderDto? Value, string? Error)> CreateAsync(CreateOrderRequest request, OrderActor actor, CancellationToken ct = default)
+    public async Task<(OrderDto? Value, string? Error, IReadOnlyList<InventoryShortageDto>? Shortages)> CreateAsync(CreateOrderRequest request, OrderActor actor, CancellationToken ct = default)
     {
-        if (!OrderRules.CanCreate(actor)) return (null, "FORBIDDEN");
+        if (!OrderRules.CanCreate(actor)) return (null, "FORBIDDEN", null);
         if (request.Items is null || request.Items.Count == 0 || request.Items.Any(x => x.ProductId == Guid.Empty || x.Quantity <= 0 || x.Notes?.Length > 300) || request.TableReference?.Length > 50 || request.Notes?.Length > 500)
-            return (null, "INVALID_REQUEST");
-        if (request.Items.GroupBy(x => x.ProductId).Any(x => x.Count() > 1)) return (null, "DUPLICATE_PRODUCT");
+            return (null, "INVALID_REQUEST", null);
+        if (request.Items.GroupBy(x => x.ProductId).Any(x => x.Count() > 1)) return (null, "DUPLICATE_PRODUCT", null);
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var ids = request.Items.Select(x => x.ProductId).ToArray();
         var products = await db.Products.Where(x => ids.Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct);
-        if (products.Count != ids.Length || products.Values.Any(x => !x.IsActive || !x.IsSellable || x.SalePrice is null || x.SalePrice < 0 || !OrderRules.ValidArea(x.PreparationArea))) return (null, "PRODUCT_NOT_ORDERABLE");
+        if (products.Count != ids.Length || products.Values.Any(x => !x.IsActive || !x.IsSellable || x.SalePrice is null || x.SalePrice < 0 || !OrderRules.ValidArea(x.PreparationArea))) return (null, "PRODUCT_NOT_ORDERABLE", null);
+        var shortages = await availability.EvaluateShortagesAsync(request.Items.Select(x => new InventoryRequirement(x.ProductId, x.Quantity)).ToArray(), ct);
+        if (shortages.Count > 0 && request.AcknowledgeStockShortage != true) return (null, "ORDER_STOCK_ACKNOWLEDGEMENT_REQUIRED", shortages);
         Guid? waiterId = null;
         if (OrderRules.Has(actor, RoleNames.Waiter))
         {
             waiterId = await OperationalEmployeeAsync(actor.UserId, ct);
-            if (waiterId is null && !OrderRules.IsOrderOperator(actor)) return (null, "ACTOR_EMPLOYEE_UNAVAILABLE");
+            if (waiterId is null && !OrderRules.IsOrderOperator(actor)) return (null, "ACTOR_EMPLOYEE_UNAVAILABLE", null);
         }
         var now = DateTimeOffset.UtcNow;
-        var order = new Order { CreatedByUserId = actor.UserId, CreatedAt = now, WaiterEmployeeId = waiterId, TableReference = Trim(request.TableReference), Notes = Trim(request.Notes) };
+        var order = new Order { CreatedByUserId = actor.UserId, CreatedAt = now, WaiterEmployeeId = waiterId, TableReference = Trim(request.TableReference), Notes = Trim(request.Notes), StockShortageAcknowledgedAt = shortages.Count > 0 && request.AcknowledgeStockShortage == true ? now : null, StockShortageAcknowledgedByUserId = shortages.Count > 0 && request.AcknowledgeStockShortage == true ? actor.UserId : null };
         foreach (var line in request.Items)
         {
             var product = products[line.ProductId];
@@ -71,7 +74,7 @@ public sealed class OrderService(ApplicationDbContext db, IKitchenRealtimeNotifi
         await tx.CommitAsync(ct);
         var dto = await MapOrderAsync(order.Id, ct);
         if (command is not null) await Publish(() => notifier.CreatedAsync(new(command.Id, order.Id, command.Status, now), ct));
-        return (dto, null);
+        return (dto, null, null);
     }
 
     public async Task<PagedResponse<OrderDto>> ListAsync(int page, int pageSize, OrderStatus? status, string? search, CancellationToken ct = default)

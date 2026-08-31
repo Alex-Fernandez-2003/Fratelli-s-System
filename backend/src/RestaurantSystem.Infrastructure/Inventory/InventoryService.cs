@@ -7,7 +7,7 @@ using RestaurantSystem.Domain.Inventory;
 
 namespace RestaurantSystem.Infrastructure.Inventory;
 
-public sealed class InventoryService(ApplicationDbContext db) : IInventoryService, IInventoryWriter
+public sealed class InventoryService(ApplicationDbContext db) : IInventoryService, IInventoryWriter, IInventoryAvailability
 {
     public async Task<(InventoryMovementDto? Value, string? Error)> RecordManualAsync(RecordManualInventoryMovementRequest request, string actorUserId, CancellationToken ct = default)
     {
@@ -83,6 +83,20 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         var ids = await q.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Id).ToArrayAsync(ct);
         var items = new List<InventoryMovementDto>(); foreach (var id in ids) items.Add((await MovementAsync(id, ct))!);
         return new(items, page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
+    }
+
+    public async Task<IReadOnlyList<InventoryShortageDto>> EvaluateShortagesAsync(IReadOnlyList<InventoryRequirement> requirements, CancellationToken ct = default)
+    {
+        var required = requirements.GroupBy(x => x.ProductId).ToDictionary(x => x.Key, x => x.Sum(y => y.Quantity));
+        if (required.Count == 0) return [];
+        var rows = await (from p in db.Products.AsNoTracking()
+                          join b in db.InventoryBalances.AsNoTracking() on p.Id equals b.ProductId into balances
+                          from b in balances.DefaultIfEmpty()
+                          join u in db.Units.AsNoTracking() on p.InventoryUnitId equals u.Id
+                          where required.Keys.Contains(p.Id)
+                          select new { p, b, u }).ToListAsync(ct);
+        return rows.Where(x => required[x.p.Id] > (x.b?.Quantity ?? 0m))
+            .Select(x => new InventoryShortageDto(x.p.Id, x.p.Name, required[x.p.Id], x.b?.Quantity ?? 0m, Math.Max(0m, required[x.p.Id] - (x.b?.Quantity ?? 0m)), x.p.InventoryUnitId, x.u.Symbol)).ToArray();
     }
 
     public async Task<(InventoryBatchResult? Value, string? Error)> WriteBatchAsync(IReadOnlyList<InventoryWriteCommand> commands, bool allowNegative, CancellationToken ct = default)

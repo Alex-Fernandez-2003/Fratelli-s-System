@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   ChefHat,
   ClipboardList,
   Home,
@@ -18,6 +19,7 @@ import { HeaderClock } from '@/components/templates/HeaderClock'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 import { PURCHASE_WRITE_ROLES } from '@/features/purchases/api'
+import { SHIFT_MANAGE_ROLES } from '@/features/shifts/api'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 
 export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'] as const
@@ -94,6 +96,13 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     target: (roles) =>
       hasAnyRole(roles, ATTENDANCE_MANAGE_ROLES) ? '/asistencia' : '/mi-asistencia',
     matches: (pathname) => pathname === '/asistencia' || pathname === '/mi-asistencia',
+  },
+  {
+    id: 'turnos',
+    label: 'Turnos / Caja',
+    icon: ArrowLeftRight,
+    target: (roles) => (hasAnyRole(roles, SHIFT_MANAGE_ROLES) ? '/turnos' : '/mi-turno'),
+    matches: (pathname) => pathname === '/turnos' || pathname === '/mi-turno',
   },
   {
     id: 'proveedores',

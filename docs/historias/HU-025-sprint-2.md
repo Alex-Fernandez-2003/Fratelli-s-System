@@ -1,63 +1,72 @@
-# HU-025 — Sprint 2 operational workflow
+HU-025 — Gestionar y operar turnos
+Resultado
 
-## Resultado
+Implementado end-to-end el flujo operativo de turnos y caja compartida: /turnos (ADMINISTRADOR/ENCARGADO) y /mi-turno (cualquier rol autenticado). El backend ya estaba completo desde el change implement-sprint-2-backend-operational-workflows; este trabajo agrega el consumidor frontend que quedaba pendiente según HU-025-sprint-2.md.
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**.
+Reglas implementadas
+Gestión completa del contexto operativo (GET /shifts/current, POST /shifts/open): ADMINISTRADOR y ENCARGADO. Lectura del turno propio (GET /shifts/me/current): cualquier usuario autenticado.
+Los dos turnos fijos (MORNING/NIGHT) comparten una sola caja (CashSession); la interfaz nunca representa dos cajas independientes.
+El traspaso (POST /shifts/{id}/handover) solo aplica de Turno Mañana (ACTIVE) hacia Turno Noche (PENDING). El turno Noche no tiene una acción de "finalizar" propia porque el contrato actual no expone un segundo endpoint de cierre — el cierre general queda reservado para HU-026/HU-027, consistente con RN-035 y con flujo-ux-turno-cierre.puml, que no contempla un paso de finalización para el segundo turno.
+El monto/fondo de continuidad (efectivo, QR, PedidosYa) y las observaciones se envían dentro del campo note de HandoverRequest, porque el contrato generado desde OpenAPI no expone campos numéricos separados todavía (aunque el diseño original los contemplaba).
+Asignar personal (PUT /shifts/{id}/assignments) reemplaza la lista completa de empleados del turno (no suma de a uno) y admite guardar una lista vacía.
+MESERO consulta únicamente su propio turno vía /mi-turno; no administra turnos ajenos ni accede a /turnos (bloqueado por RequireAnyRole + redirección a "sin permiso").
+No se implementa cierre de caja final ni montos calculados de cierre: "Monto inicial caja", "Caja chica" y "Total estimado en caja" se muestran deshabilitados con la leyenda "Disponible con HU-026/HU-027".
+Seguridad
 
-La implementación backend pertenece al change `implement-sprint-2-backend-operational-workflows`. No se modificó frontend ni se generaron contratos TypeScript.
+Los endpoints requieren JWT Bearer y derivan el actor desde los claims, no del request. Las mutaciones (open, assignments, handover) están limitadas a ADMINISTRADOR/ENCARGADO; GET /shifts/me/current es de solo lectura para el usuario autenticado sobre su propio turno. La ruta /turnos está protegida en el router (RequireAnyRole); un MESERO que intente acceder por URL directa es redirigido a la página de "sin permiso" (403).
 
-## Reglas implementadas
+Frontend y validación
+ShiftsPage reacciona al estado real del backend: cargando → "Cargando jornada…"; 404 → botón "Iniciar jornada"; error → mensaje de error; datos → resumen de jornada + tarjetas de turno + traspaso.
+AssignmentsModal carga el personal con asistencia registrada hoy, permite tildar/destildar empleados, y confirma explícitamente el guardado ("Personal actualizado correctamente") en vez de cerrarse en silencio.
+HandoverSection pide confirmación explícita ("esta acción no se puede deshacer") antes de enviar el traspaso, y muestra una tarjeta de confirmación ("Traspaso registrado") al terminar.
+El botón "Finalizar turno" del Turno Noche aparece deshabilitado con tooltip explicativo, en vez de abrir un formulario que terminaría en un error 409 — validado contra el flujo UX oficial.
+MyShiftPage muestra tipo, horario, estado y cantidad de compañeros del turno propio; si el usuario no tiene turno asignado hoy, muestra un estado vacío explicativo.
 
-Ver el mapa contractual específico de esta HU en [handoff Sprint 2](../handoffs/sprint-2-backend-frontend-handoff.md). Las reglas de negocio, actor autenticado, importes/cantidades calculadas en servidor e inventario único se mantienen en backend.
+No se declara validación manual adicional a la evidencia real listada abajo.
 
-## Seguridad
+Baseline revalidado
 
-Las rutas requieren autenticación y políticas backend; los identificadores de actor se obtienen de los claims, no del request.
+develop revalidado en <COMPLETAR: hash de commit>.
 
-## Frontend y validación
+Evidencia real
 
-Frontend Sprint 2: **PENDIENTE**. No hay capturas ni cambios de `frontend/` en este change.
+<COMPLETAR: resultado de pnpm typecheck / pnpm lint / pnpm build / pnpm test ejecutados por el equipo>. Este entorno de análisis no tiene el proyecto Node.js configurado, así que esa corrida la debe confirmar quien suba la historia.
 
-## Baseline revalidado
+Manifest de archivos del change
+Backend
+Archivo	Propósito
+backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs	Entidades de dominio: CashSession, Shift, ShiftAssignment.
+backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs	Contratos (DTOs y requests) del módulo operativo.
+backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs	Reglas de negocio: apertura de jornada, asignaciones, traspaso.
+backend/src/RestaurantSystem.Api/OperationsEndpoints.cs	Los 5 endpoints de /shifts.
+backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs	Migración de las tablas de turnos/caja.
+Frontend y contrato generado
+Archivo	Propósito
+frontend/src/features/shifts/api.ts	Tipos y hooks de React Query para los 5 endpoints de turnos.
+frontend/src/features/shifts/format.ts	Etiquetas, formato de fecha operativa y mensajes de error.
+frontend/src/features/shifts/ShiftsPage.tsx	Página /turnos: resumen de jornada, tarjetas de turno, asignación y traspaso.
+frontend/src/pages/MyShiftPage.tsx	Página /mi-turno para cualquier rol autenticado.
+frontend/src/features/navigation.tsx	Ítem de menú "Turnos / Caja", ruteo según rol.
+frontend/src/routes/AppRoutes.tsx	Rutas /turnos (protegida) y /mi-turno.
+Documentación
+Archivo	Propósito
+docs/historias/HU-025-sprint-2.md	Historia y evidencia original del backend (estado previo: FRONTEND PENDIENTE).
+docs/historias/HU-025-turnos-y-caja.md	Esta historia: consumidor frontend completo.
+Estado de entrega
 
-- Branch/HEAD: `develop` / `8a8e3f6a82356020edd7a8b0d0508e259c68c287`.
-- Docker/Testcontainers disponible durante la validación final.
+Frontend implementado y revisado a nivel de código. Pendiente que el equipo corra pnpm typecheck / pnpm lint / pnpm build / pnpm test en su propio entorno antes de pasar la tarjeta a Done, y pendiente capturar la evidencia visual listada abajo.
 
-## Evidencia real
-
-- `dotnet restore RestaurantSystem.slnx`: PASS.
-- `dotnet build RestaurantSystem.slnx --no-restore`: PASS.
-- `dotnet test RestaurantSystem.slnx --no-build`: PASS, 43/43 (incluye OperationsContractPostgresIntegrationTests).
-- La cadena EF se ejercitó sobre PostgreSQL disposable por la suite de integración; el script idempotente se generó correctamente.
-- `/openapi/v1.json` se sirvió en runtime y contiene las rutas Sprint 2 aplicables y las respuestas explícitas 400/401/403/404/409 de las mutaciones relevantes.
-
-## Manifest de archivos del change
-
-### Backend
-
-- `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`
-- `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`
-- `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`
-- `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs`
-
-### Frontend y contrato generado
-
-Ninguno.
-
-### Documentación
-
-- `docs/historias/HU-025-sprint-2-backend.md`
-- `docs/handoffs/sprint-2-backend-frontend-handoff.md`
 
 ## Evidencias
 
-No se incorporaron screenshots ni capturas.
+### Resumen de turnos
+![Resumen de turnos](../capturas/HU-025-resumen-de-turnos.png)
 
-## Estado de entrega
+### Mensaje de confirmación
+![Mensaje de confirmación](../capturas/HU-025-mensaje.png)
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**. La verificación SDD y el archive no se ejecutaron.
+### Administrar turnos
+![Administrar turnos](../capturas/HU-025-administrar-turnos.png)
 
-### Revalidación posterior
-
-El 2026-08-28 se revalidaron `dotnet restore`, `dotnet build`, la suite backend completa (53/53, 0 fallos), la cadena de migraciones PostgreSQL y OpenAPI. La matriz PostgreSQL de autorización cubre cada ruta Sprint 2 para anónimo y los seis roles; no se modificó frontend, contratos generados ni capturas.
+### Vista responsiva
+![Vista responsiva](../capturas/HU-025-responsibo.png)
