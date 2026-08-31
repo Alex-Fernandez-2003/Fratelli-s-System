@@ -23,6 +23,9 @@ import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inven
 import { ExpensesPage } from '../features/expenses/pages'
 import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
 import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
+import { ShiftsPage } from '../features/shifts/ShiftsPage'
+import { SHIFT_MANAGE_ROLES } from '../features/shifts/api'
+import { MyShiftPage } from '../pages/MyShiftPage'
 
 function Bootstrap() {
   return (
@@ -137,6 +140,12 @@ export function AppRoutes() {
             <Route path="/compras" element={<PurchasesPage />} />
             <Route path="/compras/nueva" element={<NewPurchasePage />} />
             <Route path="/compras/:id/recibir" element={<ReceivePurchasePage />} />
+          </Route>
+
+          {/* Turnos / Caja */}
+          <Route path="/mi-turno" element={<MyShiftPage />} />
+          <Route element={<RequireAnyRole roles={[...SHIFT_MANAGE_ROLES]} />}>
+            <Route path="/turnos" element={<ShiftsPage />} />
           </Route>
         </Route>
       </Route>
