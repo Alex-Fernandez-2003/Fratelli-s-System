@@ -37,31 +37,31 @@ La referencia vigente es el [informe de verificación final de Sprint 2](../open
 
 ### Backend
 
-| Archivo | Propósito |
-| --- | --- |
-| `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs` | Entidades de dominio: CashSession, Shift, ShiftAssignment. |
-| `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs` | Contratos (DTOs y requests) del módulo operativo. |
-| `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs` | Reglas de negocio: apertura de jornada, asignaciones, traspaso. |
-| `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs` | Los 5 endpoints de `/shifts`. |
-| `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs` | Migración de las tablas de turnos/caja. |
+| Archivo                                                                                                   | Propósito                                                       |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `backend/src/RestaurantSystem.Domain/Operations/OperationalEntities.cs`                                   | Entidades de dominio: CashSession, Shift, ShiftAssignment.      |
+| `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs`                             | Contratos (DTOs y requests) del módulo operativo.               |
+| `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs`                             | Reglas de negocio: apertura de jornada, asignaciones, traspaso. |
+| `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs`                                                 | Los 5 endpoints de `/shifts`.                                   |
+| `backend/src/RestaurantSystem.Infrastructure/Migrations/20260828093655_AddSprint2OperationalWorkflows.cs` | Migración de las tablas de turnos/caja.                         |
 
 ### Frontend y contrato generado
 
-| Archivo | Propósito |
-| --- | --- |
-| `frontend/src/features/shifts/api.ts` | Tipos y hooks de React Query para los 5 endpoints de turnos. |
-| `frontend/src/features/shifts/format.ts` | Etiquetas, formato de fecha operativa y mensajes de error. |
+| Archivo                                       | Propósito                                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------- |
+| `frontend/src/features/shifts/api.ts`         | Tipos y hooks de React Query para los 5 endpoints de turnos.                    |
+| `frontend/src/features/shifts/format.ts`      | Etiquetas, formato de fecha operativa y mensajes de error.                      |
 | `frontend/src/features/shifts/ShiftsPage.tsx` | Página `/turnos`: resumen de jornada, tarjetas de turno, asignación y traspaso. |
-| `frontend/src/pages/MyShiftPage.tsx` | Página `/mi-turno` para cualquier rol autenticado. |
-| `frontend/src/features/navigation.tsx` | Ítem de menú "Turnos / Caja", ruteo según rol. |
-| `frontend/src/routes/AppRoutes.tsx` | Rutas `/turnos` (protegida) y `/mi-turno`. |
+| `frontend/src/pages/MyShiftPage.tsx`          | Página `/mi-turno` para cualquier rol autenticado.                              |
+| `frontend/src/features/navigation.tsx`        | Ítem de menú "Turnos / Caja", ruteo según rol.                                  |
+| `frontend/src/routes/AppRoutes.tsx`           | Rutas `/turnos` (protegida) y `/mi-turno`.                                      |
 
 ### Documentación
 
-| Archivo | Propósito |
-| --- | --- |
-| `docs/historias/HU-025-sprint-2.md` | Historia y evidencia original del backend (estado previo: FRONTEND PENDIENTE). |
-| `docs/historias/HU-025-turnos-y-caja.md` | Esta historia: consumidor frontend completo. |
+| Archivo                                  | Propósito                                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `docs/historias/HU-025-sprint-2.md`      | Historia y evidencia original del backend (estado previo: FRONTEND PENDIENTE). |
+| `docs/historias/HU-025-turnos-y-caja.md` | Esta historia: consumidor frontend completo.                                   |
 
 ## Estado de entrega
 

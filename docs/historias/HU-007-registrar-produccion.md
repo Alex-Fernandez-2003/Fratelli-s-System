@@ -93,7 +93,7 @@ El modal identifica Pre-Pizza, la cantidad `1.00` y la acción de confirmar el r
 
 ### Registrar Produccion (Advertencia bajo stock)
 
-El diálogo de confirmación presenta el código `PRODUCTION_STOCK_INSUFFICIENT`; esta captura no acredita por sí sola la atomicidad del backend.
+El diálogo de confirmación presenta el código `PRODUCTION_STOCK_INSUFFICIENT`.
 
 ![advertencia al confirmar registro con bajo stock](../capturas/HU-007-confirm-modal-low-stock.png)
 
