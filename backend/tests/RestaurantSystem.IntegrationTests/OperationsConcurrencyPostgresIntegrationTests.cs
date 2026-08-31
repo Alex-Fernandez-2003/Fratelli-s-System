@@ -200,8 +200,70 @@ public sealed class OperationsConcurrencyPostgresIntegrationTests(PostgresFixtur
         Assert.Single(await verify.InventoryMovements.Where(x => x.ReferenceType == InventoryReferenceType.MANUAL).ToListAsync()); Assert.Empty(await verify.InventoryMovements.Where(x => x.ReferenceType == InventoryReferenceType.SALE).ToListAsync());
     }
 
-    [Fact]
-    public async Task Concurrent_handover_completes_source_once_and_leaves_exactly_one_active_shift()
+        [Fact]
+        public async Task Hu012_sale_matrix_enforces_eligibility_channel_payment_server_values_and_atomic_inventory()
+        {
+            var (options, actor, unit) = await NewDatabaseAsync("hu012_matrix");
+            var product = await SeedProductAsync(options, actor, unit, "sale-matrix", ProductType.SALE_ITEM, 20m);
+            foreach (var status in new[] { OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO, OrderStatus.CANCELADO })
+            {
+                var orderId = await SeedOrderAsync(options, actor, product, 1m, status);
+                await using var rejectedDb = new ApplicationDbContext(options);
+                var rejected = await Service(rejectedDb).ConfirmSaleAsync(new(orderId, SalesChannel.DIRECT, PaymentMethod.CASH), actor);
+                Assert.Equal("ORDER_NOT_DELIVERED", rejected.Error);
+            }
+            await using (var rejectedState = new ApplicationDbContext(options))
+            {
+                Assert.Empty(await rejectedState.Sales.ToListAsync());
+                Assert.Empty(await rejectedState.InventoryMovements.ToListAsync());
+            }
+            var shift = await OpenShiftAsync(options, actor);
+            foreach (var request in new[] { (SalesChannel.DIRECT, PaymentMethod.CASH), (SalesChannel.DIRECT, PaymentMethod.QR), (SalesChannel.PEDIDOSYA, PaymentMethod.EXTERNAL) })
+            {
+                var orderId = await SeedDeliveredOrderAsync(options, actor, product, 1m);
+                await using var saleDb = new ApplicationDbContext(options);
+                var confirmed = await Service(saleDb).ConfirmSaleAsync(new(orderId, request.Item1, request.Item2), actor);
+                Assert.Null(confirmed.Error); Assert.Equal(request.Item1, confirmed.Value!.SalesChannel); Assert.Equal(request.Item2, confirmed.Value.PaymentMethod);
+                Assert.Equal(2m, confirmed.Value.Subtotal); Assert.Equal(2m, confirmed.Value.Total); Assert.Equal(actor, confirmed.Value.ConfirmedByUserId); Assert.NotEqual(default, confirmed.Value.ConfirmedAt); Assert.Equal(shift, confirmed.Value.ShiftId);
+            }
+            foreach (var request in new[] { (SalesChannel.DIRECT, PaymentMethod.EXTERNAL), (SalesChannel.PEDIDOSYA, PaymentMethod.CASH), (SalesChannel.PEDIDOSYA, PaymentMethod.QR) })
+            {
+                var orderId = await SeedDeliveredOrderAsync(options, actor, product, 1m);
+                await using var invalidDb = new ApplicationDbContext(options);
+                Assert.Equal("INVALID_REQUEST", (await Service(invalidDb).ConfirmSaleAsync(new(orderId, request.Item1, request.Item2), actor)).Error);
+            }
+            var preparation = await SeedProductAsync(options, actor, unit, "preparation-sale", ProductType.PREPARATION, 2m);
+            var ingredient = await SeedProductAsync(options, actor, unit, "preparation-ingredient", ProductType.INGREDIENT, 9m);
+            await using (var composition = new ApplicationDbContext(options)) { composition.ProductCompositions.Add(new ProductComposition { ParentProductId = preparation, ComponentProductId = ingredient, QuantityPerOutputUnit = 3m, UnitId = unit, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor }); await composition.SaveChangesAsync(); }
+            var preparationOrder = await SeedDeliveredOrderAsync(options, actor, preparation, 1m);
+            await using (var preparationDb = new ApplicationDbContext(options)) Assert.Null((await Service(preparationDb).ConfirmSaleAsync(new(preparationOrder, SalesChannel.DIRECT, PaymentMethod.CASH), actor)).Error);
+            await using (var verify = new ApplicationDbContext(options))
+            {
+                Assert.Equal(1m, await Balance(verify, preparation)); Assert.Equal(9m, await Balance(verify, ingredient));
+                Assert.Equal(4, await verify.Sales.CountAsync()); Assert.Equal(4, await verify.InventoryMovements.CountAsync(x => x.ReferenceType == InventoryReferenceType.SALE));
+            }
+        }
+
+        [Fact]
+        public async Task Hu013_sale_time_new_shortage_requires_acknowledged_retry_and_rolls_back_first_attempt()
+        {
+            var (options, actor, unit) = await NewDatabaseAsync("hu013_sale_race");
+            var product = await SeedProductAsync(options, actor, unit, "sale-race", ProductType.SALE_ITEM, 2m);
+            var orderId = await SeedDeliveredOrderAsync(options, actor, product, 2m); await OpenShiftAsync(options, actor);
+            await using (var lowerStock = new ApplicationDbContext(options)) { (await lowerStock.InventoryBalances.SingleAsync(x => x.ProductId == product)).Quantity = 1m; await lowerStock.SaveChangesAsync(); }
+            await using (var firstAttemptDb = new ApplicationDbContext(options))
+            {
+                var first = await Service(firstAttemptDb).ConfirmSaleAsync(new(orderId, SalesChannel.DIRECT, PaymentMethod.CASH), actor);
+                Assert.Equal("SALE_STOCK_CONFIRMATION_REQUIRED", first.Error); var shortage = Assert.Single(first.Shortages!); Assert.Equal(1m, shortage.ShortageQuantity); Assert.Equal(1m, shortage.CurrentQuantity);
+            }
+            await using (var afterFirst = new ApplicationDbContext(options)) { Assert.Empty(await afterFirst.Sales.ToListAsync()); Assert.Empty(await afterFirst.InventoryMovements.Where(x => x.ReferenceType == InventoryReferenceType.SALE).ToListAsync()); Assert.Equal(1m, await Balance(afterFirst, product)); }
+            await using (var retryDb = new ApplicationDbContext(options)) { var retry = await Service(retryDb).ConfirmSaleAsync(new(orderId, SalesChannel.DIRECT, PaymentMethod.CASH, true), actor); Assert.Null(retry.Error); }
+            await using var verified = new ApplicationDbContext(options);
+            var order = await verified.Orders.SingleAsync(x => x.Id == orderId); Assert.NotNull(order.StockShortageAcknowledgedAt); Assert.Equal(actor, order.StockShortageAcknowledgedByUserId); Assert.Single(await verified.Sales.ToListAsync()); Assert.Single(await verified.InventoryMovements.Where(x => x.ReferenceType == InventoryReferenceType.SALE).ToListAsync()); Assert.Equal(-1m, await Balance(verified, product));
+        }
+
+        [Fact]
+        public async Task Concurrent_handover_completes_source_once_and_leaves_exactly_one_active_shift()
     {
         var (options, actor, _) = await NewDatabaseAsync("handover_handover"); var source = await OpenShiftAsync(options, actor);
         var results = await Race(options, x => x.HandoverAsync(source, new("handover"), actor));
@@ -229,9 +291,10 @@ public sealed class OperationsConcurrencyPostgresIntegrationTests(PostgresFixtur
     {
         var ingredient = await SeedProductAsync(options, actor, unit, "ingredient", ProductType.INGREDIENT, stock); var preparation = await SeedProductAsync(options, actor, unit, "preparation", ProductType.PREPARATION, 0m); await using var db = new ApplicationDbContext(options); db.ProductCompositions.Add(new() { ParentProductId = preparation, ComponentProductId = ingredient, QuantityPerOutputUnit = perUnit, UnitId = unit, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor }); await db.SaveChangesAsync(); return (ingredient, preparation);
     }
-    private static async Task<Guid> SeedDeliveredOrderAsync(DbContextOptions<ApplicationDbContext> options, string actor, Guid product, decimal quantity)
+    private static Task<Guid> SeedDeliveredOrderAsync(DbContextOptions<ApplicationDbContext> options, string actor, Guid product, decimal quantity) => SeedOrderAsync(options, actor, product, quantity, OrderStatus.ENTREGADO);
+    private static async Task<Guid> SeedOrderAsync(DbContextOptions<ApplicationDbContext> options, string actor, Guid product, decimal quantity, OrderStatus status)
     {
-        await using var db = new ApplicationDbContext(options); var order = new Order { Status = OrderStatus.ENTREGADO, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor }; order.Items.Add(new() { ProductId = product, Quantity = quantity, UnitPrice = 2m, CreatedAt = DateTimeOffset.UtcNow }); db.Orders.Add(order); await db.SaveChangesAsync(); return order.Id;
+        await using var db = new ApplicationDbContext(options); var order = new Order { Status = status, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor }; order.Items.Add(new() { ProductId = product, Quantity = quantity, UnitPrice = 2m, CreatedAt = DateTimeOffset.UtcNow }); db.Orders.Add(order); await db.SaveChangesAsync(); return order.Id;
     }
     private static async Task<Guid> OpenShiftAsync(DbContextOptions<ApplicationDbContext> options, string actor)
     {

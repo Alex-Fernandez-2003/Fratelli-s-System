@@ -8,6 +8,7 @@ using Npgsql;
 using RestaurantSystem.Application.Orders;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Orders;
+using RestaurantSystem.Domain.Inventory;
 using RestaurantSystem.Infrastructure;
 using RestaurantSystem.Infrastructure.Orders;
 
@@ -32,7 +33,7 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
         }
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/v1/orders", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Post, "/api/v1/orders", accountant, new { items = new[] { new { productId = kitchenProduct, quantity = 1m } } })).StatusCode);
-        var created = await Send(client, HttpMethod.Post, "/api/v1/orders", mesero, new { tableReference = "A1", items = new[] { new { productId = kitchenProduct, quantity = 2m }, new { productId = barProduct, quantity = 1m }, new { productId = noneProduct, quantity = 1m } } });
+        var created = await Send(client, HttpMethod.Post, "/api/v1/orders", mesero, new { tableReference = "A1", acknowledgeStockShortage = true, items = new[] { new { productId = kitchenProduct, quantity = 2m }, new { productId = barProduct, quantity = 1m }, new { productId = noneProduct, quantity = 1m } } });
         Assert.Equal(HttpStatusCode.Created, created.StatusCode); var order = await created.Content.ReadFromJsonAsync<JsonElement>(); var orderId = order.GetProperty("id").GetGuid(); Assert.Equal("PENDIENTE", order.GetProperty("status").GetString()); Assert.Equal(53m, order.GetProperty("total").GetDecimal()); Assert.True(order.GetProperty("waiterEmployeeId").GetGuid() != Guid.Empty); var commandId = order.GetProperty("kitchenCommandId").GetGuid();
         var command = await Send(client, HttpMethod.Get, $"/api/v1/kitchen/commands/{commandId}", mesero); Assert.Equal(HttpStatusCode.OK, command.StatusCode); var commandJson = await command.Content.ReadFromJsonAsync<JsonElement>(); Assert.Single(commandJson.GetProperty("items").EnumerateArray()); Assert.False(commandJson.TryGetProperty("total", out _)); Assert.False(commandJson.TryGetProperty("unitPrice", out _));
         Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Post, $"/api/v1/kitchen/commands/{commandId}/start", mesero)).StatusCode);
@@ -40,16 +41,75 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"/api/v1/kitchen/commands/{commandId}/start", kitchen)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"/api/v1/kitchen/commands/{commandId}/ready", kitchen)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"/api/v1/orders/{orderId}/deliver", mesero)).StatusCode);
-        var noKitchen = await Send(client, HttpMethod.Post, "/api/v1/orders", admin, new { items = new[] { new { productId = barProduct, quantity = 1m } } }); Assert.Equal(HttpStatusCode.Created, noKitchen.StatusCode); var noKitchenBody = await noKitchen.Content.ReadFromJsonAsync<JsonElement>(); Assert.Equal("LISTO", noKitchenBody.GetProperty("status").GetString()); Assert.Equal(JsonValueKind.Null, noKitchenBody.GetProperty("kitchenCommandId").ValueKind);
+        var noKitchen = await Send(client, HttpMethod.Post, "/api/v1/orders", admin, new { acknowledgeStockShortage = true, items = new[] { new { productId = barProduct, quantity = 1m } } }); Assert.Equal(HttpStatusCode.Created, noKitchen.StatusCode); var noKitchenBody = await noKitchen.Content.ReadFromJsonAsync<JsonElement>(); Assert.Equal("LISTO", noKitchenBody.GetProperty("status").GetString()); Assert.Equal(JsonValueKind.Null, noKitchenBody.GetProperty("kitchenCommandId").ValueKind);
         var duplicate = await Send(client, HttpMethod.Post, "/api/v1/orders", admin, new { items = new[] { new { productId = barProduct, quantity = 1m }, new { productId = barProduct, quantity = 1m } } }); Assert.Equal(HttpStatusCode.BadRequest, duplicate.StatusCode);
         await using var verify = new ApplicationDbContext(options); Assert.Equal(OrderStatus.ENTREGADO, (await verify.Orders.SingleAsync(x => x.Id == orderId)).Status); Assert.Equal(KitchenCommandStatus.LISTA, (await verify.KitchenCommands.SingleAsync(x => x.Id == commandId)).Status);
     }
+    [Fact]
+    public async Task Hu013_order_shortage_matrix_is_read_only_revalidated_and_audited()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "hu013_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
+        var token = await Token(client, "admin.test"); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
+        Guid exact; Guid shortOne; Guid shortTwo;
+        await using (var setup = new ApplicationDbContext(options))
+        {
+            var unit = await setup.Units.FirstAsync(); var actor = (await setup.Users.SingleAsync(x => x.UserName == "admin.test")).Id;
+            exact = AddProduct(setup, unit.Id, actor, "exact", "NONE", 10); shortOne = AddProduct(setup, unit.Id, actor, "short-one", "NONE", 10); shortTwo = AddProduct(setup, unit.Id, actor, "short-two", "NONE", 10);
+            await setup.SaveChangesAsync(); setup.InventoryBalances.AddRange(new InventoryBalance { ProductId = exact, Quantity = 2, UpdatedAt = DateTimeOffset.UtcNow }, new InventoryBalance { ProductId = shortOne, Quantity = 1, UpdatedAt = DateTimeOffset.UtcNow }, new InventoryBalance { ProductId = shortTwo, Quantity = 0, UpdatedAt = DateTimeOffset.UtcNow }); await setup.SaveChangesAsync();
+        }
+        var exactResult = await Send(client, HttpMethod.Post, "/api/v1/orders", token, new { items = new[] { new { productId = exact, quantity = 2m } } });
+        Assert.Equal(HttpStatusCode.Created, exactResult.StatusCode);
+        var rejected = await Send(client, HttpMethod.Post, "/api/v1/orders", token, new { items = new[] { new { productId = shortOne, quantity = 2m }, new { productId = shortTwo, quantity = 3m } } });
+        Assert.Equal(HttpStatusCode.Conflict, rejected.StatusCode); var problem = await rejected.Content.ReadFromJsonAsync<JsonElement>(); Assert.Equal("ORDER_STOCK_ACKNOWLEDGEMENT_REQUIRED", problem.GetProperty("code").GetString()); Assert.Equal(2, problem.GetProperty("shortages").GetArrayLength()); Assert.All(problem.GetProperty("shortages").EnumerateArray(), x => Assert.True(x.GetProperty("shortageQuantity").GetDecimal() > 0));
+        await using (var rejectedState = new ApplicationDbContext(options)) { Assert.Equal(1, await rejectedState.Orders.CountAsync()); Assert.Empty(await rejectedState.KitchenCommands.ToListAsync()); Assert.Empty(await rejectedState.InventoryMovements.ToListAsync()); }
+        // The retry observes current stock, rather than reserving the first conflict's snapshot.
+        await using (var replenish = new ApplicationDbContext(options)) { (await replenish.InventoryBalances.SingleAsync(x => x.ProductId == shortOne)).Quantity = 5; await replenish.SaveChangesAsync(); }
+        var acknowledged = await Send(client, HttpMethod.Post, "/api/v1/orders", token, new { acknowledgeStockShortage = true, items = new[] { new { productId = shortOne, quantity = 2m }, new { productId = shortTwo, quantity = 3m } } });
+        Assert.Equal(HttpStatusCode.Created, acknowledged.StatusCode); var orderId = (await acknowledged.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        await using var verify = new ApplicationDbContext(options); var order = await verify.Orders.SingleAsync(x => x.Id == orderId);
+        Assert.NotNull(order.StockShortageAcknowledgedAt); Assert.Equal((await verify.Users.SingleAsync(x => x.UserName == "admin.test")).Id, order.StockShortageAcknowledgedByUserId); Assert.Equal(2, await verify.Orders.CountAsync()); Assert.Empty(await verify.InventoryMovements.ToListAsync()); Assert.Equal(5m, await verify.InventoryBalances.Where(x => x.ProductId == shortOne).Select(x => x.Quantity).SingleAsync()); Assert.Equal(0m, await verify.InventoryBalances.Where(x => x.ProductId == shortTwo).Select(x => x.Quantity).SingleAsync());
+    }
+
+    [Fact]
+    public async Task Hu012_sale_endpoint_reports_and_acknowledges_a_real_sale_time_shortage()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "hu012_sale_shortage_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
+        var token = await Token(client, "admin.test"); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
+        Guid product;
+        await using (var setup = new ApplicationDbContext(options))
+        {
+            var unit = await setup.Units.FirstAsync(); var actor = (await setup.Users.SingleAsync(x => x.UserName == "admin.test")).Id;
+            product = AddProduct(setup, unit.Id, actor, "sale-time-shortage", "NONE", 10); await setup.SaveChangesAsync();
+            setup.InventoryBalances.Add(new InventoryBalance { ProductId = product, Quantity = 2m, UpdatedAt = DateTimeOffset.UtcNow }); await setup.SaveChangesAsync();
+        }
+        var created = await Send(client, HttpMethod.Post, "/api/v1/orders", token, new { items = new[] { new { productId = product, quantity = 2m } } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode); var orderId = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"/api/v1/orders/{orderId}/deliver", token)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, "/api/v1/shifts/open", token)).StatusCode);
+        await using (var lowerStock = new ApplicationDbContext(options)) { (await lowerStock.InventoryBalances.SingleAsync(x => x.ProductId == product)).Quantity = 1m; await lowerStock.SaveChangesAsync(); }
+
+        var request = new { orderId, salesChannel = "DIRECT", paymentMethod = "CASH", acknowledgeStockShortage = false };
+        var conflict = await Send(client, HttpMethod.Post, "/api/v1/sales", token, request);
+        Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode); Assert.Equal("application/problem+json", conflict.Content.Headers.ContentType!.MediaType);
+        var problem = await conflict.Content.ReadFromJsonAsync<JsonElement>(); Assert.Equal("SALE_STOCK_CONFIRMATION_REQUIRED", problem.GetProperty("code").GetString());
+        var shortage = Assert.Single(problem.GetProperty("shortages").EnumerateArray()); Assert.Equal(product, shortage.GetProperty("productId").GetGuid()); Assert.Equal(2m, shortage.GetProperty("requiredQuantity").GetDecimal()); Assert.Equal(1m, shortage.GetProperty("currentQuantity").GetDecimal()); Assert.Equal(1m, shortage.GetProperty("shortageQuantity").GetDecimal());
+        await using (var afterConflict = new ApplicationDbContext(options)) { var order = await afterConflict.Orders.SingleAsync(x => x.Id == orderId); Assert.Equal(OrderStatus.ENTREGADO, order.Status); Assert.Null(order.StockShortageAcknowledgedAt); Assert.Null(order.StockShortageAcknowledgedByUserId); Assert.Empty(await afterConflict.Sales.ToListAsync()); Assert.Single(await afterConflict.Shifts.Where(x => x.Status == RestaurantSystem.Domain.Operations.ShiftStatus.ACTIVE).ToListAsync()); }
+
+        var retry = await Send(client, HttpMethod.Post, "/api/v1/sales", token, new { orderId, salesChannel = "DIRECT", paymentMethod = "CASH", acknowledgeStockShortage = true });
+        Assert.Equal(HttpStatusCode.Created, retry.StatusCode);
+        await using var verified = new ApplicationDbContext(options); var acknowledgedOrder = await verified.Orders.SingleAsync(x => x.Id == orderId); Assert.NotNull(acknowledgedOrder.StockShortageAcknowledgedAt); Assert.NotNull(acknowledgedOrder.StockShortageAcknowledgedByUserId); Assert.Single(await verified.Sales.ToListAsync()); Assert.Single(await verified.InventoryMovements.Where(x => x.ReferenceType == InventoryReferenceType.SALE).ToListAsync());
+    }
+
     [Fact]
     public async Task Notifier_failure_after_commit_preserves_order_state()
     {
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "notifier_" + Guid.NewGuid().ToString("N") }.ConnectionString; await postgres.MigrateAsync(cs); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
         await using var db = new ApplicationDbContext(options); var unit = await db.Units.FirstAsync(); var user = "actor"; db.Users.Add(new Microsoft.AspNetCore.Identity.IdentityUser { Id = user, UserName = user, NormalizedUserName = user.ToUpperInvariant() }); await db.SaveChangesAsync(); db.Employees.Add(new RestaurantSystem.Domain.Identity.Employee { UserId = user, FullName = "Actor" }); var product = AddProduct(db, unit.Id, user, "K", "KITCHEN", 1); await db.SaveChangesAsync();
-        var service = new OrderService(db, new ThrowingNotifier(), NullLogger<OrderService>.Instance); var result = await service.CreateAsync(new(null, null, [new(product, 1, null)]), new(user, new HashSet<string> { "ENCARGADO" })); Assert.Null(result.Error); Assert.True(await db.Orders.AnyAsync()); Assert.True(await db.KitchenCommands.AnyAsync());
+        var service = new OrderService(db, new RestaurantSystem.Infrastructure.Inventory.InventoryService(db), new ThrowingNotifier(), NullLogger<OrderService>.Instance); var result = await service.CreateAsync(new(null, null, [new(product, 1, null)], true), new(user, new HashSet<string> { "ENCARGADO" })); Assert.Null(result.Error); Assert.True(await db.Orders.AnyAsync()); Assert.True(await db.KitchenCommands.AnyAsync());
     }
     [Fact]
     public async Task Openapi_exposes_orders_and_kitchen_contracts()
@@ -77,7 +137,7 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "take_race_" + Guid.NewGuid().ToString("N") }.ConnectionString; await postgres.MigrateAsync(cs); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
         var (orderId, firstUser, secondUser) = await SeedRaceOrder(options, OrderStatus.LISTO, false);
         await using var firstDb = new ApplicationDbContext(options); await using var secondDb = new ApplicationDbContext(options);
-        var first = new OrderService(firstDb, new SilentNotifier(), NullLogger<OrderService>.Instance); var second = new OrderService(secondDb, new SilentNotifier(), NullLogger<OrderService>.Instance);
+        var first = new OrderService(firstDb, new RestaurantSystem.Infrastructure.Inventory.InventoryService(firstDb), new SilentNotifier(), NullLogger<OrderService>.Instance); var second = new OrderService(secondDb, new RestaurantSystem.Infrastructure.Inventory.InventoryService(secondDb), new SilentNotifier(), NullLogger<OrderService>.Instance);
         var firstTask = first.TakeAsync(orderId, new(firstUser, new HashSet<string> { "MESERO" })); var secondTask = second.TakeAsync(orderId, new(secondUser, new HashSet<string> { "MESERO" })); var results = await Task.WhenAll(firstTask, secondTask);
         Assert.Single(results, x => x.Error is null); Assert.Single(results, x => x.Error == "ORDER_ALREADY_ASSIGNED"); await using var verify = new ApplicationDbContext(options); var persisted = await verify.Orders.SingleAsync(x => x.Id == orderId); var eligible = await verify.Employees.Where(x => x.UserId == firstUser || x.UserId == secondUser).Select(x => x.Id).ToListAsync(); Assert.Contains(persisted.WaiterEmployeeId!.Value, eligible);
     }
@@ -86,7 +146,7 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
     {
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "pair_race_" + Guid.NewGuid().ToString("N") }.ConnectionString; await postgres.MigrateAsync(cs); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
         var (orderId, actor, _) = await SeedRaceOrder(options, OrderStatus.EN_PREPARACION, true); await using var lookup = new ApplicationDbContext(options); var commandId = await lookup.KitchenCommands.Where(x => x.OrderId == orderId).Select(x => x.Id).SingleAsync();
-        await using var readyDb = new ApplicationDbContext(options); await using var cancelDb = new ApplicationDbContext(options); var ready = new KitchenCommandService(readyDb, new SilentNotifier(), NullLogger<KitchenCommandService>.Instance); var cancel = new OrderService(cancelDb, new SilentNotifier(), NullLogger<OrderService>.Instance);
+        await using var readyDb = new ApplicationDbContext(options); await using var cancelDb = new ApplicationDbContext(options); var ready = new KitchenCommandService(readyDb, new SilentNotifier(), NullLogger<KitchenCommandService>.Instance); var cancel = new OrderService(cancelDb, new RestaurantSystem.Infrastructure.Inventory.InventoryService(cancelDb), new SilentNotifier(), NullLogger<OrderService>.Instance);
         var readyTask = ready.ReadyAsync(commandId, new(actor, new HashSet<string> { "COCINA" })); var cancelTask = cancel.CancelAsync(orderId, new("race"), new(actor, new HashSet<string> { "ENCARGADO" })); await Task.WhenAll(readyTask, cancelTask); var readyResult = await readyTask; var cancelResult = await cancelTask; var results = new[] { new { Error = readyResult.Error }, new { Error = cancelResult.Error } };
         Assert.Single(results, x => x.Error is null); await using var verify = new ApplicationDbContext(options); var order = await verify.Orders.SingleAsync(x => x.Id == orderId); var command = await verify.KitchenCommands.SingleAsync(x => x.OrderId == orderId); Assert.True((order.Status == OrderStatus.LISTO && command.Status == KitchenCommandStatus.LISTA) || (order.Status == OrderStatus.CANCELADO && command.Status == KitchenCommandStatus.CANCELADA));
     }
@@ -95,9 +155,9 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
     {
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "remaining_races_" + Guid.NewGuid().ToString("N") }.ConnectionString; await postgres.MigrateAsync(cs); var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
         var (orderId, actor, _) = await SeedRaceOrder(options, OrderStatus.PENDIENTE, true); await using var lookup = new ApplicationDbContext(options); var commandId = await lookup.KitchenCommands.Where(x => x.OrderId == orderId).Select(x => x.Id).SingleAsync();
-        await using var startDb = new ApplicationDbContext(options); await using var cancelDb = new ApplicationDbContext(options); var start = new KitchenCommandService(startDb, new SilentNotifier(), NullLogger<KitchenCommandService>.Instance); var cancel = new OrderService(cancelDb, new SilentNotifier(), NullLogger<OrderService>.Instance); var startTask = start.StartAsync(commandId, new(actor, new HashSet<string> { "COCINA" })); var cancelTask = cancel.CancelAsync(orderId, new(null), new(actor, new HashSet<string> { "ENCARGADO" })); await Task.WhenAll(startTask, cancelTask);
+        await using var startDb = new ApplicationDbContext(options); await using var cancelDb = new ApplicationDbContext(options); var start = new KitchenCommandService(startDb, new SilentNotifier(), NullLogger<KitchenCommandService>.Instance); var cancel = new OrderService(cancelDb, new RestaurantSystem.Infrastructure.Inventory.InventoryService(cancelDb), new SilentNotifier(), NullLogger<OrderService>.Instance); var startTask = start.StartAsync(commandId, new(actor, new HashSet<string> { "COCINA" })); var cancelTask = cancel.CancelAsync(orderId, new(null), new(actor, new HashSet<string> { "ENCARGADO" })); await Task.WhenAll(startTask, cancelTask);
         await using var verify = new ApplicationDbContext(options); var finalOrder = await verify.Orders.SingleAsync(x => x.Id == orderId); var finalCommand = await verify.KitchenCommands.SingleAsync(x => x.OrderId == orderId); Assert.True((finalOrder.Status == OrderStatus.EN_PREPARACION && finalCommand.Status == KitchenCommandStatus.EN_PREPARACION) || (finalOrder.Status == OrderStatus.CANCELADO && finalCommand.Status == KitchenCommandStatus.CANCELADA));
-        var delivery = new Order { Status = OrderStatus.LISTO, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor, WaiterEmployeeId = await verify.Employees.Where(x => x.UserId == actor).Select(x => (Guid?)x.Id).SingleAsync() }; verify.Orders.Add(delivery); await verify.SaveChangesAsync(); await using var d1 = new ApplicationDbContext(options); await using var d2 = new ApplicationDbContext(options); var service1 = new OrderService(d1, new SilentNotifier(), NullLogger<OrderService>.Instance); var service2 = new OrderService(d2, new SilentNotifier(), NullLogger<OrderService>.Instance); var actorModel = new OrderActor(actor, new HashSet<string> { "MESERO" }); var deliveries = await Task.WhenAll(service1.DeliverAsync(delivery.Id, actorModel), service2.DeliverAsync(delivery.Id, actorModel)); Assert.All(deliveries, x => Assert.Null(x.Error));
+        var delivery = new Order { Status = OrderStatus.LISTO, CreatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor, WaiterEmployeeId = await verify.Employees.Where(x => x.UserId == actor).Select(x => (Guid?)x.Id).SingleAsync() }; verify.Orders.Add(delivery); await verify.SaveChangesAsync(); await using var d1 = new ApplicationDbContext(options); await using var d2 = new ApplicationDbContext(options); var service1 = new OrderService(d1, new RestaurantSystem.Infrastructure.Inventory.InventoryService(d1), new SilentNotifier(), NullLogger<OrderService>.Instance); var service2 = new OrderService(d2, new RestaurantSystem.Infrastructure.Inventory.InventoryService(d2), new SilentNotifier(), NullLogger<OrderService>.Instance); var actorModel = new OrderActor(actor, new HashSet<string> { "MESERO" }); var deliveries = await Task.WhenAll(service1.DeliverAsync(delivery.Id, actorModel), service2.DeliverAsync(delivery.Id, actorModel)); Assert.All(deliveries, x => Assert.Null(x.Error));
     }
     private static async Task<(Guid OrderId, string FirstUser, string SecondUser)> SeedRaceOrder(DbContextOptions<ApplicationDbContext> options, OrderStatus status, bool command)
     {
