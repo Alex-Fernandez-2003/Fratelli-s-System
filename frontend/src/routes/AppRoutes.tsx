@@ -15,13 +15,13 @@ import { MyAttendancePage } from '../pages/MyAttendancePage'
 import { UiKitPage } from '../pages/UiKitPage'
 import { KitchenPage } from '../features/kitchen/pages'
 import { NewOrderPage, OrderDetailPage, OrdersPage } from '../features/orders/pages'
+import { CheckoutPage } from '../features/sales/pages'
 import { ProductsPage } from '../features/products/pages'
-import { CompositionPage } from '../features/products/composition/CompositionPage'
 import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
-import { NewPurchasePage, PurchasesPage } from '../features/purchases/pages'
+import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
 import { PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { ShiftsPage } from '../features/shifts/ShiftsPage'
 import { SHIFT_MANAGE_ROLES } from '../features/shifts/api'
@@ -95,14 +95,12 @@ export function AppRoutes() {
             <Route path="/pedidos" element={<OrdersPage />} />
             <Route path="/pedidos/nuevo" element={<NewOrderPage />} />
             <Route path="/pedidos/:id" element={<OrderDetailPage />} />
+            <Route path="/pedidos/:id/cobrar" element={<CheckoutPage />} />
           </Route>
 
           {/* Productos */}
           <Route element={<RequireAnyRole roles={[...PRODUCT_READ_ROLES]} />}>
             <Route path="/productos" element={<ProductsPage />} />
-          </Route>
-          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
-            <Route path="/productos/:id/composicion" element={<CompositionPage />} />
           </Route>
 
           {/* Inventario */}
@@ -137,9 +135,11 @@ export function AppRoutes() {
             <Route path="/proveedores" element={<SuppliersPage />} />
           </Route>
 
+
           <Route element={<RequireAnyRole roles={[...PURCHASE_WRITE_ROLES]} />}>
             <Route path="/compras" element={<PurchasesPage />} />
             <Route path="/compras/nueva" element={<NewPurchasePage />} />
+            <Route path="/compras/:id/recibir" element={<ReceivePurchasePage />} />
           </Route>
 
           {/* Turnos / Caja */}

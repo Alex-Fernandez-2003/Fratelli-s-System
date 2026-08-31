@@ -8,9 +8,12 @@ public sealed record InventoryBalanceDto(Guid ProductId, string ProductName, Pro
 public sealed record InventoryMovementDto(Guid Id, Guid ProductId, string ProductName, InventoryMovementType MovementType, decimal QuantityDelta, Guid InventoryUnitId, string InventoryUnitCode, string InventoryUnitName, string InventoryUnitSymbol, string? Reason, InventoryReferenceType? ReferenceType, Guid? ReferenceId, DateTimeOffset CreatedAt, string CreatedByUserId, string? CreatedByDisplayName);
 public sealed record InventorySummaryDto(int TotalProducts, int LowStockCount, int NegativeStockCount, int NormalStockCount, IReadOnlyList<InventoryBalanceDto> LowStockItems);
 public sealed record RecordManualInventoryMovementRequest(Guid ProductId, InventoryMovementType Type, decimal Quantity, string Reason);
-public sealed record InventoryWriteCommand(Guid ProductId, InventoryMovementType Type, decimal QuantityDelta, string? Reason, InventoryReferenceType? ReferenceType, Guid? ReferenceId, string ActorUserId);
+public sealed record InventoryShortageDto(Guid ProductId, string ProductName, decimal RequiredQuantity, decimal CurrentQuantity, decimal ShortageQuantity, Guid InventoryUnitId, string InventoryUnitSymbol);
+    public sealed record InventoryRequirement(Guid ProductId, decimal Quantity);
+    public sealed record InventoryWriteCommand(Guid ProductId, InventoryMovementType Type, decimal QuantityDelta, string? Reason, InventoryReferenceType? ReferenceType, Guid? ReferenceId, string ActorUserId);
 public sealed record InventoryBatchResult(IReadOnlyList<InventoryMovementDto> Movements, IReadOnlyList<(Guid ProductId, decimal Required, decimal Current)> Shortages);
-public interface IInventoryWriter { Task<(InventoryMovementDto? Value, string? Error)> WriteAsync(InventoryWriteCommand command, CancellationToken ct = default); Task<(InventoryBatchResult? Value, string? Error)> WriteBatchAsync(IReadOnlyList<InventoryWriteCommand> commands, bool allowNegative, CancellationToken ct = default); }
+public interface IInventoryAvailability { Task<IReadOnlyList<InventoryShortageDto>> EvaluateShortagesAsync(IReadOnlyList<InventoryRequirement> requirements, CancellationToken ct = default); }
+    public interface IInventoryWriter { Task<(InventoryMovementDto? Value, string? Error)> WriteAsync(InventoryWriteCommand command, CancellationToken ct = default); Task<(InventoryBatchResult? Value, string? Error)> WriteBatchAsync(IReadOnlyList<InventoryWriteCommand> commands, bool allowNegative, CancellationToken ct = default); }
 public interface IInventoryService
 {
     Task<PagedResponse<InventoryBalanceDto>> BalancesAsync(int page, int pageSize, string? search, ProductType? productType, bool? active, CancellationToken ct = default);
