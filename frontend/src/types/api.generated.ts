@@ -2221,7 +2221,63 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    get: {
+      parameters: {
+        query?: {
+          page?: number | string
+          pageSize?: number | string
+          from?: string
+          to?: string
+          categoryId?: string
+          cashSource?: components['schemas']['CashSource']
+          responsible?: string
+          shiftId?: string
+          shiftType?: components['schemas']['ShiftType']
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ExpenseHistoryPage']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
     put?: never
     post: {
       parameters: {
@@ -2520,6 +2576,77 @@ export interface paths {
           }
           content: {
             'application/json': components['schemas']['AttendanceTodayResponse']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attendance/admin': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          employeeId?: string
+          from?: string
+          to?: string
+          shiftType?: components['schemas']['ShiftType']
+          outcome?: components['schemas']['AttendanceLifecycle']
+          late?: boolean
+          page?: number | string
+          pageSize?: number | string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['AdministrativeAttendancePage']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
           }
         }
         /** @description Unauthorized */
@@ -3487,6 +3614,390 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/customers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query: {
+          page: number | string
+          pageSize: number | string
+          search?: string
+          isActive?: boolean
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfCustomerDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CustomerRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CustomerDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/customers/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CustomerDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CustomerRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CustomerDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/customers/{id}/activate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/customers/{id}/deactivate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/products/{id}/composition': {
     parameters: {
       query?: never
@@ -3787,7 +4298,62 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    get: {
+      parameters: {
+        query: {
+          page: number | string
+          pageSize: number | string
+          productId?: string
+          batchCode?: string
+          status?: components['schemas']['ProductionStatus']
+          responsible?: string
+          from?: string
+          to?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfProductionHistoryDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
     put?: never
     post: {
       parameters: {
@@ -3871,7 +4437,62 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    get: {
+      parameters: {
+        query: {
+          page: number | string
+          pageSize: number | string
+          from?: string
+          to?: string
+          shiftId?: string
+          salesChannel?: components['schemas']['SalesChannel']
+          paymentMethod?: components['schemas']['PaymentMethod']
+          customerSearch?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfSalesHistoryDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
     put?: never
     post: {
       parameters: {
@@ -3948,6 +4569,200 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/productions/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ProductionDetailDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/work-schedules': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['WorkScheduleDto'][]
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/work-schedules/{shiftType}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          shiftType: components['schemas']['ShiftType']
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['WorkScheduleRequest']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['WorkScheduleDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/shifts/open': {
     parameters: {
       query?: never
@@ -3964,7 +4779,11 @@ export interface paths {
         path?: never
         cookie?: never
       }
-      requestBody?: never
+      requestBody?: {
+        content: {
+          'application/json': null | components['schemas']['OpenOperationalDayRequest']
+        }
+      }
       responses: {
         /** @description OK */
         200: {
@@ -3973,6 +4792,15 @@ export interface paths {
           }
           content: {
             'application/json': components['schemas']['ShiftContextDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
           }
         }
         /** @description Unauthorized */
@@ -4306,6 +5134,236 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/sales/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['SalesDetailDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/reports/sales': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          from?: string
+          to?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['SalesReportDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/reports/inventory': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['InventoryReportDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/reports/attendance': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          from?: string
+          to?: string
+          employeeId?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['AttendanceReportDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/purchases': {
     parameters: {
       query?: never
@@ -4440,6 +5498,77 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/purchases/history': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query: {
+          page: number | string
+          pageSize: number | string
+          status?: components['schemas']['PurchaseStatus']
+          supplierId?: string
+          purchaseArea?: string
+          responsible?: string
+          from?: string
+          to?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfPurchaseHistoryDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/purchases/{id}': {
     parameters: {
       query?: never
@@ -4465,6 +5594,70 @@ export interface paths {
           }
           content: {
             'application/json': components['schemas']['PurchaseDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/purchases/history/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PurchaseDetailDto']
           }
         }
         /** @description Unauthorized */
@@ -4676,14 +5869,340 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/cash/preview': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CashPreviewDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cash/close': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CloseCashRequest']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CashClosingDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cash/closings': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query: {
+          page: number | string
+          pageSize: number | string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PagedResponseOfCashClosingDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/cash/closings/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['CashClosingDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    AdministrativeAttendancePage: {
+      items: components['schemas']['AdministrativeAttendanceRow'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+      summary: components['schemas']['AdministrativeAttendanceSummary']
+      employeeSummaries: components['schemas']['EmployeeAttendanceSummary'][]
+    }
+    AdministrativeAttendanceRow: {
+      /** Format: uuid */
+      employeeId: string
+      fullName: string
+      /** Format: date */
+      businessDate: string
+      shiftType: components['schemas']['ShiftType']
+      /** Format: date-time */
+      plannedStart: string
+      /** Format: date-time */
+      plannedEnd: string
+      /** Format: date-time */
+      checkInAt: null | string
+      /** Format: date-time */
+      checkOutAt: null | string
+      outcome: components['schemas']['AttendanceLifecycle']
+      /** Format: int32 */
+      workedMinutes: null | number | string
+      isLate: boolean
+      /** Format: int32 */
+      lateMinutes: number | string
+    }
+    AdministrativeAttendanceSummary: {
+      /** Format: int32 */
+      totalRecords: number | string
+      /** Format: int32 */
+      openCount: number | string
+      /** Format: int32 */
+      closedCount: number | string
+      /** Format: int32 */
+      totalWorkedMinutes: number | string
+      /** Format: int32 */
+      lateCount: number | string
+      /** Format: int32 */
+      absenceCount: number | string
+    }
     AssignOrderRequest: {
       /** Format: uuid */
       waiterEmployeeId: string
     }
+    /** @enum {unknown} */
+    AttendanceLifecycle: 'NO_ASSIGNMENT' | 'NO_RECORD' | 'OPEN' | 'CLOSED' | 'ABSENT'
     AttendancePage: {
       items: components['schemas']['AttendanceRecordDto'][]
       /** Format: int32 */
@@ -4708,6 +6227,28 @@ export interface components {
       /** Format: date-time */
       checkOutAt: null | string
       checkOutByUserId: null | string
+    }
+    AttendanceReportDto: {
+      items: components['schemas']['AttendanceReportItemDto'][]
+    }
+    AttendanceReportItemDto: {
+      /** Format: uuid */
+      employeeId: string
+      fullName: string
+      /** Format: int32 */
+      attendanceCount: number | string
+      /** Format: int32 */
+      workedMinutes: number | string
+      /** Format: double */
+      workedHours: number | string
+      /** Format: int32 */
+      lateCount: number | string
+      /** Format: int32 */
+      absenceCount: number | string
+      /** Format: double */
+      hourlyRate: number | string
+      /** Format: double */
+      projectedPay: number | string
     }
     AttendanceTodayItem: {
       /** Format: uuid */
@@ -4743,6 +6284,83 @@ export interface components {
     CancelPurchaseRequest: {
       reason: null | string
     }
+    CashClosingDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      cashSessionId: string
+      /** Format: date */
+      businessDate: string
+      /** Format: double */
+      openingAmount: number | string
+      /** Format: double */
+      pettyCashOpeningAmount: number | string
+      /** Format: double */
+      cashRemovedAmount: number | string
+      /** Format: double */
+      salesTotal: number | string
+      /** Format: double */
+      cashSalesTotal: number | string
+      /** Format: double */
+      qrSalesTotal: number | string
+      /** Format: double */
+      externalSalesTotal: number | string
+      /** Format: double */
+      directSalesTotal: number | string
+      /** Format: double */
+      pedidosYaSalesTotal: number | string
+      /** Format: double */
+      cashDrawerExpensesTotal: number | string
+      /** Format: double */
+      pettyCashExpensesTotal: number | string
+      /** Format: double */
+      expensesTotal: number | string
+      /** Format: double */
+      expectedCash: number | string
+      /** Format: double */
+      declaredCash: number | string
+      /** Format: double */
+      difference: number | string
+      observation: null | string
+      closedByUserId: string
+      /** Format: date-time */
+      closedAt: string
+    }
+    CashPreviewDto: {
+      /** Format: uuid */
+      cashSessionId: string
+      /** Format: date */
+      businessDate: string
+      /** Format: double */
+      openingAmount: number | string
+      /** Format: double */
+      pettyCashOpeningAmount: number | string
+      /** Format: double */
+      cashRemovedAmount: number | string
+      /** Format: double */
+      cashAmountCarriedForward: null | number | string
+      /** Format: double */
+      salesTotal: number | string
+      /** Format: double */
+      cashSalesTotal: number | string
+      /** Format: double */
+      qrSalesTotal: number | string
+      /** Format: double */
+      externalSalesTotal: number | string
+      /** Format: double */
+      directSalesTotal: number | string
+      /** Format: double */
+      pedidosYaSalesTotal: number | string
+      /** Format: double */
+      cashDrawerExpensesTotal: number | string
+      /** Format: double */
+      pettyCashExpensesTotal: number | string
+      /** Format: double */
+      expensesTotal: number | string
+      /** Format: double */
+      expectedCash: number | string
+      shifts: components['schemas']['ShiftDto'][]
+    }
     /** @enum {unknown} */
     CashSource: 'PETTY_CASH' | 'CASH_DRAWER'
     CategoryDto: {
@@ -4758,6 +6376,11 @@ export interface components {
     }
     /** @enum {unknown} */
     CategoryScope: 'MENU' | 'INVENTORY' | 'PREPARATION'
+    CloseCashRequest: {
+      /** Format: double */
+      declaredCash: number | string
+      observation: null | string
+    }
     CompositionDto: {
       /** Format: uuid */
       productId: string
@@ -4787,6 +6410,8 @@ export interface components {
       paymentMethod: components['schemas']['PaymentMethod']
       /** @default false */
       acknowledgeStockShortage: boolean
+      /** Format: uuid */
+      customerId?: null | string
     }
     CreateExpenseRequest: {
       /** Format: uuid */
@@ -4831,6 +6456,40 @@ export interface components {
       username: string
       roles: string[]
     }
+    CustomerDto: {
+      /** Format: uuid */
+      id: string
+      name: string
+      ci: string
+      nit: null | string
+      notes: null | string
+      isActive: boolean
+      /** Format: date-time */
+      createdAt: string
+      createdByUserId: string
+      /** Format: date-time */
+      updatedAt: string
+      updatedByUserId: string
+    }
+    CustomerRequest: {
+      name: string
+      ci: string
+      nit: null | string
+      notes: null | string
+    }
+    EmployeeAttendanceSummary: {
+      /** Format: uuid */
+      employeeId: string
+      fullName: string
+      /** Format: int32 */
+      workedMinutes: number | string
+      /** Format: int32 */
+      lateCount: number | string
+      /** Format: int32 */
+      absenceCount: number | string
+      /** Format: int32 */
+      attendanceCount: number | string
+    }
     ExpenseCategoryDto: {
       /** Format: uuid */
       id: string
@@ -4853,8 +6512,47 @@ export interface components {
       createdByUserId: string
       createdByDisplayName: null | string
     }
+    ExpenseHistoryDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date */
+      expenseDate: string
+      /** Format: date */
+      businessDate: null | string
+      description: string
+      /** Format: uuid */
+      expenseCategoryId: null | string
+      expenseCategoryName: null | string
+      cashSource: components['schemas']['CashSource']
+      /** Format: double */
+      amount: number | string
+      createdByUserId: string
+      responsibleDisplayName: null | string
+      /** Format: uuid */
+      shiftId: null | string
+      shiftType: null | components['schemas']['ShiftType']
+    }
+    ExpenseHistoryPage: {
+      items: components['schemas']['ExpenseHistoryDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+      /** Format: double */
+      totalAmount: number | string
+      /** Format: double */
+      cashDrawerTotal: number | string
+      /** Format: double */
+      pettyCashTotal: number | string
+    }
     HandoverRequest: {
       note: null | string
+      /** Format: double */
+      cashRemovedAmount?: null | number | string
     }
     HttpValidationProblemDetails: {
       type?: null | string
@@ -4918,6 +6616,26 @@ export interface components {
       | 'ADJUSTMENT'
     /** @enum {unknown} */
     InventoryReferenceType: 'MANUAL' | 'SALE' | 'PURCHASE' | 'PRODUCTION' | null
+    InventoryReportDto: {
+      items: components['schemas']['InventoryReportItemDto'][]
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      lowCount: number | string
+      /** Format: int32 */
+      negativeCount: number | string
+    }
+    InventoryReportItemDto: {
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      quantity: number | string
+      /** Format: double */
+      minStock: null | number | string
+      stockState: string
+      unitSymbol: string
+    }
     InventorySummaryDto: {
       /** Format: int32 */
       totalProducts: number | string
@@ -4967,6 +6685,12 @@ export interface components {
       /** Format: double */
       minStock: null | number | string
     }
+    OpenOperationalDayRequest: {
+      /** Format: double */
+      openingAmount: null | number | string
+      /** Format: double */
+      pettyCashOpeningAmount: null | number | string
+    }
     OrderDto: {
       /** Format: uuid */
       id: string
@@ -5013,8 +6737,30 @@ export interface components {
     }
     /** @enum {unknown} */
     OrderStatus: 'PENDIENTE' | 'EN_PREPARACION' | 'LISTO' | 'ENTREGADO' | 'CANCELADO'
+    PagedResponseOfCashClosingDto: {
+      items: components['schemas']['CashClosingDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
     PagedResponseOfCategoryDto: {
       items: components['schemas']['CategoryDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
+    PagedResponseOfCustomerDto: {
+      items: components['schemas']['CustomerDto'][]
       /** Format: int32 */
       page: number | string
       /** Format: int32 */
@@ -5079,8 +6825,41 @@ export interface components {
       /** Format: int32 */
       totalPages: number | string
     }
+    PagedResponseOfProductionHistoryDto: {
+      items: components['schemas']['ProductionHistoryDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
     PagedResponseOfPurchaseDto: {
       items: components['schemas']['PurchaseDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
+    PagedResponseOfPurchaseHistoryDto: {
+      items: components['schemas']['PurchaseHistoryDto'][]
+      /** Format: int32 */
+      page: number | string
+      /** Format: int32 */
+      pageSize: number | string
+      /** Format: int32 */
+      totalCount: number | string
+      /** Format: int32 */
+      totalPages: number | string
+    }
+    PagedResponseOfSalesHistoryDto: {
+      items: components['schemas']['SalesHistoryDto'][]
       /** Format: int32 */
       page: number | string
       /** Format: int32 */
@@ -5157,6 +6936,36 @@ export interface components {
       updatedAt: string
       updatedByUserId: string
     }
+    ProductionConsumptionHistoryDto: {
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      quantityConsumed: number | string
+      /** Format: uuid */
+      unitId: string
+      unitSymbol: string
+    }
+    ProductionDetailDto: {
+      /** Format: uuid */
+      id: string
+      batchCode: string
+      status: components['schemas']['ProductionStatus']
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      quantityProduced: number | string
+      /** Format: uuid */
+      unitId: string
+      unitSymbol: string
+      /** Format: date-time */
+      producedAt: string
+      createdByUserId: string
+      responsibleName: null | string
+      notes: null | string
+      consumptions: components['schemas']['ProductionConsumptionHistoryDto'][]
+    }
     ProductionDto: {
       /** Format: uuid */
       id: string
@@ -5167,6 +6976,27 @@ export interface components {
       /** Format: date-time */
       producedAt: string
       consumptions: components['schemas']['ProductionRequirementDto'][]
+      batchCode: string
+      status: components['schemas']['ProductionStatus']
+    }
+    ProductionHistoryDto: {
+      /** Format: uuid */
+      id: string
+      batchCode: string
+      status: components['schemas']['ProductionStatus']
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      quantityProduced: number | string
+      /** Format: uuid */
+      unitId: string
+      unitSymbol: string
+      /** Format: date-time */
+      producedAt: string
+      createdByUserId: string
+      responsibleName: null | string
+      notes: null | string
     }
     ProductionRequirementDto: {
       /** Format: uuid */
@@ -5189,6 +7019,8 @@ export interface components {
       components: components['schemas']['ProductionRequirementDto'][]
       hasSufficientStock: boolean
     }
+    /** @enum {unknown} */
+    ProductionStatus: 'COMPLETED'
     ProductRequest: {
       name: string
       productType: components['schemas']['ProductType']
@@ -5206,6 +7038,29 @@ export interface components {
     }
     /** @enum {unknown} */
     ProductType: 'INGREDIENT' | 'PREPARATION' | 'SALE_ITEM' | 'SUPPLY'
+    PurchaseDetailDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date */
+      purchaseDate: string
+      /** Format: uuid */
+      supplierId: string
+      supplierName: string
+      purchaseArea: string
+      status: components['schemas']['PurchaseStatus']
+      /** Format: double */
+      total: number | string
+      createdByUserId: string
+      responsibleName: null | string
+      receiptReference: null | string
+      notes: null | string
+      cancellationReason: null | string
+      /** Format: date-time */
+      cancelledAt: null | string
+      cancelledByUserId: null | string
+      items: components['schemas']['PurchaseHistoryItemDto'][]
+      receipt: null | components['schemas']['PurchaseReceiptHistoryDto']
+    }
     PurchaseDto: {
       /** Format: uuid */
       id: string
@@ -5215,6 +7070,41 @@ export interface components {
       /** Format: double */
       total: number | string
       lines: components['schemas']['PurchaseLineDto'][]
+    }
+    PurchaseHistoryDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date */
+      purchaseDate: string
+      /** Format: uuid */
+      supplierId: string
+      supplierName: string
+      purchaseArea: string
+      status: components['schemas']['PurchaseStatus']
+      /** Format: double */
+      total: number | string
+      createdByUserId: string
+      responsibleName: null | string
+      cancellationReason: null | string
+      /** Format: date-time */
+      cancelledAt: null | string
+      cancelledByUserId: null | string
+    }
+    PurchaseHistoryItemDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      orderedQuantity: number | string
+      /** Format: uuid */
+      unitId: string
+      unitSymbol: string
+      /** Format: double */
+      unitCost: number | string
+      /** Format: double */
+      lineTotal: number | string
     }
     PurchaseLineDto: {
       /** Format: uuid */
@@ -5241,6 +7131,25 @@ export interface components {
       unitId: string
       /** Format: double */
       unitCost: number | string
+    }
+    PurchaseReceiptHistoryDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date-time */
+      receivedAt: string
+      receivedByUserId: string
+      responsibleName: null | string
+      notes: null | string
+      lines: components['schemas']['PurchaseReceiptHistoryLineDto'][]
+    }
+    PurchaseReceiptHistoryLineDto: {
+      /** Format: uuid */
+      purchaseItemId: string
+      /** Format: double */
+      receivedQuantity: number | string
+      /** Format: uuid */
+      unitId: string
+      unitSymbol: string
     }
     /** @enum {unknown} */
     PurchaseStatus: 'PENDIENTE' | 'RECIBIDA' | 'CANCELADA'
@@ -5295,6 +7204,91 @@ export interface components {
     }
     /** @enum {unknown} */
     SalesChannel: 'DIRECT' | 'PEDIDOSYA'
+    SalesDetailDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date-time */
+      confirmedAt: string
+      /** Format: date */
+      businessDate: string
+      /** Format: uuid */
+      shiftId: string
+      shiftType: components['schemas']['ShiftType']
+      salesChannel: components['schemas']['SalesChannel']
+      paymentMethod: components['schemas']['PaymentMethod']
+      /** Format: double */
+      subtotal: number | string
+      /** Format: double */
+      total: number | string
+      confirmedByUserId: string
+      responsibleName: null | string
+      /** Format: uuid */
+      customerId: null | string
+      customerNameSnapshot: null | string
+      customerCiSnapshot: null | string
+      customerNitSnapshot: null | string
+      items: components['schemas']['SalesHistoryItemDto'][]
+    }
+    SalesHistoryDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date-time */
+      confirmedAt: string
+      /** Format: date */
+      businessDate: string
+      /** Format: uuid */
+      shiftId: string
+      shiftType: components['schemas']['ShiftType']
+      salesChannel: components['schemas']['SalesChannel']
+      paymentMethod: components['schemas']['PaymentMethod']
+      /** Format: double */
+      subtotal: number | string
+      /** Format: double */
+      total: number | string
+      confirmedByUserId: string
+      responsibleName: null | string
+      /** Format: uuid */
+      customerId: null | string
+      customerNameSnapshot: null | string
+      customerCiSnapshot: null | string
+      customerNitSnapshot: null | string
+    }
+    SalesHistoryItemDto: {
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: double */
+      quantity: number | string
+      /** Format: double */
+      unitPrice: number | string
+      /** Format: double */
+      lineTotal: number | string
+    }
+    SalesReportDto: {
+      /** Format: int32 */
+      salesCount: number | string
+      /** Format: double */
+      totalAmount: number | string
+      /** Format: double */
+      cashTotal: number | string
+      /** Format: double */
+      qrTotal: number | string
+      /** Format: double */
+      externalTotal: number | string
+      /** Format: double */
+      directTotal: number | string
+      /** Format: double */
+      pedidosYaTotal: number | string
+      series: components['schemas']['SalesReportSeriesDto'][]
+    }
+    SalesReportSeriesDto: {
+      /** Format: date */
+      businessDate: string
+      /** Format: int32 */
+      salesCount: number | string
+      /** Format: double */
+      totalAmount: number | string
+    }
     SetUserPasswordRequest: {
       newPassword: string
     }
@@ -5307,6 +7301,10 @@ export interface components {
       /** Format: date */
       businessDate: string
       shifts: components['schemas']['ShiftDto'][]
+      /** Format: double */
+      cashRemovedAmount: null | number | string
+      /** Format: double */
+      cashAmountCarriedForward: null | number | string
     }
     ShiftDto: {
       /** Format: uuid */
@@ -5318,7 +7316,7 @@ export interface components {
     /** @enum {unknown} */
     ShiftStatus: 'PENDING' | 'ACTIVE' | 'COMPLETED'
     /** @enum {unknown} */
-    ShiftType: 'MORNING' | 'NIGHT'
+    ShiftType: 'MORNING' | 'NIGHT' | null
     SupplierDto: {
       /** Format: uuid */
       id: string
@@ -5377,6 +7375,23 @@ export interface components {
       roles: string[]
       isActive: boolean
       hasPassword: boolean
+    }
+    WorkScheduleDto: {
+      shiftType: components['schemas']['ShiftType']
+      /** Format: time */
+      plannedStart: string
+      /** Format: time */
+      plannedEnd: string
+      /** Format: int32 */
+      lateToleranceMinutes: number | string
+    }
+    WorkScheduleRequest: {
+      /** Format: time */
+      plannedStart: string
+      /** Format: time */
+      plannedEnd: string
+      /** Format: int32 */
+      lateToleranceMinutes: number | string
     }
   }
   responses: never
