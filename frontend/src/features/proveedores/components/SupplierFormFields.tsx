@@ -61,7 +61,7 @@ export function SupplierFormFields({
     <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
       {serverError && <Alert kind="error">{serverError}</Alert>}
 
-      {/*
+      {/* 
         FormField (components/molecules/FormFields.tsx) genera el id del
         control y su aria-describedby automáticamente con useId() + cloneElement;
         no acepta `htmlFor` ni requiere que le pasemos aria-* a mano.

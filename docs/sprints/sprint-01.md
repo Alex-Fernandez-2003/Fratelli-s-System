@@ -126,17 +126,11 @@ El Sprint consolidó mecanismos compartidos que son utilizados por varias HU:
 - La validación visual humana global de desktop, 403 px y 360 px permanece pendiente según el documento de Sprint existente.
 - No se declara una Sprint Review o aceptación final de Product Owner porque el ZIP auditado no contiene `docs/sprints/sprint-01-review.md`.
 
-## Deuda y observaciones documentales detectadas
+## Observaciones documentales de cierre
 
-Durante la revisión del ZIP se identificaron inconsistencias que conviene corregir en una actualización documental posterior:
+La auditoría documental posterior reconcilió los enlaces de capturas de `HU-003` y `HU-022`, el estado current-state de `14-trazabilidad.md`, las limitaciones históricas de `13-pruebas-y-validacion.md` y las secciones duplicadas de estado de las HU afectadas.
 
-1. `docs/historias/HU-003-catalogo.md` referencia `../capturas/HU-003-formulario.png.png`, pero el archivo existente es `HU-003-formulario.png`.
-2. `docs/historias/HU-022-registrar-asistencia.md` enlaza en su sección de evidencias capturas de `HU-002`, aunque en `docs/capturas/` existen archivos propios de asistencia con prefijo `HU-022F...`.
-3. `docs/14-trazabilidad.md` conserva todavía las HU como `PENDIENTE`, por lo que no refleja el estado current-state documentado en `docs/historias/`.
-4. La sección de Sprint 1 de `docs/13-pruebas-y-validacion.md` mantiene el texto previo al Sprint Planning indicando que el contenido exacto todavía se definiría.
-5. Algunas HU conservan secciones duplicadas de `Estado de entrega` provenientes de su evolución documental.
-
-Estas observaciones no cambian por sí solas el estado funcional de las HU; representan deuda de reconciliación documental.
+Estas correcciones no cambian por sí solas el estado funcional de las HU. Se mantienen como límites de cierre los pendientes ya declarados en este Sprint: validación manual de `HU-020`, validación visual humana global y ausencia de un documento `sprint-01-review.md` que pruebe aceptación final de Product Owner.
 
 ## Referencias
 

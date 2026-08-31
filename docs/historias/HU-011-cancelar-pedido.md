@@ -66,7 +66,3 @@ Implementada para MVP.
 ![Captura de pedidos](../capturas/HU-011-cancel-order.png)
 
 ---
-
-## Estado de entrega
-
-Completado para MVP, cambios visuales se harán posteriormente

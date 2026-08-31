@@ -1,0 +1,62 @@
+@startuml
+title Diagrama de casos de uso — Pedidos, cocina y ventas
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "ADMINISTRADOR" as Admin
+actor "ENCARGADO" as Encargado
+actor "MESERO" as Mesero
+actor "COCINA" as Cocina
+actor "CONTADORA" as Contadora
+
+rectangle "Pedidos, cocina y ventas" {
+  usecase "Registrar / gestionar\npedidos" as UC_Orders
+  usecase "Consultar pedidos" as UC_OrderView
+  usecase "Gestionar estados\nde comanda" as UC_Kitchen
+  usecase "Consultar comandas" as UC_KitchenView
+  usecase "Registrar / confirmar\nventas" as UC_Sales
+  usecase "Consultar ventas" as UC_SalesView
+  usecase "Gestionar clientes" as UC_Customers
+  usecase "Consultar clientes" as UC_CustomersView
+}
+
+Admin --> UC_Orders
+Encargado --> UC_Orders
+Mesero --> UC_Orders
+Cocina --> UC_OrderView
+
+Admin --> UC_Kitchen
+Encargado --> UC_Kitchen
+Cocina --> UC_Kitchen
+
+Admin --> UC_KitchenView
+Encargado --> UC_KitchenView
+Mesero --> UC_KitchenView
+Cocina --> UC_KitchenView
+
+Admin --> UC_Sales
+Encargado --> UC_Sales
+Mesero --> UC_Sales
+
+Admin --> UC_SalesView
+Encargado --> UC_SalesView
+Contadora --> UC_SalesView
+
+Admin --> UC_Customers
+Encargado --> UC_Customers
+Mesero --> UC_Customers
+
+Admin --> UC_CustomersView
+Encargado --> UC_CustomersView
+Mesero --> UC_CustomersView
+Contadora --> UC_CustomersView
+
+note bottom
+La comprobación de stock, el cálculo de totales, la trazabilidad y
+la actualización de inventario son comportamientos internos de estos
+casos de uso y permanecen especificados en requisitos y reglas de negocio.
+end note
+
+@enduml

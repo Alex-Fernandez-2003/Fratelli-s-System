@@ -7,7 +7,7 @@ using RestaurantSystem.Domain.Inventory;
 
 namespace RestaurantSystem.Infrastructure.Inventory;
 
-public sealed class InventoryService(ApplicationDbContext db) : IInventoryService, IInventoryWriter
+public sealed class InventoryService(ApplicationDbContext db) : IInventoryService, IInventoryWriter, IInventoryAvailability
 {
     public async Task<(InventoryMovementDto? Value, string? Error)> RecordManualAsync(RecordManualInventoryMovementRequest request, string actorUserId, CancellationToken ct = default)
     {
@@ -53,7 +53,25 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         return new(rows.Select(x => Balance(x.p, x.b, x.u)).ToArray(), page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
     }
 
-    public async Task<PagedResponse<InventoryMovementDto>> MovementsAsync(int page, int pageSize, Guid? productId, InventoryMovementType? movementType, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+        public async Task<InventorySummaryDto> SummaryAsync(CancellationToken ct = default)
+        {
+            var q = from p in db.Products.AsNoTracking()
+                    join b in db.InventoryBalances.AsNoTracking() on p.Id equals b.ProductId into balances
+                    from b in balances.DefaultIfEmpty()
+                    join u in db.Units.AsNoTracking() on p.InventoryUnitId equals u.Id
+                    where p.IsActive
+                    select new { p, b, u };
+            var total = await q.CountAsync(ct);
+            var negatives = await q.CountAsync(x => (x.b == null ? 0m : x.b.Quantity) < 0m, ct);
+            var low = q.Where(x => (x.b == null ? 0m : x.b.Quantity) < 0m || (x.p.MinStock != null && (x.b == null ? 0m : x.b.Quantity) <= x.p.MinStock));
+            var lowCount = await low.CountAsync(ct);
+            var items = (await low.OrderBy(x => x.p.Name).ThenBy(x => x.p.Id).ToListAsync(ct))
+                .Select(x => Balance(x.p, x.b, x.u))
+                .ToArray();
+            return new(total, lowCount, negatives, total - lowCount, items);
+        }
+
+        public async Task<PagedResponse<InventoryMovementDto>> MovementsAsync(int page, int pageSize, Guid? productId, InventoryMovementType? movementType, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         if (from > to) throw new ArgumentException("Invalid date range");
         var q = db.InventoryMovements.AsNoTracking().AsQueryable();
@@ -67,7 +85,42 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         return new(items, page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
     }
 
-    private static InventoryBalanceDto Balance(Product p, InventoryBalance? b, Unit u) { var quantity = b?.Quantity ?? 0m; return new(p.Id, p.Name, p.ProductType, u.Id, u.Code, u.Name, u.Symbol, quantity, p.MinStock, p.MinStock is not null && quantity <= p.MinStock.Value, p.IsActive); }
+    public async Task<IReadOnlyList<InventoryShortageDto>> EvaluateShortagesAsync(IReadOnlyList<InventoryRequirement> requirements, CancellationToken ct = default)
+    {
+        var required = requirements.GroupBy(x => x.ProductId).ToDictionary(x => x.Key, x => x.Sum(y => y.Quantity));
+        if (required.Count == 0) return [];
+        var rows = await (from p in db.Products.AsNoTracking()
+                          join b in db.InventoryBalances.AsNoTracking() on p.Id equals b.ProductId into balances
+                          from b in balances.DefaultIfEmpty()
+                          join u in db.Units.AsNoTracking() on p.InventoryUnitId equals u.Id
+                          where required.Keys.Contains(p.Id)
+                          select new { p, b, u }).ToListAsync(ct);
+        return rows.Where(x => required[x.p.Id] > (x.b?.Quantity ?? 0m))
+            .Select(x => new InventoryShortageDto(x.p.Id, x.p.Name, required[x.p.Id], x.b?.Quantity ?? 0m, Math.Max(0m, required[x.p.Id] - (x.b?.Quantity ?? 0m)), x.p.InventoryUnitId, x.u.Symbol)).ToArray();
+    }
+
+    public async Task<(InventoryBatchResult? Value, string? Error)> WriteBatchAsync(IReadOnlyList<InventoryWriteCommand> commands, bool allowNegative, CancellationToken ct = default)
+    {
+        if (commands.Count == 0 || commands.Any(x => x.ProductId == Guid.Empty || x.QuantityDelta == 0 || string.IsNullOrWhiteSpace(x.ActorUserId))) return (null, "INVALID_REQUEST");
+        var owns = db.Database.CurrentTransaction is null;
+        await using var tx = owns ? await db.Database.BeginTransactionAsync(ct) : null;
+        var ids = commands.Select(x => x.ProductId).Distinct().OrderBy(x => x).ToArray();
+        var products = new Dictionary<Guid, Product>();
+        foreach (var id in ids) { var p = await db.Products.FromSqlInterpolated($"SELECT * FROM public.\"Products\" WHERE \"Id\" = {id} FOR UPDATE").SingleOrDefaultAsync(ct); if (p is null) return (null, "NOT_FOUND"); if (!p.IsActive) return (null, "PRODUCT_INACTIVE"); products[id] = p; }
+        foreach (var id in ids) await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO public.inventory_balances (product_id, quantity, updated_at) VALUES ({id}, {0m}, {DateTimeOffset.UtcNow}) ON CONFLICT (product_id) DO NOTHING", ct);
+        var balances = new Dictionary<Guid, InventoryBalance>();
+        foreach (var id in ids) { balances[id] = await db.InventoryBalances.FromSqlInterpolated($"SELECT * FROM public.inventory_balances WHERE product_id = {id} FOR UPDATE").SingleAsync(ct); await db.Entry(balances[id]).ReloadAsync(ct); }
+        var deltas = commands.GroupBy(x => x.ProductId).ToDictionary(x => x.Key, x => x.Sum(y => y.QuantityDelta));
+        var shortages = deltas.Where(x => x.Value < 0 && balances[x.Key].Quantity + x.Value < 0).Select(x => (x.Key, -x.Value, balances[x.Key].Quantity)).ToArray();
+        if (!allowNegative && shortages.Length > 0) return (new InventoryBatchResult([], shortages), "STOCK_INSUFFICIENT");
+        var now = DateTimeOffset.UtcNow; var movements = new List<InventoryMovement>();
+        foreach (var pair in deltas) { balances[pair.Key].Quantity += pair.Value; balances[pair.Key].UpdatedAt = now; }
+        foreach (var c in commands) movements.Add(new InventoryMovement { ProductId=c.ProductId, MovementType=c.Type, QuantityDelta=c.QuantityDelta, Reason=c.Reason, ReferenceType=c.ReferenceType, ReferenceId=c.ReferenceId, CreatedAt=now, CreatedByUserId=c.ActorUserId });
+        db.InventoryMovements.AddRange(movements); await db.SaveChangesAsync(ct); if (owns) await tx!.CommitAsync(ct);
+        var result = movements.Select(x => new InventoryMovementDto(x.Id,x.ProductId,products[x.ProductId].Name,x.MovementType,x.QuantityDelta,products[x.ProductId].InventoryUnitId,"","","",x.Reason,x.ReferenceType,x.ReferenceId,x.CreatedAt,x.CreatedByUserId,null)).ToArray(); return (new InventoryBatchResult(result, []), null);
+    }
+
+    private static InventoryBalanceDto Balance(Product p, InventoryBalance? b, Unit u) { var quantity = b?.Quantity ?? 0m; return new(p.Id, p.Name, p.ProductType, u.Id, u.Code, u.Name, u.Symbol, quantity, p.MinStock, quantity < 0m || (p.MinStock is not null && quantity <= p.MinStock.Value), p.IsActive); }
     private async Task<InventoryMovementDto?> MovementAsync(Guid id, CancellationToken ct)
     {
         var m = await db.InventoryMovements.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct); if (m is null) return null;

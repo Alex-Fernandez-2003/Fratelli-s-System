@@ -578,11 +578,17 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .HasColumnType("date")
                         .HasColumnName("expense_date");
 
+                    b.Property<Guid?>("ShiftId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shift_id");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("ExpenseCategoryId");
+
+                    b.HasIndex("ShiftId");
 
                     b.ToTable("expenses", "public", t =>
                         {
@@ -760,6 +766,414 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.CashSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("BusinessDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OpenedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessDate")
+                        .IsUnique();
+
+                    b.ToTable("cash_sessions", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ProductComposition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ComponentProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ParentProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("QuantityPerOutputUnit")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComponentProductId");
+
+                    b.HasIndex("UnitId");
+
+                    b.HasIndex("ParentProductId", "ComponentProductId")
+                        .IsUnique();
+
+                    b.ToTable("product_compositions", "public", t =>
+                        {
+                            t.HasCheckConstraint("CK_composition_quantity", "\"QuantityPerOutputUnit\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Production", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("ProducedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("QuantityProduced")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<Guid?>("ResponsibleEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "ProducedAt");
+
+                    b.ToTable("productions", "public", t =>
+                        {
+                            t.HasCheckConstraint("CK_productions_quantity", "\"QuantityProduced\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ProductionConsumption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ComponentProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("QuantityConsumed")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionId", "ComponentProductId")
+                        .IsUnique();
+
+                    b.ToTable("production_consumptions", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Purchase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancelledByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("PurchaseDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ReceiptReference")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("purchases", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseId");
+
+                    b.ToTable("purchase_items", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReceivedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseId")
+                        .IsUnique();
+
+                    b.ToTable("purchase_receipts", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseReceiptLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurchaseItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurchaseReceiptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ReceivedQuantity")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseReceiptId", "PurchaseItemId")
+                        .IsUnique();
+
+                    b.ToTable("purchase_receipt_lines", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Sale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ConfirmedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesChannel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("sales", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.SaleItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(14, 4)
+                        .HasColumnType("numeric(14,4)");
+
+                    b.Property<Guid>("SaleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SaleId", "OrderItemId")
+                        .IsUnique();
+
+                    b.ToTable("sale_items", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Shift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CashSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HandoverNote")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CashSessionId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("shifts", "public");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ShiftAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AssignedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ShiftId", "EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("shift_assignments", "public");
+                });
+
             modelBuilder.Entity("RestaurantSystem.Domain.Orders.KitchenCommand", b =>
                 {
                     b.Property<Guid>("Id")
@@ -885,6 +1299,14 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
+                    b.Property<DateTimeOffset?>("StockShortageAcknowledgedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("stock_shortage_acknowledged_at");
+
+                    b.Property<string>("StockShortageAcknowledgedByUserId")
+                        .HasColumnType("text")
+                        .HasColumnName("stock_shortage_acknowledged_by_user_id");
+
                     b.Property<string>("TableReference")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
@@ -911,6 +1333,8 @@ namespace RestaurantSystem.Infrastructure.Migrations
                     b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("StockShortageAcknowledgedByUserId");
 
                     b.HasIndex("UpdatedByUserId");
 
@@ -1114,6 +1538,11 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ExpenseCategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RestaurantSystem.Domain.Operations.Shift", null)
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("RestaurantSystem.Domain.Identity.Employee", b =>
@@ -1154,6 +1583,123 @@ namespace RestaurantSystem.Infrastructure.Migrations
                     b.HasOne("RestaurantSystem.Domain.Catalog.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ProductComposition", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ComponentProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantSystem.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ParentProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantSystem.Domain.Catalog.Unit", null)
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Production", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ProductionConsumption", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.Production", null)
+                        .WithMany("Consumptions")
+                        .HasForeignKey("ProductionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Purchase", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Suppliers.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseItem", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.Purchase", null)
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseReceipt", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.Purchase", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseReceiptLine", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.PurchaseReceipt", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("PurchaseReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Sale", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.Shift", null)
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.SaleItem", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.Sale", null)
+                        .WithMany("Items")
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Shift", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Operations.CashSession", null)
+                        .WithMany("Shifts")
+                        .HasForeignKey("CashSessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.ShiftAssignment", b =>
+                {
+                    b.HasOne("RestaurantSystem.Domain.Identity.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantSystem.Domain.Operations.Shift", null)
+                        .WithMany("Assignments")
+                        .HasForeignKey("ShiftId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1208,6 +1754,11 @@ namespace RestaurantSystem.Infrastructure.Migrations
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
+                        .HasForeignKey("StockShortageAcknowledgedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
@@ -1232,6 +1783,36 @@ namespace RestaurantSystem.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.CashSession", b =>
+                {
+                    b.Navigation("Shifts");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Production", b =>
+                {
+                    b.Navigation("Consumptions");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Purchase", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.PurchaseReceipt", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Sale", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("RestaurantSystem.Domain.Operations.Shift", b =>
+                {
+                    b.Navigation("Assignments");
                 });
 
             modelBuilder.Entity("RestaurantSystem.Domain.Orders.KitchenCommand", b =>

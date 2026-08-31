@@ -1,109 +1,48 @@
 <p align="center">
-  <img
-    src="docs/images/fratelli-logo.png"
-    alt="Logo de Fratelli"
-    width="180"
-  />
+  <img src="docs/images/fratelli-logo.png" alt="Logo de Fratelli" width="180" />
 </p>
 
 <h1 align="center">Restaurant System — Fratelli</h1>
 
-<p align="center">
-  Sistema web responsive para centralizar la gestión operativa y administrativa del restaurante Fratelli.
-</p>
+<p align="center">Sistema web responsive para la gestión operativa y administrativa del restaurante Fratelli.</p>
 
-## Sobre el proyecto
+## Estado actual
 
-Restaurant System — Fratelli es una aplicación web creada para reunir en una única plataforma procesos clave del restaurante. Facilita la gestión de operaciones diarias mediante una experiencia web responsive y un acceso controlado por roles, de modo que cada persona visualice y ejecute las capacidades que le corresponden.
+- **Sprint 0:** base técnica completada (sin historias de negocio).
+- **Sprint 1:** integración de 10 historias, con sus límites de validación manual documentados.
+- **Sprint 2:** **COMPLETO — 8/8 historias y 41 Story Points**.
 
-## Funcionalidades principales
+Este estado no declara completado el proyecto, el MVP ni una entrega final. La revisión de Sprint y la aceptación de Product Owner solo se afirman cuando exista evidencia documental.
 
-- **Autenticación y autorización:** inicio, renovación y cierre de sesión; acceso protegido según los roles asignados.
-- **Usuarios y roles:** administración de cuentas internas, roles múltiples, contraseñas y estado activo o inactivo.
-- **Catálogo:** consulta y gestión de categorías, unidades y productos según autorización.
-- **Proveedores:** consulta y administración de proveedores.
-- **Inventario:** visualización de existencias, historial y registro de movimientos manuales.
-- **Pedidos:** creación, consulta, detalle, asignación, toma, entrega y cancelación de pedidos.
-- **Cocina:** seguimiento de comandas y actualización de estados para la operación de cocina.
-- **Gastos:** gestión de categorías y registro de gastos operativos.
-- **Asistencia:** registro de entrada y salida, gestión diaria e historial personal según el rol.
+## Módulos implementados
 
-## Roles
+- Autenticación, usuarios y roles múltiples.
+- Catálogo y productos; composición y producción.
+- Inventario: saldos, movimientos y notificaciones de stock bajo.
+- Pedidos, cocina, ventas, compras y recepción.
+- Turnos y caja compartida.
+- Proveedores, gastos y asistencia.
 
-El sistema controla los módulos y las acciones disponibles según los roles asignados al usuario:
+### Roles
 
-- `ADMINISTRADOR`
-- `ENCARGADO`
-- `MESERO`
-- `COCINA`
-- `CONTADORA`
-- `EMPLEADO`
+`ADMINISTRADOR`, `ENCARGADO`, `MESERO`, `COCINA`, `CONTADORA` y `EMPLEADO`.
 
-Una misma cuenta puede tener varios roles. Las capacidades efectivas y la navegación se determinan por la unión de los roles asignados, sin incluir una matriz de permisos extensa en esta portada.
+## Arquitectura y stack
 
-## Experiencia de usuario
+El backend es un **monolito modular** con **Clean Architecture** (Domain, Application, Infrastructure y API). El frontend combina **Atomic Design** para componentes reutilizables con módulos por funcionalidad en `features/`.
 
-La aplicación ofrece navegación autenticada centralizada y adaptada a cada rol. En escritorio utiliza una barra lateral; en dispositivos móviles, una barra superior con panel lateral desplegable. Las rutas están protegidas y el menú muestra únicamente las capacidades implementadas y permitidas para el usuario.
+| Capa | Tecnología |
+| --- | --- |
+| Backend | .NET `net10.0` / Web API, EF Core, Npgsql, PostgreSQL, Identity, JWT, SignalR y OpenAPI |
+| Frontend | React `19.2.8`, TypeScript `~5.7.3`, Vite `8.2.0`, Tailwind `4.3.3`, React Router `7.18.2`, TanStack Query `5.101.4` y Vitest `4.1.11` |
 
-## Arquitectura
-
-El proyecto adopta un enfoque de **monolito modular**. El backend se organiza con **Clean Architecture** —dominio, aplicación, infraestructura y API—, mientras que el frontend combina módulos por funcionalidad con componentes reutilizables. La comunicación entre ambas capas se basa en un contrato OpenAPI, del que se generan tipos TypeScript para el cliente.
-
-## Tecnologías
-
-### Backend
-
-- .NET 10 y ASP.NET Core Web API
-- Entity Framework Core con Npgsql y PostgreSQL
-- ASP.NET Core Identity y JWT Bearer
-- SignalR para Cocina/KDS
-- OpenAPI y Swagger en entorno de desarrollo
-- xUnit
-
-### Frontend
-
-- React y TypeScript
-- Vite y Tailwind CSS
-- React Router y TanStack Query
-- Lucide React
-- Vitest y Testing Library
-- Tipos TypeScript generados desde OpenAPI
-
-## Estructura del repositorio
-
-```text
-Fratelli-s-System/
-├── backend/          API, dominio, aplicación, infraestructura y pruebas
-├── frontend/         Aplicación web React
-├── docs/             Documentación funcional, técnica y de Scrum
-├── .github/          Configuración relacionada con GitHub
-├── openspec/         Unión de compatibilidad local para OpenSpec
-└── README.md         Presentación general del proyecto
-```
-
-## Documentación
-
-La documentación detallada se encuentra en [`docs/`](docs/). Incluye requisitos, reglas de negocio, historias de usuario, Product Backlog, arquitectura, ADR, diagramas, evidencia, sprints y artefactos OpenSpec.
-
-Enlaces principales:
-
-- [Guía del backend](backend/README.md)
-- [Guía del frontend](frontend/README.md)
-- [Documentación del proyecto](docs/)
-- [Sprints](docs/sprints/)
+OpenAPI es el contrato entre capas. `frontend/src/types/api.generated.ts` se genera desde ese contrato y **no se edita manualmente**.
 
 ## Ejecución local
 
-### Requisitos previos
-
-- .NET 10 SDK
-- PostgreSQL disponible localmente
-- Node.js `>=20.19.0`
-- pnpm `11.18.0`
+Requiere .NET 10 SDK, PostgreSQL, Node.js `>=20.19.0` y pnpm `11.18.0`.
 
 ### Backend
-
-Desde la raíz del repositorio:
 
 ```bash
 cd backend
@@ -112,11 +51,16 @@ dotnet build RestaurantSystem.slnx
 dotnet run --project src/RestaurantSystem.Api
 ```
 
-La API se inicia en `http://localhost:5057`. Para configurar la base de datos y los valores locales requeridos, consultá la [guía del backend](backend/README.md).
+API: `http://localhost:5057`.
+
+### Migraciones
+
+```bash
+cd backend
+dotnet ef database update --project src/RestaurantSystem.Infrastructure --startup-project src/RestaurantSystem.Api --no-build
+```
 
 ### Frontend
-
-Desde la raíz del repositorio:
 
 ```bash
 cd frontend
@@ -124,21 +68,22 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-La aplicación se inicia en `http://localhost:8087`. Para variables de entorno, proxy y generación del contrato OpenAPI, consultá la [guía del frontend](frontend/README.md).
+Frontend: `http://localhost:8087`. El proxy de Vite dirige `/api`, `/health` y WebSocket en `/hubs` a `API_PROXY_TARGET` o a la API en el puerto `5057`.
 
-## Calidad y pruebas
+### Contrato OpenAPI
 
-### Backend
-
-```bash
-cd backend
-dotnet test RestaurantSystem.slnx --no-build
-```
-
-### Frontend
+Con el backend iniciado en Development:
 
 ```bash
 cd frontend
+pnpm run api:generate
+```
+
+La fuente es `OPENAPI_SCHEMA_URL` o `http://localhost:5057/openapi/v1.json`; el destino generado es `src/types/api.generated.ts`. Swagger/OpenAPI se exponen solo en Development.
+
+## Calidad frontend
+
+```bash
 pnpm run format:check
 pnpm run typecheck
 pnpm run lint
@@ -146,21 +91,24 @@ pnpm test
 pnpm run build
 ```
 
-## Metodología de trabajo
+## Documentación
 
-El proyecto se desarrolla con Scrum, mediante trabajo iterativo e incremental organizado en Sprints, historias de usuario y Product Backlog. La planificación, seguimiento y retrospectivas se documentan en [`docs/sprints/`](docs/sprints/).
+- [Ficha del proyecto](docs/00-ficha-proyecto.md)
+- [Arquitectura](docs/10-arquitectura.md)
+- [Requisitos](docs/requirements/requisitos-funcionales.md)
+- [Historias ejecutadas](docs/historias/README.md)
+- [Pruebas y validación](docs/13-pruebas-y-validacion.md)
+- [Sprint 0](docs/sprints/sprint-00.md), [Sprint 1](docs/sprints/sprint-01.md) y [retrospectiva Sprint 1](docs/sprints/sprint-01-retrospectiva.md)
+- [Sprint 2](docs/sprints/sprint-02.md) y [retrospectiva Sprint 2](docs/sprints/sprint-02-retrospectiva.md)
+- [Diagramas editables](docs/puml/) y [OpenSpec](docs/openspec/README.md)
 
-## Estado del proyecto
+## Mejoras identificadas post-MVP
 
-El Sprint 1 ya integra funcionalidades reales de backend y frontend para autenticación, usuarios, catálogo, proveedores, inventario, pedidos, cocina, gastos y asistencia. El desarrollo continúa de forma incremental de acuerdo con el Product Backlog y los Sprints posteriores.
+**No implementadas:** integración de una tableta digitalizadora o pad de firma para el comprobante de compra y refinamientos de UI/UX.
 
 ## Equipo
 
-- Alex Saúl Fernandez Valdez
-- Ana Paola Viscarra Chambi
+- Alex Saúl Fernandez Valdez — Scrum Master
+- Ana Paola Viscarra Chambi — Product Owner
 - Miguel Angel Colque Calizaya
 - Josué Matias Arroyo Reynoso
-
-## Idioma de la documentación
-
-Salvo identificadores técnicos, nombres propios, código y comandos, la documentación del repositorio está en español.

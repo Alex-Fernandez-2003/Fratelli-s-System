@@ -1,0 +1,66 @@
+@startuml
+title Diagrama de secuencia — Compra, recepción e inventario
+
+autonumber
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "ENCARGADO / COCINA / ADMINISTRADOR" as User
+participant "Frontend web" as Frontend
+participant "Purchases API" as Api
+participant "Application\n(Purchases / Inventory)" as App
+database "PostgreSQL" as DB
+
+== Registro de compra ==
+
+User -> Frontend : registrar compra
+Frontend -> Api : POST /purchases
+Api -> App : CreatePurchase(command)
+App -> DB : guardar Purchase(PENDIENTE)\n+ PurchaseItems
+App --> Api : compra registrada
+Api --> Frontend : 201 Created
+Frontend --> User : mostrar compra pendiente
+
+note right of DB
+Una compra PENDIENTE no incrementa inventario.
+end note
+
+== Recepción de compra ==
+
+User -> Frontend : registrar recepción
+Frontend -> Api : POST /purchase-receipts
+Api -> App : ReceivePurchase(command)
+App -> DB : obtener Purchase + Items
+
+alt recepción aceptada
+  App -> DB : guardar PurchaseReceipt\n(+ líneas si aplica)
+  App -> DB : actualizar Purchase=RECIBIDA
+  App -> DB : registrar InventoryMovements\n(entradas por compra)
+  App -> DB : actualizar InventoryBalances
+  App --> Api : compra recibida
+  Api --> Frontend : 201 Created
+  Frontend --> User : mostrar compra recibida
+else recepción no aceptada
+  App --> Api : no cambia inventario
+  Api --> Frontend : 409/validación
+  Frontend --> User : informar incidencia
+end
+
+== Cancelación antes de recepción ==
+
+opt cancelar compra pendiente
+  User -> Frontend : cancelar compra
+  Frontend -> Api : PATCH /purchases/{id}/cancel
+  Api -> App : CancelPurchase(command)
+  App -> DB : actualizar Purchase=CANCELADA
+  App --> Api : compra cancelada
+  Api --> Frontend : 200 OK
+  Frontend --> User : mostrar compra cancelada
+end
+
+note across
+Solo el estado RECIBIDA incrementa inventario.
+La baseline actual no modela recepción parcial estructurada.
+end note
+
+@enduml

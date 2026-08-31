@@ -9,6 +9,9 @@ describe('authenticated navigation registry', () => {
     )
     expect(canManageProducts(['CONTADORA', 'ENCARGADO'])).toBe(true)
     expect(canManageProducts(['MESERO'])).toBe(false)
+    expect(canManageProducts(['COCINA'])).toBe(false)
+    expect(canManageProducts(['CONTADORA'])).toBe(false)
+    expect(canManageProducts(['EMPLEADO'])).toBe(false)
   })
 
   it('resolves one Attendance destination with manager precedence', () => {
@@ -19,6 +22,13 @@ describe('authenticated navigation registry', () => {
     expect(
       typeof attendance.target === 'function' && attendance.target(['MESERO', 'ENCARGADO']),
     ).toBe('/asistencia')
+  })
+
+  it('limits purchases and own-shift navigation to their read capabilities', () => {
+    expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).toContain('compras')
+    expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).not.toContain('turnos')
+    expect(visibleNavigation(['COCINA']).map((item) => item.id)).not.toContain('turnos')
+    expect(visibleNavigation(['MESERO']).map((item) => item.id)).toContain('turnos')
   })
 
   it('keeps parent navigation active for child routes', () => {

@@ -1,8 +1,8 @@
 import { Button } from '../components/atoms'
-
 import { Link } from 'react-router-dom'
 import { Clock, Users, LogOut } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthProvider'
+
 
 const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
 

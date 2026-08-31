@@ -1,0 +1,123 @@
+@startuml
+title Diagrama de clases — Pedidos, cocina y ventas
+
+hide empty methods
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+class Employee {
+  +id: UUID
+  +fullName: String
+}
+
+class Shift {
+  +id: UUID
+  +shiftType: ShiftType
+  +status: ShiftStatus
+  +startedAt: DateTime?
+  +endedAt: DateTime?
+}
+
+class Product {
+  +id: UUID
+  +name: String
+  +isSellable: Boolean
+  +salePrice: Money?
+}
+
+class Order {
+  +id: UUID
+  +tableReference: String?
+  +status: OrderStatus
+}
+
+class OrderItem {
+  +id: UUID
+  +quantity: Decimal
+  +unitPrice: Money
+}
+
+class KitchenCommand {
+  +id: UUID
+  +status: KitchenCommandStatus
+}
+
+class KitchenCommandItem {
+  +id: UUID
+}
+
+class Customer {
+  +id: UUID
+  +name: String
+  +isActive: Boolean
+}
+
+class Sale {
+  +id: UUID
+  +salesChannel: SalesChannel
+  +paymentMethod: PaymentMethod
+  +subtotal: Money
+  +total: Money
+  +confirmedAt: DateTime
+}
+
+class SaleItem {
+  +id: UUID
+  +quantity: Decimal
+  +unitPrice: Money
+  +lineTotal: Money
+}
+
+enum OrderStatus {
+  PENDIENTE
+  EN_PREPARACION
+  LISTO
+  ENTREGADO
+  CANCELADO
+}
+
+enum KitchenCommandStatus {
+  PENDIENTE
+  EN_PREPARACION
+  LISTA
+  CANCELADA
+}
+
+enum ShiftType
+enum ShiftStatus
+enum SalesChannel
+enum PaymentMethod
+
+Shift "1" -- "0..*" Order
+Employee "0..1" -- "0..*" Order : mesero >
+
+Order "1" *-- "1..*" OrderItem
+Product "1" -- "0..*" OrderItem
+
+Order "1" *-- "0..1" KitchenCommand
+KitchenCommand "1" *-- "1..*" KitchenCommandItem
+OrderItem "1" -- "0..1" KitchenCommandItem
+
+Order "1" -- "0..1" Sale
+Shift "1" -- "0..*" Sale
+Customer "0..1" -- "0..*" Sale
+
+Sale "1" *-- "1..*" SaleItem
+OrderItem "1" -- "0..1" SaleItem
+Product "1" -- "0..*" SaleItem
+
+Order ..> OrderStatus
+KitchenCommand ..> KitchenCommandStatus
+Shift ..> ShiftType
+Shift ..> ShiftStatus
+Sale ..> SalesChannel
+Sale ..> PaymentMethod
+
+note bottom of Sale
+La venta puede provenir de un pedido existente y se asocia
+al turno operativo. El cliente es opcional en el modelo global.
+end note
+@enduml

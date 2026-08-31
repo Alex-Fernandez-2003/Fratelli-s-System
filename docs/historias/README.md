@@ -6,6 +6,17 @@ Esta carpeta contiene la documentación de **historias de usuario que realmente 
 
 La carpeta **no funciona como copia del Product Backlog**.
 
+## Índice de historias documentadas
+
+Este índice reúne solo expedientes presentes en esta carpeta; el estado vivo sigue en GitHub Projects y las limitaciones de cada Sprint permanecen en sus documentos de cierre.
+
+| Sprint | Historias documentadas |
+| --- | --- |
+| Sprint 1 | [HU-001](HU-001-iniciar-cerrar-sesion.md), [HU-002](HU-002-gestion-usuarios-y-multiples-roles.md), [HU-003](HU-003-catalogo.md), [HU-005](HU-005-inventario.md), [HU-009](HU-009-pedidos.md), [HU-010](HU-010-comandas-cocina.md), [HU-011](HU-011-cancelar-pedido.md), [HU-016](HU-016-proveedores.md), [HU-020](HU-020-registrar-gastos.md), [HU-022](HU-022-registrar-asistencia.md) |
+| Sprint 2 | [HU-004](HU-004-composición-preparaciones.md), [HU-006](HU-006-notificaciones-stock-bajo.md), [HU-007](HU-007-spri.md), [HU-012](HU-012-registrar-confirmar-venta.md), [HU-013](HU-013-venta-stock-bajo.md), [HU-017](HU-017-registrar-compra.md), [HU-018](HU-018-sprint-2.md), [HU-025](HU-025-sprint-2.md) |
+
+Para el resultado documentado de cada grupo, consulte [Sprint 1](../sprints/sprint-01.md) y [Sprint 2](../sprints/sprint-02.md).
+
 La fuente documental del backlog es:
 
 ```text
@@ -228,23 +239,11 @@ No se añadirá evidencia decorativa que no demuestre una condición verificable
 
 ---
 
-# 8. Organización sugerida de evidencia
+# 8. Organización de evidencia
 
-Cuando una historia necesite archivos adicionales, se recomienda:
+Para mantener una única ubicación canónica, las capturas de ejecución se almacenan directamente en `docs/capturas/` con el prefijo de la HU. Los resultados técnicos, decisiones y enlaces necesarios se registran en el Markdown de la historia; no se crea `docs/evidence/historias/` ni una subcarpeta por HU.
 
-```text
-docs/evidence/historias/
-└── HU-XXX/
-    ├── README.md              # opcional
-    ├── captura-01.png
-    ├── captura-02.png
-    ├── resultado-prueba.txt
-    └── ...
-```
-
-El archivo de historia deberá enlazar la evidencia utilizada.
-
-Si una evidencia ya existe en otra ubicación válida del repositorio, se podrá referenciar sin duplicarla.
+La evidencia de relevamiento conserva su estructura propia en `docs/evidence/relevamiento/` y no sustituye evidencia de ejecución.
 
 ---
 

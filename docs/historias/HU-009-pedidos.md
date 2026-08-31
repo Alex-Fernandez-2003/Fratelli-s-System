@@ -80,7 +80,3 @@ Implementada para MVP; no incluye venta ni movimientos de inventario.
 ![Captura pantalla de detalle de pedido](../capturas/HU-009-order-detail.png)
 
 ---
-
-## Estado de entrega
-
-Completado para MVP, cambios visuales se harán posteriormente

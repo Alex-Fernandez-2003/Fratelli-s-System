@@ -18,6 +18,8 @@ public sealed class Order
     public DateTimeOffset? CancelledAt { get; set; }
     public string? CancelledByUserId { get; set; }
     public string? CancellationReason { get; set; }
+        public DateTimeOffset? StockShortageAcknowledgedAt { get; set; }
+        public string? StockShortageAcknowledgedByUserId { get; set; }
     public List<OrderItem> Items { get; set; } = [];
     public KitchenCommand? KitchenCommand { get; set; }
 }

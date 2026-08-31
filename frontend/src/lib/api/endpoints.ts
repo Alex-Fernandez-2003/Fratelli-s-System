@@ -1,4 +1,4 @@
-function query(path: string, params: Record<string, string | number | boolean | undefined>) {
+function withQuery(path: string, params: Record<string, string | number | boolean | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
@@ -25,7 +25,7 @@ export const endpoints = {
   },
   orders: {
     list: (params: { page?: number; pageSize?: number; status?: string; search?: string } = {}) =>
-      query('/api/v1/orders', params),
+      withQuery('/api/v1/orders', params),
     detail: (id: string) => `/api/v1/orders/${id}`,
     create: () => '/api/v1/orders',
     assignment: (id: string) => `/api/v1/orders/${id}/assignment`,
@@ -35,7 +35,7 @@ export const endpoints = {
   },
   kitchen: {
     list: (params: { page?: number; pageSize?: number; status?: string } = {}) =>
-      query('/api/v1/kitchen/commands', params),
+      withQuery('/api/v1/kitchen/commands', params),
     detail: (id: string) => `/api/v1/kitchen/commands/${id}`,
     start: (id: string) => `/api/v1/kitchen/commands/${id}/start`,
     ready: (id: string) => `/api/v1/kitchen/commands/${id}/ready`,
@@ -50,7 +50,7 @@ export const endpoints = {
         role?: string
         active?: boolean
       } = {},
-    ) => query('/api/v1/users', params),
+    ) => withQuery('/api/v1/users', params),
     detail: (id: string) => `/api/v1/users/${id}`,
     create: () => '/api/v1/users',
     update: (id: string) => `/api/v1/users/${id}`,
@@ -61,14 +61,14 @@ export const endpoints = {
   categories: {
     list: (
       params: { page?: number; pageSize?: number; scope?: string; includeInactive?: boolean } = {},
-    ) => query('/api/v1/categories', params),
+    ) => withQuery('/api/v1/categories', params),
     detail: (id: string) => `/api/v1/categories/${id}`,
     create: () => '/api/v1/categories',
     update: (id: string) => `/api/v1/categories/${id}`,
   },
   units: {
     list: (params: { page?: number; pageSize?: number; includeInactive?: boolean } = {}) =>
-      query('/api/v1/units', params),
+      withQuery('/api/v1/units', params),
     detail: (id: string) => `/api/v1/units/${id}`,
     create: () => '/api/v1/units',
     update: (id: string) => `/api/v1/units/${id}`,
@@ -85,16 +85,49 @@ export const endpoints = {
         preparationArea?: string
         isActive?: boolean
       } = {},
-    ) => query('/api/v1/products', params),
+    ) => withQuery('/api/v1/products', params),
     detail: (id: string) => `/api/v1/products/${id}`,
     create: () => '/api/v1/products',
     update: (id: string) => `/api/v1/products/${id}`,
     deactivate: (id: string) => `/api/v1/products/${id}`,
+    composition: (id: string) => `/api/v1/products/${encodeURIComponent(id)}/composition`,
+    updateComposition: (id: string) => `/api/v1/products/${encodeURIComponent(id)}/composition`,
+    minimumStock: (id: string) => `/api/v1/products/${encodeURIComponent(id)}/minimum-stock`,
+    updateMinimumStock: (id: string) => `/api/v1/products/${encodeURIComponent(id)}/minimum-stock`,
+    productionRequirements: (id: string, quantity: number) =>
+      withQuery(`/api/v1/products/${encodeURIComponent(id)}/production-requirements`, { quantity }),
+  },
+  productions: {
+    create: () => '/api/v1/productions',
+  },
+  sales: {
+    create: () => '/api/v1/sales',
+  },
+  purchases: {
+    list: (params: { page: number; pageSize: number; status?: string }) =>
+      withQuery('/api/v1/purchases', params),
+    detail: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}`,
+    create: () => '/api/v1/purchases',
+    cancel: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}/cancel`,
+    receive: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}/receive`,
+  },
+  shifts: {
+    open: () => '/api/v1/shifts/open',
+    current: () => '/api/v1/shifts/current',
+    meCurrent: () => '/api/v1/shifts/me/current',
+    assignments: (id: string) => `/api/v1/shifts/${encodeURIComponent(id)}/assignments`,
+    handover: (id: string) => `/api/v1/shifts/${encodeURIComponent(id)}/handover`,
   },
   inventory: {
     balances: (
-      params: { page?: number; pageSize?: number; search?: string; productType?: string } = {},
-    ) => query('/api/v1/inventory/balances', params),
+      params: {
+        page?: number
+        pageSize?: number
+        search?: string
+        productType?: string
+        active?: boolean
+      } = {},
+    ) => withQuery('/api/v1/inventory/balances', params),
     movements: (
       params: {
         page?: number
@@ -104,8 +137,9 @@ export const endpoints = {
         from?: string
         to?: string
       } = {},
-    ) => query('/api/v1/inventory/movements', params),
+    ) => withQuery('/api/v1/inventory/movements', params),
     create: () => '/api/v1/inventory/movements',
+    summary: () => '/api/v1/inventory/summary',
   },
   expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
   suppliers: {

@@ -1435,11 +1435,11 @@ Ejemplo:
 
 ```text
 docs/capturas/
-├── HU-001-login-correcto.png
-├── HU-001-login-invalido.png
-├── HU-003-producto-creado.png
-├── HU-012-venta-confirmada.png
-├── HU-012-stock-negativo.png
+├── HU-001-login.png
+├── HU-002-users-page.png
+├── HU-003-formulario.png
+├── HU-009-orders.png
+├── HU-020-expenses.png
 └── ...
 ```
 
@@ -1458,11 +1458,11 @@ HU-XXX-descripcion-breve.ext
 Ejemplos:
 
 ```text
-HU-009-pedido-creado.png
-HU-010-comanda-en-preparacion.png
-HU-012-venta-confirmada.png
-HU-018-compra-recibida.png
-HU-027-cierre-registrado.png
+HU-009-orders.png
+HU-010-kitchen.png
+HU-016-listado.png
+HU-020-expenses.png
+HU-022F1.png
 ```
 
 Esto evita la necesidad de subcarpetas.
@@ -1482,7 +1482,7 @@ docs/historias/HU-012-confirmar-venta.md
 
 ### Venta confirmada
 
-![Venta confirmada](../capturas/HU-012-venta-confirmada.png)
+`[captura vinculada desde el expediente de la HU]`
 ```
 
 La historia explica el resultado y la captura lo demuestra visualmente.
@@ -1916,12 +1916,7 @@ docs/capturas/
 
 con nombres que indiquen Sprint o HU cuando corresponda.
 
-Ejemplos:
-
-```text
-sprint-01-review-incremento.png
-HU-012-venta-validada-po.png
-```
+No existe una captura de Sprint Review ni una validación visual de PO registrada actualmente. Esos archivos solo se agregarán cuando la revisión ocurra; no se reservan nombres como si fueran evidencia existente.
 
 ---
 
@@ -2419,25 +2414,20 @@ Los scripts definitivos deberán reflejar el `package.json` real.
 
 # 138. Estado del coverage
 
-```text
-Pendiente de validar durante ejecución
-```
+La baseline no fija un umbral de *coverage* sin evidencia suficiente. Los resultados ejecutados se registran en los expedientes de las HU y en los documentos de Sprint; no se infiere cobertura a partir de la mera existencia de código o capturas.
 
-No bloquea Ready to Develop.
+No bloquea Ready to Develop por sí solo.
 
 ---
 
-# 139. Limitaciones iniciales de esta estrategia
+# 139. Limitaciones de la estrategia
 
-- no existe aún velocidad histórica;
-- no existen resultados reales de pruebas;
-- no existe todavía suite implementada;
 - Playwright se incorporará incrementalmente;
-- automatización frontend queda a criterio de valor/aplicabilidad;
-- coverage obligatorio no está definido;
-- pruebas de rendimiento concretas dependen de RNF/implementación real.
+- la automatización frontend se evalúa por valor y aplicabilidad;
+- el umbral obligatorio de *coverage* no está definido;
+- las pruebas de rendimiento concretas dependen de RNF e implementación real.
 
-Estas limitaciones son esperables antes del inicio de desarrollo.
+La afirmación histórica de que no existían resultados ni suite implementada quedó superada por la evidencia registrada en `docs/sprints/sprint-01.md`, los expedientes de `docs/historias/` y el handoff Sprint 2. Esta estrategia no convierte esas evidencias puntuales en una validación global o de Product Owner.
 
 ---
 

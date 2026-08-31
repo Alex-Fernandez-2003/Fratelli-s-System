@@ -26,7 +26,7 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "inventory_expenses_" + Guid.NewGuid().ToString("N") }.ConnectionString;
         await postgres.MigrateAsync(cs);
         await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient(); await client.GetAsync("/health");
-        var admin = await Token(client, "admin.test"); var manager = await Token(client, "encargado.test"); var waiter = await Token(client, "mesero.test"); var accountant = await Token(client, "contadora.test");
+        var admin = await Token(client, "admin.test"); var manager = await Token(client, "encargado.test"); var waiter = await Token(client, "mesero.test"); var kitchen = await Token(client, "cocina.test"); var accountant = await Token(client, "contadora.test"); var employee = await Token(client, "empleado.test");
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options; Guid productId; Guid inactiveId; Guid categoryId;
         await using (var db = new ApplicationDbContext(options))
         {
@@ -37,7 +37,8 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/inventory/balances")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/balances", waiter)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/balances", accountant)).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", waiter)).StatusCode);
+        foreach (var inventoryReader in new[] { admin, manager, waiter, kitchen, accountant }) Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", inventoryReader)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/inventory/movements", employee)).StatusCode);
         var entry = await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", manager, new { productId, type = "ENTRY", quantity = 10m, reason = " received " }); Assert.Equal(HttpStatusCode.Created, entry.StatusCode);
         var writeoff = await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", admin, new { productId, type = "WRITE_OFF", quantity = 13m, reason = "waste" }); Assert.Equal(HttpStatusCode.Created, writeoff.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await Send(client, HttpMethod.Post, "/api/v1/inventory/movements", admin, new { productId, type = "SALE", quantity = 1m, reason = "x" })).StatusCode);
@@ -48,6 +49,40 @@ public sealed class InventoryExpensesPostgresIntegrationTests(PostgresFixture po
         Assert.Equal(HttpStatusCode.Created, (await Send(client, HttpMethod.Post, "/api/v1/expenses", manager, expense)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Post, "/api/v1/expenses", accountant, expense)).StatusCode);
         await using var check = new ApplicationDbContext(options); Assert.Equal(-3m, await check.InventoryBalances.Where(x => x.ProductId == productId).Select(x => x.Quantity).SingleAsync()); Assert.Equal(2, await check.InventoryMovements.CountAsync(x => x.ProductId == productId)); Assert.Single(await check.Expenses.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Inventory_summary_uses_active_universe_and_includes_negative_stock()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "inventory_summary_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        await using var factory = new AuthWebApplicationFactory(cs, "Development"); using var client = factory.CreateClient();
+        var tokens = new Dictionary<string, string>();
+        foreach (var role in new[] { "admin", "encargado", "mesero", "cocina", "contadora", "empleado" }) tokens[role] = await Token(client, role + ".test");
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
+        Guid negative;
+        await using (var db = new ApplicationDbContext(options))
+        {
+            var unit = await db.Units.FirstAsync(); var actor = (await db.Users.SingleAsync(x => x.UserName == "admin.test")).Id;
+            Product(db, unit.Id, actor, "Normal", 5, true); Product(db, unit.Id, actor, "Below", 5, true); Product(db, unit.Id, actor, "Equal", 5, true);
+            negative = Product(db, unit.Id, actor, "Negative no minimum", null, true); Product(db, unit.Id, actor, "No balance", null, true); Product(db, unit.Id, actor, "Inactive", 5, false);
+            await db.SaveChangesAsync();
+            var products = await db.Products.Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+            db.InventoryBalances.AddRange(
+                new InventoryBalance { ProductId = products.Single(x => x.Name == "Normal").Id, Quantity = 6, UpdatedAt = DateTimeOffset.UtcNow },
+                new InventoryBalance { ProductId = products.Single(x => x.Name == "Below").Id, Quantity = 4, UpdatedAt = DateTimeOffset.UtcNow },
+                new InventoryBalance { ProductId = products.Single(x => x.Name == "Equal").Id, Quantity = 5, UpdatedAt = DateTimeOffset.UtcNow },
+                new InventoryBalance { ProductId = negative, Quantity = -2.3m, UpdatedAt = DateTimeOffset.UtcNow });
+            await db.SaveChangesAsync();
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/inventory/summary")).StatusCode);
+        foreach (var role in new[] { "admin", "encargado", "mesero", "cocina", "contadora" }) Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Get, "/api/v1/inventory/summary", tokens[role])).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await Send(client, HttpMethod.Get, "/api/v1/inventory/summary", tokens["empleado"])).StatusCode);
+        var json = await (await Send(client, HttpMethod.Get, "/api/v1/inventory/summary", tokens["admin"])).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(5, json.GetProperty("totalProducts").GetInt32()); Assert.Equal(3, json.GetProperty("lowStockCount").GetInt32()); Assert.Equal(1, json.GetProperty("negativeStockCount").GetInt32()); Assert.Equal(2, json.GetProperty("normalStockCount").GetInt32());
+        var lowItems = json.GetProperty("lowStockItems").EnumerateArray().ToArray(); Assert.Equal(3, lowItems.Length);
+        var negativeItem = lowItems.Single(x => x.GetProperty("productId").GetGuid() == negative); Assert.Equal(-2.3m, negativeItem.GetProperty("currentQuantity").GetDecimal()); Assert.True(negativeItem.GetProperty("isLowStock").GetBoolean());
+        await using var check = new ApplicationDbContext(options); Assert.Equal(-2.3m, await check.InventoryBalances.Where(x => x.ProductId == negative).Select(x => x.Quantity).SingleAsync());
     }
 
     [Fact]

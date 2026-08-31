@@ -1,0 +1,41 @@
+@startuml
+title Diagrama de estados — Compra
+
+hide empty description
+skinparam shadowing false
+
+state "PENDIENTE" as Pendiente
+state "RECIBIDA" as Recibida
+state "CANCELADA" as Cancelada
+
+[*] --> Pendiente : registrar compra
+
+Pendiente --> Recibida : verificar recepción\n/ recibir compra
+Pendiente --> Cancelada : cancelar compra
+
+Recibida --> [*]
+Cancelada --> [*]
+
+note right of Pendiente
+La compra existe, pero aún no incrementa inventario.
+Puede conservar proveedor, detalle, cantidades, costos,
+responsable y respaldo descriptivo.
+end note
+
+note right of Recibida
+La compra fue verificada y aceptada.
+Este estado dispara el incremento de inventario
+según los ítems y cantidades recibidas.
+end note
+
+note right of Cancelada
+La compra se anula antes de quedar recibida.
+Una compra cancelada no incrementa inventario.
+end note
+
+note bottom
+La baseline del MVP no contempla recepción parcial estructurada.
+Por ello, la transición normal desde PENDIENTE es hacia RECIBIDA
+cuando la recepción fue aceptada de forma definitiva.
+end note
+@enduml

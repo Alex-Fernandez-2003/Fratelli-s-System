@@ -40,6 +40,13 @@ describe('inventory API adapter', () => {
     })
   })
 
+  it('uses the shared client and generated route for summary', async () => {
+    get.mockResolvedValueOnce({ lowStockItems: [] })
+    await inventoryApi.summary()
+    expect(get).toHaveBeenCalledWith('/api/v1/inventory/summary')
+    expect(inventoryKeys.summary()).toEqual(['inventory', 'summary'])
+  })
+
   it('separates serialized balance and movement query keys', () => {
     expect(inventoryKeys.balances({ page: 1, pageSize: 20 })).not.toEqual(
       inventoryKeys.movements({ page: 1, pageSize: 20 }),

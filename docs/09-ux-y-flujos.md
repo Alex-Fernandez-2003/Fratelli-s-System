@@ -2,7 +2,7 @@
 
 ## 1. Propósito
 
-Este documento define la experiencia de usuario funcional de **Restaurant System** para Fratelli antes de establecer el diseño visual definitivo y antes de seleccionar tecnologías de implementación.
+Este documento define la experiencia de usuario funcional de **Restaurant System** para Fratelli. Conserva el diseño visual como guía de flujo; las decisiones técnicas vigentes se documentan en `10-arquitectura.md` y el estado de ejecución en las historias y sprints.
 
 El objetivo es describir:
 
@@ -883,6 +883,12 @@ Diagrama editable:
 docs/puml/flujo-ux-pedido-venta.puml
 ```
 
+La secuencia complementa este recorrido UX: describe el intercambio temporal entre frontend, API, aplicación, persistencia y SignalR; no reemplaza el flujo de interacción del usuario.
+
+![Diagrama de secuencia: pedido, cocina y venta](images/diagrama-secuencia-pedido-cocina-venta.png)
+
+> **Fuente editable:** [`puml/diagrama-secuencia-pedido-cocina-venta.puml`](puml/diagrama-secuencia-pedido-cocina-venta.puml)
+
 ---
 
 # 27. Pantalla de venta
@@ -1090,6 +1096,12 @@ Diagrama editable:
 docs/puml/flujo-ux-produccion-inventario.puml
 ```
 
+La secuencia detalla la confirmación y la actualización coordinada de producción e inventario que el flujo UX presenta desde la perspectiva operativa.
+
+![Diagrama de secuencia: producción e inventario](images/diagrama-secuencia-produccion-inventario.png)
+
+> **Fuente editable:** [`puml/diagrama-secuencia-produccion-inventario.puml`](puml/diagrama-secuencia-produccion-inventario.puml)
+
 ---
 
 # 37. Historial de producción
@@ -1220,6 +1232,12 @@ Diagrama editable:
 docs/puml/flujo-ux-compra-recepcion.puml
 ```
 
+La secuencia aclara que registrar una compra no altera inventario y que la recepción aceptada es la operación que actualiza sus saldos.
+
+![Diagrama de secuencia: compra, recepción e inventario](images/diagrama-secuencia-compra-recepcion-inventario.png)
+
+> **Fuente editable:** [`puml/diagrama-secuencia-compra-recepcion-inventario.puml`](puml/diagrama-secuencia-compra-recepcion-inventario.puml)
+
 ---
 
 # 44. Gastos
@@ -1310,6 +1328,12 @@ Diagrama editable:
 ```text
 docs/puml/flujo-ux-asistencia.puml
 ```
+
+La secuencia muestra la validación de una única asistencia abierta y las respuestas de éxito o conflicto que sostienen este recorrido UX.
+
+![Diagrama de secuencia: asistencia](images/diagrama-secuencia-asistencia.png)
+
+> **Fuente editable:** [`puml/diagrama-secuencia-asistencia.puml`](puml/diagrama-secuencia-asistencia.puml)
 
 ---
 
@@ -1454,6 +1478,12 @@ Diagrama editable:
 ```text
 docs/puml/flujo-ux-turno-cierre.puml
 ```
+
+La secuencia distingue activación y traspaso de turno del cierre definitivo de la sesión de caja compartida.
+
+![Diagrama de secuencia: turno y cierre de caja](images/diagrama-secuencia-turno-cierre.png)
+
+> **Fuente editable:** [`puml/diagrama-secuencia-turno-cierre.puml`](puml/diagrama-secuencia-turno-cierre.puml)
 
 ---
 
@@ -1900,6 +1930,8 @@ En móvil, ambos paneles podrán apilarse.
 
 # 77. Diagramas UX
 
+Los cinco flujos UX conservan el recorrido usuario–sistema y se muestran una única vez en la sección siguiente. Las secuencias ubicadas junto a cada flujo operativo son complementarias: explican la interacción temporal entre participantes técnicos y no sustituyen estos recorridos.
+
 Se utilizarán cinco diagramas principales:
 
 ```text
@@ -1932,21 +1964,31 @@ flujo-ux-asistencia.png
 
 ![Flujo UX pedido y venta](images/flujo-ux-pedido-venta.png)
 
+> **Fuente editable:** [`puml/flujo-ux-pedido-venta.puml`](puml/flujo-ux-pedido-venta.puml)
+
 ---
 
 ![Flujo UX producción e inventario](images/flujo-ux-produccion-inventario.png)
+
+> **Fuente editable:** [`puml/flujo-ux-produccion-inventario.puml`](puml/flujo-ux-produccion-inventario.puml)
 
 ---
 
 ![Flujo UX compra y recepción](images/flujo-ux-compra-recepcion.png)
 
+> **Fuente editable:** [`puml/flujo-ux-compra-recepcion.puml`](puml/flujo-ux-compra-recepcion.puml)
+
 ---
 
 ![Flujo UX turno y cierre](images/flujo-ux-turno-cierre.png)
 
+> **Fuente editable:** [`puml/flujo-ux-turno-cierre.puml`](puml/flujo-ux-turno-cierre.puml)
+
 ---
 
 ![Flujo UX asistencia](images/flujo-ux-asistencia.png)
+
+> **Fuente editable:** [`puml/flujo-ux-asistencia.puml`](puml/flujo-ux-asistencia.puml)
 
 ---
 

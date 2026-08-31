@@ -1,9 +1,11 @@
 import {
+  ArrowLeftRight,
   ChefHat,
   ClipboardList,
   Home,
   Package,
   ReceiptText,
+  ShoppingBag,
   UsersRound,
   Warehouse,
   Clock3,
@@ -16,6 +18,8 @@ import { Button } from '@/components/atoms'
 import { HeaderClock } from '@/components/templates/HeaderClock'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
+import { PURCHASE_READ_ROLES } from '@/features/purchases/api'
+import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '@/features/shifts/api'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 
 export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'] as const
@@ -70,6 +74,14 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     matches: startsWithRoute('/productos'),
   },
   {
+    id: 'produccion',
+    label: 'Produccion',
+    icon: ChefHat,
+    readRoles: ['COCINA', 'ENCARGADO', 'ADMINISTRADOR'],
+    target: '/produccion/registrar',
+    matches: startsWithRoute('/produccion'),
+  },
+  {
     id: 'inventario',
     label: 'Inventario',
     icon: Warehouse,
@@ -86,12 +98,29 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     matches: (pathname) => pathname === '/asistencia' || pathname === '/mi-asistencia',
   },
   {
+    id: 'turnos',
+    label: 'Turnos / Caja',
+    icon: ArrowLeftRight,
+    readRoles: SHIFT_OWN_READ_ROLES,
+    target: (roles) => (hasAnyRole(roles, SHIFT_MANAGE_ROLES) ? '/turnos' : '/mi-turno'),
+    matches: (pathname) => pathname === '/turnos' || pathname === '/mi-turno',
+  },
+  {
     id: 'proveedores',
     label: 'Proveedores',
     icon: Package,
     readRoles: SUPPLIER_READ_ROLES,
     target: '/proveedores',
     matches: startsWithRoute('/proveedores'),
+  },
+  {
+    id: 'compras',
+    label: 'Compras',
+    icon: ShoppingBag,
+
+    readRoles: PURCHASE_READ_ROLES,
+    target: '/compras',
+    matches: startsWithRoute('/compras'),
   },
   {
     id: 'gastos',

@@ -1,13 +1,14 @@
 using System.Text.Json.Serialization;
 using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Domain.Orders;
+    using RestaurantSystem.Application.Inventory;
 
 namespace RestaurantSystem.Application.Orders;
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record CreateOrderItemRequest(Guid ProductId, decimal Quantity, string? Notes);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed record CreateOrderRequest(string? TableReference, string? Notes, IReadOnlyList<CreateOrderItemRequest> Items);
+public sealed record CreateOrderRequest(string? TableReference, string? Notes, IReadOnlyList<CreateOrderItemRequest> Items, bool? AcknowledgeStockShortage = false);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record AssignOrderRequest(Guid WaiterEmployeeId);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
@@ -21,7 +22,7 @@ public sealed record KitchenRealtimeEvent(Guid CommandId, Guid OrderId, KitchenC
 public interface IKitchenRealtimeNotifier { Task CreatedAsync(KitchenRealtimeEvent value, CancellationToken ct = default); Task UpdatedAsync(KitchenRealtimeEvent value, CancellationToken ct = default); Task CancelledAsync(KitchenRealtimeEvent value, CancellationToken ct = default); }
 public interface IOrderService
 {
-    Task<(OrderDto? Value, string? Error)> CreateAsync(CreateOrderRequest request, OrderActor actor, CancellationToken ct = default);
+    Task<(OrderDto? Value, string? Error, IReadOnlyList<InventoryShortageDto>? Shortages)> CreateAsync(CreateOrderRequest request, OrderActor actor, CancellationToken ct = default);
     Task<PagedResponse<OrderDto>> ListAsync(int page, int pageSize, OrderStatus? status, string? search, CancellationToken ct = default);
     Task<OrderDto?> GetAsync(Guid id, CancellationToken ct = default);
     Task<(OrderDto? Value, string? Error)> AssignAsync(Guid id, AssignOrderRequest request, OrderActor actor, CancellationToken ct = default);

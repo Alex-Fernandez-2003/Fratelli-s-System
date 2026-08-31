@@ -1230,8 +1230,8 @@ RN-003
 se encuentran representadas visualmente en:
 
 ```text
-docs/puml/estados-pedido-comanda.puml
-docs/images/estados-pedido-comanda.png
+docs/puml/diagrama-estados-pedido-comanda.puml
+docs/images/diagrama-estados-pedido-comanda.png
 ```
 
 Cualquier modificación futura en los estados deberá actualizar:

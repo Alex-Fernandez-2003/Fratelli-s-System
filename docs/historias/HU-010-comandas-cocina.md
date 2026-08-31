@@ -74,7 +74,3 @@ Implementada para MVP.
 ![Captura pantalla para agregar pedidos](../capturas/HU-010-waiter-kitchen.png)
 
 ---
-
-## Estado de entrega
-
-Completado para MVP, cambios visuales se harán posteriormente

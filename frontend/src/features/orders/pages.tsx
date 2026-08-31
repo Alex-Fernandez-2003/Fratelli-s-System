@@ -1,11 +1,21 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Button, Card, Input, Select, Textarea, Badge, Spinner } from '@/components/atoms'
+import {
+  Button,
+  Card,
+  Input,
+  LinkButton,
+  Select,
+  Textarea,
+  Badge,
+  Spinner,
+} from '@/components/atoms'
 import { Alert, EmptyState } from '@/components/molecules/Feedback'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useKitchenConnectionStatus } from '@/features/kitchen/realtime'
-import { httpClient } from '@/lib/api/http-client'
+import { httpClient, HttpError } from '@/lib/api/http-client'
+import { ShortageDialog } from '@/features/sales/pages'
 import type { components } from '@/types/api.generated'
 import {
   useAssignOrder,
@@ -245,6 +255,9 @@ export function OrderDetailPage() {
             Marcar como entregado
           </Button>
         )}
+        {o.status === 'ENTREGADO' && (
+          <LinkButton href={`/pedidos/${o.id}/cobrar`}>Confirmar venta</LinkButton>
+        )}
         {canCancel && (
           <>
             <Textarea
@@ -311,6 +324,9 @@ export function NewOrderPage() {
   const [tableReference, setTableReference] = useState('')
   const [notes, setNotes] = useState('')
   const create = useCreateOrder()
+  const [shortages, setShortages] = useState<
+    { productName: string; shortageQuantity: number; inventoryUnitSymbol?: string }[] | null
+  >(null)
   const products = useProducts(search)
   const lines = Object.values(cart)
   const total = useMemo(
@@ -416,13 +432,51 @@ export function NewOrderPage() {
                   quantity: l.quantity,
                   notes: l.notes || null,
                 })),
+                acknowledgeStockShortage: false,
               },
-              { onSuccess: (o) => nav(`/pedidos/${o.id}`) },
+              {
+                onSuccess: (o) => nav('/pedidos/' + o.id),
+                onError: (error) => {
+                  if (
+                    error instanceof HttpError &&
+                    error.problem.code === 'ORDER_STOCK_ACKNOWLEDGEMENT_REQUIRED'
+                  )
+                    setShortages(
+                      (error.problem.shortages as {
+                        productName: string
+                        shortageQuantity: number
+                        inventoryUnitSymbol?: string
+                      }[]) ?? [],
+                    )
+                },
+              },
             )
           }
         >
           Crear pedido
-        </Button>
+        </Button>{' '}
+        {shortages && (
+          <ShortageDialog
+            shortages={shortages}
+            pending={create.isPending}
+            onClose={() => setShortages(null)}
+            onContinue={() =>
+              create.mutate(
+                {
+                  tableReference: tableReference || null,
+                  notes: notes || null,
+                  items: lines.map((l) => ({
+                    productId: l.p.id,
+                    quantity: l.quantity,
+                    notes: l.notes || null,
+                  })),
+                  acknowledgeStockShortage: true,
+                },
+                { onSuccess: (o) => nav('/pedidos/' + o.id) },
+              )
+            }
+          />
+        )}
       </Card>
     </main>
   )

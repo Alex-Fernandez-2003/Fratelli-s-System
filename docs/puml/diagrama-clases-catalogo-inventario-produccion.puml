@@ -1,0 +1,98 @@
+@startuml
+title Diagrama de clases — Catálogo, inventario y producción
+
+hide empty methods
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+class Category {
+  +id: UUID
+  +name: String
+  +isActive: Boolean
+}
+
+class Unit {
+  +id: UUID
+  +code: String
+  +dimension: String
+  +factorToBase: Decimal
+  +isBase: Boolean
+}
+
+class Product {
+  +id: UUID
+  +name: String
+  +productType: ProductType
+  +preparationArea: PreparationArea
+  +isSellable: Boolean
+  +salePrice: Money?
+  +minimumStock: Decimal
+  +isActive: Boolean
+}
+
+class ProductComposition {
+  +id: UUID
+  +quantity: Decimal
+}
+
+class InventoryBalance {
+  +quantity: Decimal
+  +updatedAt: DateTime
+}
+
+class InventoryMovement {
+  +id: UUID
+  +movementType: InventoryMovementType
+  +quantityDelta: Decimal
+  +reason: String
+  +referenceType: String
+  +referenceId: UUID?
+}
+
+class Production {
+  +id: UUID
+  +quantityProduced: Decimal
+  +producedAt: DateTime
+  +notes: String?
+}
+
+class ProductionConsumption {
+  +id: UUID
+  +quantityConsumed: Decimal
+}
+
+enum ProductType
+enum PreparationArea
+enum InventoryMovementType
+
+Category "1" -- "0..*" Product
+Unit "1" -- "0..*" Product : unidad inventario >
+
+Product "1" -- "0..*" ProductComposition : producto padre >
+Product "1" -- "0..*" ProductComposition : componente >
+Unit "1" -- "0..*" ProductComposition
+
+Product "1" *-- "1" InventoryBalance
+Product "1" -- "0..*" InventoryMovement
+
+Product "1" -- "0..*" Production : producto producido >
+Production "1" *-- "1..*" ProductionConsumption
+Product "1" -- "0..*" ProductionConsumption : componente consumido >
+
+Product ..> ProductType
+Product ..> PreparationArea
+InventoryMovement ..> InventoryMovementType
+
+note bottom of ProductComposition
+Una composición representa la receta de un producto preparado
+mediante otros productos y una unidad compatible.
+end note
+
+note bottom of InventoryMovement
+Los movimientos de inventario trazan entradas y salidas
+provenientes de producción, venta, recepción u otro origen.
+end note
+@enduml

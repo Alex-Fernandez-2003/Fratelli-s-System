@@ -1,5 +1,5 @@
 @startuml
-title Flujo de valor principal del MVP — Restaurant System / Fratelli
+title Diagrama de Actividad del Negocio — Restaurant System / Fratelli
 
 skinparam shadowing false
 skinparam roundcorner 12

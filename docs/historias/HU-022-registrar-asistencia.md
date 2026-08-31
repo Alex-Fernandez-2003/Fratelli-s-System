@@ -65,7 +65,7 @@ Implementada para MVP.
 
 ### Captura de la pantalla de inicio
 
-![Captura de usuarios y roles](../capturas/HU-022F3.png)
+![Captura inicial de asistencia](../capturas/HU-022F3.png)
 
 ---
 

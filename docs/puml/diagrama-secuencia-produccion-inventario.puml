@@ -1,0 +1,42 @@
+@startuml
+title Diagrama de secuencia — Producción e inventario
+
+autonumber
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "ENCARGADO / COCINA" as User
+participant "Frontend web" as Frontend
+participant "Production API" as Api
+participant "Application\n(Production / Inventory)" as App
+database "PostgreSQL" as DB
+
+User -> Frontend : registrar producción
+Frontend -> Api : POST /productions
+Api -> App : RegisterProduction(command)
+
+App -> DB : obtener Product + Composition
+App -> DB : validar cantidades y unidades
+
+alt composición válida
+  App -> DB : guardar Production
+  App -> DB : guardar consumos de producción
+  App -> DB : registrar InventoryMovements\n(salida de componentes)
+  App -> DB : actualizar InventoryBalances\n(componentes)
+  App -> DB : registrar InventoryMovement\n(entrada de producto producido)
+  App -> DB : actualizar InventoryBalance\n(producto producido)
+  App --> Api : producción registrada
+  Api --> Frontend : 201 Created
+  Frontend --> User : mostrar producción registrada
+else composición inexistente o inválida
+  App --> Api : error de validación
+  Api --> Frontend : 400 Bad Request
+  Frontend --> User : mostrar error
+end
+
+note across
+La producción incrementa el inventario del producto producido
+y descuenta los componentes definidos en la composición.
+end note
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml
+title Diagrama de clases — Proveedores, compras y abastecimiento
+
+hide empty methods
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+class Supplier {
+  +id: UUID
+  +name: String
+  +isActive: Boolean
+}
+
+class Product {
+  +id: UUID
+  +name: String
+  +minimumStock: Decimal
+  +isActive: Boolean
+}
+
+class Unit {
+  +id: UUID
+  +code: String
+  +dimension: String
+}
+
+class Purchase {
+  +id: UUID
+  +purchaseArea: PurchaseArea?
+  +status: PurchaseStatus
+  +purchaseDate: DateTime
+  +total: Money
+  +notes: String?
+}
+
+class PurchaseItem {
+  +id: UUID
+  +quantity: Decimal
+  +unitCost: Money
+  +lineTotal: Money
+}
+
+class PurchaseReceipt {
+  +id: UUID
+  +receivedAt: DateTime
+  +notes: String?
+}
+
+class PurchaseReceiptLine {
+  +id: UUID
+  +receivedQuantity: Decimal
+}
+
+enum PurchaseStatus {
+  PENDIENTE
+  RECIBIDA
+  CANCELADA
+}
+
+enum PurchaseArea
+
+Supplier "1" -- "0..*" Purchase
+Purchase "1" *-- "1..*" PurchaseItem
+Product "1" -- "0..*" PurchaseItem
+Unit "1" -- "0..*" PurchaseItem
+
+Purchase "1" *-- "0..1" PurchaseReceipt
+PurchaseReceipt "1" *-- "1..*" PurchaseReceiptLine
+PurchaseItem "1" -- "0..1" PurchaseReceiptLine
+Unit "1" -- "0..*" PurchaseReceiptLine : unidad recepción >
+
+Purchase ..> PurchaseStatus
+Purchase ..> PurchaseArea
+
+note bottom of PurchaseReceiptLine
+Permite registrar la cantidad efectivamente recibida
+por cada ítem de compra y compararla con lo solicitado.
+end note
+@enduml

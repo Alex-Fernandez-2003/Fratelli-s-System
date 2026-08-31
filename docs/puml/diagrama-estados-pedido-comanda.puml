@@ -1,5 +1,5 @@
 @startuml
-title Estados de pedido y comanda — Restaurant System / Fratelli
+title Diagrama de estados — Restaurant System / Fratelli
 
 skinparam shadowing false
 skinparam roundcorner 12

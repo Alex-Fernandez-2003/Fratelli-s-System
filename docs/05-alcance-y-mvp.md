@@ -808,9 +808,9 @@ Cierre de caja
 Reporte de ventas
 ```
 
-![Flujo de valor principal del MVP](./images/flujo-valor-mvp.png)
+![Diagrama de actividad del negocio: flujo de valor principal del MVP](images/diagrama-actividad-negocio.png)
 
-> **Fuente editable:** [`puml/flujo-valor-mvp.puml`](puml/flujo-valor-mvp.puml)
+> **Fuente editable:** [`puml/diagrama-actividad-negocio.puml`](puml/diagrama-actividad-negocio.puml)
 
 Este flujo principal se complementa con tres flujos de soporte prioritarios:
 
@@ -1217,8 +1217,8 @@ Para este documento se utiliza un único diagrama de actividad con el fin de rep
 Archivos esperados:
 
 ```text
-docs/puml/flujo-valor-mvp.puml
-docs/images/flujo-valor-mvp.png
+docs/puml/diagrama-actividad-negocio.puml
+docs/images/diagrama-actividad-negocio.png
 ```
 
 Este documento no incorpora diagramas UML exhaustivos de casos de uso, clases o secuencias. Dichos modelos pertenecen a las etapas posteriores de modelado y diseño, utilizando como entrada el alcance, la SRS y los requisitos ya consolidados.

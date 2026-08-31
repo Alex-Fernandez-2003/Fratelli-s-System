@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight, Package, Pencil, Plus, Search, XCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ListTree, Package, Pencil, Plus, Search, XCircle } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { DataTable, Modal, PageHeader } from '@/components/organisms'
 import {
   Badge,
@@ -355,6 +356,15 @@ export function ProductsPage() {
         >
           <Pencil size={16} />
         </IconButton>
+        {product.productType === 'PREPARATION' && (
+          <Link
+            to={`/productos/${product.id}/composicion`}
+            aria-label={`Editar composición de ${product.name}`}
+            className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-border bg-transparent p-2 text-text no-underline transition-colors hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          >
+            <ListTree size={16} aria-hidden="true" />
+          </Link>
+        )}
         {product.isActive && (
           <IconButton
             type="button"

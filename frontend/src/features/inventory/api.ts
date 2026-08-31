@@ -5,6 +5,7 @@ import { httpClient } from '@/lib/api/http-client'
 
 export type Balance = components['schemas']['InventoryBalanceDto']
 export type Movement = components['schemas']['InventoryMovementDto']
+export type InventorySummary = components['schemas']['InventorySummaryDto']
 export type ProductType = components['schemas']['ProductType']
 export type MovementType = components['schemas']['InventoryMovementType']
 export type ManualMovement = components['schemas']['RecordManualInventoryMovementRequest']
@@ -26,11 +27,14 @@ type BalancePage =
   paths['/api/v1/inventory/balances']['get']['responses'][200]['content']['application/json']
 type MovementPage =
   paths['/api/v1/inventory/movements']['get']['responses'][200]['content']['application/json']
+type Summary =
+  paths['/api/v1/inventory/summary']['get']['responses'][200]['content']['application/json']
 
 export const inventoryKeys = {
   all: ['inventory'] as const,
   balances: (filters: BalanceFilters) => ['inventory', 'balances', filters] as const,
   movements: (filters: MovementFilters) => ['inventory', 'movements', filters] as const,
+  summary: () => ['inventory', 'summary'] as const,
 }
 
 export const inventoryApi = {
@@ -38,6 +42,7 @@ export const inventoryApi = {
     httpClient.get<BalancePage>(endpoints.inventory.balances(filters)),
   movements: (filters: MovementFilters) =>
     httpClient.get<MovementPage>(endpoints.inventory.movements(filters)),
+  summary: () => httpClient.get<Summary>(endpoints.inventory.summary()),
   create: (request: ManualMovement) =>
     httpClient.post<Movement>(endpoints.inventory.create(), request),
 }
@@ -55,6 +60,15 @@ export function useMovements(filters: MovementFilters) {
   return useQuery({
     queryKey: inventoryKeys.movements(filters),
     queryFn: () => inventoryApi.movements(filters),
+    refetchInterval: 30_000,
+    placeholderData: (previous) => previous,
+  })
+}
+
+export function useInventorySummary() {
+  return useQuery({
+    queryKey: inventoryKeys.summary(),
+    queryFn: inventoryApi.summary,
     refetchInterval: 30_000,
     placeholderData: (previous) => previous,
   })

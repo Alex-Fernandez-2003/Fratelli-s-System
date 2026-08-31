@@ -47,6 +47,33 @@ describe('httpClient authentication policy', () => {
     expect(fetchMock.mock.calls[1][1].body).toBe(JSON.stringify({ name: 'item' }))
   })
 
+  it('preserves structured Sale shortage code and extensions from a 409 ProblemDetails response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response(409, {
+          title: 'Operational workflow conflict',
+          code: 'SALE_STOCK_CONFIRMATION_REQUIRED',
+          shortages: [
+            {
+              productId: '00000000-0000-0000-0000-000000000001',
+              requiredQuantity: 2,
+              currentQuantity: 1,
+              shortageQuantity: 1,
+            },
+          ],
+        }),
+      ),
+    )
+    await expect(httpClient.post('/api/v1/sales', {})).rejects.toMatchObject({
+      status: 409,
+      problem: {
+        code: 'SALE_STOCK_CONFIRMATION_REQUIRED',
+        shortages: [expect.objectContaining({ shortageQuantity: 1 })],
+      },
+    })
+  })
+
   it('does not refresh for non-401 errors, network failures, or a retry 401', async () => {
     sessionCoordinator.accept({ accessToken: 'token' })
     const refresh = vi.fn().mockResolvedValue(undefined)

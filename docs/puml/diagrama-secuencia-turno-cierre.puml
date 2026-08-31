@@ -1,0 +1,65 @@
+@startuml
+title Diagrama de secuencia — Turno y cierre de caja
+
+autonumber
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "ENCARGADO / ADMINISTRADOR" as User
+participant "Frontend web" as Frontend
+participant "Shifts API" as ShiftsApi
+participant "Cash Closing API" as ClosingApi
+participant "Application\n(Shifts / Cash Closing)" as App
+database "PostgreSQL" as DB
+
+== Inicio / activación de turno ==
+
+User -> Frontend : iniciar / activar turno
+Frontend -> ShiftsApi : PATCH /shifts/{id}/start
+ShiftsApi -> App : StartShift(command)
+App -> DB : obtener Shift + CashSession
+App -> DB : actualizar Shift=ACTIVE
+App --> ShiftsApi : turno activo
+ShiftsApi --> Frontend : 200 OK
+Frontend --> User : mostrar turno activo
+
+== Continuidad / traspaso ==
+
+opt finalizar turno con traspaso
+  User -> Frontend : finalizar turno
+  Frontend -> ShiftsApi : PATCH /shifts/{id}/complete
+  ShiftsApi -> App : CompleteShift(command)
+  App -> DB : registrar handover amounts + note
+  App -> DB : actualizar Shift=COMPLETED
+  App --> ShiftsApi : turno completado
+  ShiftsApi --> Frontend : 200 OK
+  Frontend --> User : mostrar turno completado
+end
+
+== Cierre final de caja ==
+
+User -> Frontend : preparar cierre
+Frontend -> ClosingApi : GET /cash-closings/summary?cashSessionId=...
+ClosingApi -> App : BuildClosingSummary(query)
+App -> DB : consultar ventas por canal
+App -> DB : consultar gastos por fuente
+App -> DB : consultar sesión y turnos
+App --> ClosingApi : expected cash + resumen
+ClosingApi --> Frontend : 200 OK
+Frontend --> User : mostrar resumen esperado
+
+User -> Frontend : registrar cierre
+Frontend -> ClosingApi : POST /cash-closings
+ClosingApi -> App : RegisterCashClosing(command)
+App -> DB : guardar CashClosing
+App -> DB : actualizar CashSession=CLOSED
+App --> ClosingApi : cierre registrado
+ClosingApi --> Frontend : 201 Created
+Frontend --> User : mostrar cierre guardado
+
+note bottom
+Fratelli opera con dos turnos, una sola caja y un único cierre final.
+El cierre pertenece a la sesión de caja, no a un turno individual.
+end note
+
+@enduml
