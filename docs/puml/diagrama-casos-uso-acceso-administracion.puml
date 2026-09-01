@@ -1,26 +1,29 @@
 @startuml
 title Diagrama de casos de uso — Acceso y administración
-
 left to right direction
 skinparam packageStyle rectangle
 skinparam shadowing false
-
-actor "Usuario autenticado" as Usuario
+skinparam actorStyle awesome
+actor "Usuario del sistema" as Usuario
 actor "ADMINISTRADOR" as Admin
-
+Admin --|> Usuario
 rectangle "Acceso y administración" {
   usecase "Iniciar sesión" as UC_Login
   usecase "Cerrar sesión" as UC_Logout
-  usecase "Gestionar usuarios\ny roles" as UC_Users
+  usecase "Gestionar usuarios" as UC_UserMgmt
+  usecase "Asignar múltiples roles" as UC_Roles
+  usecase "Activar / desactivar\nusuarios" as UC_Activation
 }
-
 Usuario --> UC_Login
 Usuario --> UC_Logout
-Admin --> UC_Users
-
+Admin --> UC_UserMgmt
+Admin --> UC_Roles
+Admin --> UC_Activation
+UC_UserMgmt .> UC_Roles : <<include>>
+UC_UserMgmt .> UC_Activation : <<include>>
 note bottom
-El resto de roles autenticados heredan las capacidades comunes
-de inicio y cierre de sesión.
+El actor ADMINISTRADOR hereda las capacidades comunes del Usuario del sistema,
+incluyendo iniciar y cerrar sesión, y además posee permisos de administración
+de usuarios, roles y ciclo de activación.
 end note
-
 @enduml

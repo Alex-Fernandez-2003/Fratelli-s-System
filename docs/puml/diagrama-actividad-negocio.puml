@@ -1,38 +1,119 @@
 @startuml
-title Diagrama de Actividad del Negocio — Restaurant System / Fratelli
-
+title Diagrama de actividad del negocio — Operación principal de Fratelli
 skinparam shadowing false
 skinparam roundcorner 12
 skinparam defaultTextAlignment center
-skinparam ArrowColor #555555
-skinparam ArrowThickness 1.5
-
+skinparam ArrowThickness 1.2
+skinparam activity {
+  BackgroundColor white
+  BorderColor #4d4d4d
+  DiamondBackgroundColor white
+  DiamondBorderColor #4d4d4d
+  StartColor #333333
+  EndColor #333333
+  BarColor #666666
+}
 start
-
-:Usuario se autentica;
-
-:Registra o inicia un pedido;
-
-:Selecciona platos y/o productos;
-
-:Genera la comanda;
-
-:Cocina recibe la información del pedido;
-
-:Se prepara y completa el pedido;
-
-:Se registra la venta y el medio de pago;
-
-:Se actualizan los movimientos\nde inventario correspondientes;
-
-:La operación queda asociada\nal turno activo;
-
-:Se registran otros movimientos\ndel turno cuando correspondan;
-
-:Se realiza el cierre\nde turno / caja;
-
-:Se consulta el reporte\nde ventas;
-
+partition "Personal / Operación" {
+  :Iniciar sesión;
+}
+partition "Sistema" {
+  :Validar credenciales\ny perfil de acceso;
+}
+if (¿Existe sesión de caja activa?) then (Sí)
+  partition "Sistema" {
+    :Recuperar turno\ny contexto operativo;
+  }
+else (No)
+  partition "Personal / Operación" {
+    :Abrir sesión de caja\ne iniciar turno;
+  }
+  partition "Sistema" {
+    :Registrar sesión abierta\ny turno activo;
+  }
+endif
+partition "Personal / Operación" {
+  :Consultar catálogo, stock\ny tareas del turno;
+}
+if (¿Se requiere abastecimiento\no preparación previa?) then (Sí)
+  if (¿Es preparación interna?) then (Producción)
+    partition "Personal / Operación" {
+      :Registrar producción;
+    }
+    partition "Sistema" {
+      :Validar composición\ny disponibilidad de ingredientes;
+      :Descontar componentes\ne incrementar stock preparado;
+    }
+  else (Compra / recepción)
+    partition "Personal / Operación" {
+      :Registrar compra\ny recibir insumos;
+    }
+    partition "Sistema" {
+      :Mantener compra en PENDIENTE\nhasta su recepción;
+      :Incrementar inventario\nal confirmar RECEPCIÓN;
+    }
+  endif
+endif
+partition "Personal / Operación" {
+  :Registrar pedido del cliente;
+}
+partition "Sistema" {
+  :Crear pedido y generar comanda;
+  :Publicar comanda a cocina\nen tiempo real;
+}
+partition "Cocina" {
+  :Aceptar, preparar\ny marcar comanda LISTA;
+}
+partition "Sistema" {
+  :Actualizar estado del pedido\ny notificar que está listo;
+}
+partition "Personal / Operación" {
+  :Entregar pedido e iniciar cobro;
+}
+partition "Sistema" {
+  :Calcular total de la venta\ny verificar disponibilidad de stock;
+}
+if (¿Stock insuficiente?) then (Sí)
+  partition "Sistema" {
+    :Mostrar advertencia\nde stock insuficiente;
+  }
+  if (¿Continuar venta?) then (Sí)
+    partition "Personal / Operación" {
+      :Confirmar continuar venta;
+    }
+  else (No)
+    partition "Personal / Operación" {
+      :Cancelar confirmación\nde venta;
+    }
+    stop
+  endif
+endif
+partition "Personal / Operación" {
+  :Registrar medio de pago\ny confirmar venta;
+}
+partition "Sistema" {
+  :Registrar venta y detalle;
+  :Actualizar movimientos\ny saldos de inventario;
+  :Asociar la operación\nal turno activo;
+}
+if (¿Hay gastos u otras\noperaciones del turno?) then (Sí)
+  partition "Personal / Operación" {
+    :Registrar gastos\ny observaciones del turno;
+  }
+  partition "Sistema" {
+    :Conservar trazabilidad\nde la operación;
+  }
+endif
+partition "Sistema" {
+  :Preparar resumen operativo\npara continuidad y cierre;
+}
+partition "Personal / Operación" {
+  :Finalizar turno o realizar\ntraspaso al siguiente;
+  :Registrar cierre final de caja;
+}
+partition "Sistema" {
+  :Consolidar ventas, gastos\ny diferencias del cierre;
+  :Generar reportes de ventas,\ninventario y asistencia;
+}
 stop
-
 @enduml

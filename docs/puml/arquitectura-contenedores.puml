@@ -1,34 +1,108 @@
 @startuml
-title Restaurant System — Arquitectura de contenedores
 
+title Restaurant System — Arquitectura de contenedores (vista explicativa)
+
+left to right direction
+
+skinparam shadowing false
+skinparam packageStyle rectangle
 skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+skinparam wrapWidth 220
+skinparam maxMessageSize 120
+skinparam ArrowThickness 1.2
 
-actor "Usuario de Fratelli" as User
+actor "Usuario de Fratelli\n(Administrador, Encargado, Mesero,\nCocina, Contadora, Empleado)" as User
 
-rectangle "Browser" as Browser {
-  component "React SPA\nTypeScript + Vite + Tailwind" as Frontend
+rectangle "Cliente / dispositivo" as Client {
+    node "Ordenador o móvil" as Device {
+        component "Navegador web" as Browser
+    }
 }
 
-rectangle "Restaurant System Backend\nASP.NET Core 10" as Backend {
-  component "REST API\n/api/v1" as API
-  component "SignalR Kitchen Hub\n/hubs/kitchen" as Hub
-  component "OpenAPI\n/openapi/v1.json" as OpenAPI
-  component "Application + Domain" as Core
+rectangle "Frontend" as FrontendBoundary {
+    component "React SPA\nTypeScript + Vite + Tailwind" as SPA
+    component "Rutas protegidas\ny navegación" as Routing
+    component "Pantallas y componentes\nAtomic Design + features" as UI
+    component "Cliente API\n(fetch/HTTP + tipos OpenAPI)" as ApiClient
+    component "Cliente SignalR\nactualización en tiempo real" as SignalRClient
+}
+
+rectangle "Backend — ASP.NET Core 10\nMonolito modular + Clean Architecture" as BackendBoundary {
+    component "REST API\nControllers / Endpoints\n/api/v1" as API
+    component "Autenticación y autorización\nIdentity + JWT + Policies" as Auth
+    component "SignalR Kitchen Hub\n/hubs/kitchen" as Hub
+    component "Casos de uso / Application" as App
+    component "Reglas de negocio / Domain" as Domain
+    component "Persistencia / Infrastructure\nEF Core + Repositories" as Infra
+    component "OpenAPI\n/openapi/v1.json" as OpenAPI
 }
 
 database "PostgreSQL" as DB
 
-User --> Frontend
-Frontend --> API : HTTP/HTTPS + JSON
-Frontend --> Hub : WebSocket / SignalR
-Frontend ..> OpenAPI : generar cliente tipado
-API --> Core
-Hub --> Core
-Core --> DB : EF Core + Npgsql
+User --> Browser : usa el sistema
 
-note right of Backend
-Monolito modular:
-un único backend desplegable
-con módulos internos separados.
+Browser --> SPA : carga la aplicación
+
+SPA --> Routing : navega entre módulos
+SPA --> UI : renderiza pantallas
+
+UI --> ApiClient : acciones del usuario
+UI --> SignalRClient : escucha eventos de cocina
+
+ApiClient --> API : HTTP/HTTPS + JSON + JWT
+SignalRClient <--> Hub : WebSocket / SignalR
+
+ApiClient ..> OpenAPI : contrato usado\npara generar tipos
+
+API --> Auth : validar credenciales\ny permisos
+API --> App : ejecutar caso de uso
+
+Hub --> App : publicar / consumir\ncambios de comanda
+
+App --> Domain : aplicar reglas\nde negocio
+App --> Infra : persistir / consultar datos
+
+Infra --> DB : EF Core + Npgsql
+
+OpenAPI ..> API : describe contrato REST
+
+
+note top of SPA
+Un único cliente web responsive.
+Se utiliza en escritorio y móvil.
 end note
+
+
+note right of API
+Expone operaciones de autenticación,
+catálogo, inventario, producción, pedidos,
+comandas, ventas, compras, asistencia,
+turnos, cierre y reportes.
+end note
+
+
+note right of Hub
+Tiempo real solo para Cocina/KDS.
+Permite notificar nuevas comandas
+y cambios de estado.
+end note
+
+
+note right of DB
+Persistencia central del sistema:
+usuarios, roles, catálogo, inventario,
+pedidos, ventas, compras, asistencia,
+turnos, cierres y reportes.
+end note
+
+
+note as GeneralNote
+Esta vista explica cómo se comunica el usuario con el sistema y cómo se separan
+frontend, backend y base de datos. El frontend consume REST para la mayoría de
+operaciones y SignalR para actualizaciones de cocina en tiempo real.
+end note
+
+DB -[hidden]down-> GeneralNote
+
 @enduml

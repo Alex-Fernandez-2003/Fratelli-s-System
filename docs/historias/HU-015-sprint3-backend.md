@@ -71,4 +71,35 @@ Backend-only HU: evidencia es `apply-progress.md` + `verify-report.md` + OpenAPI
 
 ## Estado de entrega
 
-`HU_015_BACKEND_COMPLETE: YES` — `READY_FOR_SPRINT_3_FRONTEND: YES` (frontend Sprint 3 pendiente en change separado)
+`HU_015_BACKEND_COMPLETE: YES` — `HU_015_FRONTEND_COMPLETE: YES` (frontend verificado en `implement-sprint-3-frontend-customers-and-sales-history`)
+
+## Frontend Sprint 3 — estado verificado
+
+**FRONTEND IMPLEMENTADO Y VERIFICADO AUTOMÁTICAMENTE.** La implementación pertenece al change `implement-sprint-3-frontend-customers-and-sales-history`. Este registro conserva el backend de esta HU como reutilizado y sin cambios.
+
+### Alcance implementado
+
+- Ruta protegida y navegación de `Historial de ventas` para los roles definidos en la capability compartida; la UI conserva la unión de roles y distingue scope broad de MESERO asignado a turno.
+- Historial server-side de ventas confirmadas con período inicial basado en `America/La_Paz`, filtros contractuales, paginación, tabla desktop, cards mobile y estados de carga/error/vacío.
+- Detalle on-demand en modal: muestra snapshots históricos de Customer, ítems y total; no consulta el Customer actual para reescribir la historia.
+- Comprobante PDF interno generado client-side desde el detalle autorizado, con Sale ID real y aviso no fiscal.
+
+### Manifest de implementación — HU-015
+
+| Estado | Paths existentes | Evidencia / propósito |
+| --- | --- | --- |
+| IMPLEMENTED | `frontend/src/features/sales/api.ts` | Queries tipadas de history/detail, filtros, paginación y scope de UI. |
+| IMPLEMENTED | `frontend/src/features/sales/SalesHistoryPage.tsx` | Historial responsive, filtros y controles de detalle. |
+| IMPLEMENTED | `frontend/src/features/sales/SaleDetailOverlay.tsx` | Detail on-demand, snapshots y acción de comprobante. |
+| IMPLEMENTED | `frontend/src/features/sales/saleReceiptPdf.ts` | Adapter PDF client-side no fiscal basado en el Sale detail. |
+| SHARED IMPLEMENTED | `frontend/src/routes/AppRoutes.tsx`; `frontend/src/features/navigation.tsx`; `frontend/src/components/atoms/Action.tsx`; `frontend/src/components/organisms/index.tsx`; `frontend/src/lib/business-time.ts` | Ruta `/historial-ventas`, navegación, soporte de modal/acción y fecha de negocio reutilizados. |
+| TESTED | `frontend/src/features/sales/api.test.ts`; `frontend/src/features/sales/SalesHistoryPage.test.tsx`; `frontend/src/features/sales/SaleDetailOverlay.test.tsx`; `frontend/src/features/sales/saleReceiptPdf.test.ts`; `frontend/src/routes/AppRoutes.test.tsx`; `frontend/src/features/navigation.test.ts`; `frontend/src/components/atoms/Action.test.tsx`; `frontend/src/components/organisms/Modal.test.tsx`; `frontend/src/lib/business-time.test.ts` | Cobertura de filtros/scope, history/detail, PDF, rutas/navegación y primitives compartidos. |
+| REUSED / UNCHANGED | `backend/` | Backend de HU-015 reutilizado; no hay cambio backend atribuido a este frontend change. |
+| UNCHANGED | `frontend/src/types/api.generated.ts` | Contrato generado consumido; no se regeneró ni editó manualmente. |
+| DEPENDENCY ADDED | `frontend/package.json`; `frontend/pnpm-lock.yaml` | `jspdf` incorporado para el comprobante PDF client-side. |
+
+### Evidencia disponible
+
+El `verify-report.md` del change registra que, desde `frontend/`, pasaron `pnpm run format:check`, `pnpm run typecheck`, `pnpm run lint`, `pnpm test` (28 archivos / 138 tests / 0 failed) y `pnpm run build`. También registra que no se ejecutó `api:generate` y que la inspección de diff no encontró cambios en backend, OpenAPI ni `api.generated.ts`.
+
+La validación manual de navegador/responsive (~360 px, ~768 px y ~1280 px) sigue **pendiente**. No hay screenshots ni resultado manual que declarar.

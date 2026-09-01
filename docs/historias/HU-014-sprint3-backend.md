@@ -76,4 +76,34 @@ Backend-only HU: evidencia es `apply-progress.md` + `verify-report.md` + OpenAPI
 
 ## Estado de entrega
 
-`HU_014_BACKEND_COMPLETE: YES` — `READY_FOR_SPRINT_3_FRONTEND: YES` (frontend Sprint 3 pendiente en change separado)
+`HU_014_BACKEND_COMPLETE: YES` — `HU_014_FRONTEND_COMPLETE: YES` (frontend verificado en `implement-sprint-3-frontend-customers-and-sales-history`)
+
+## Frontend Sprint 3 — estado verificado
+
+**FRONTEND IMPLEMENTADO Y VERIFICADO AUTOMÁTICAMENTE.** La implementación pertenece al change `implement-sprint-3-frontend-customers-and-sales-history`. Este registro no cambia ni vuelve a atribuir el backend de esta HU.
+
+### Alcance implementado
+
+- Ruta protegida y navegación de `Clientes` para ADMINISTRADOR, ENCARGADO y MESERO; las acciones de activar/desactivar quedan limitadas a ADMINISTRADOR y ENCARGADO.
+- Gestión de clientes con búsqueda y paginación server-side, filtro de estado, create/edit, estados de carga/error/vacío y representación tabla desktop / cards mobile.
+- `CustomerForm` reutilizado tanto por gestión como por quick-create en ConfirmSale: Name y CI requeridos; NIT y Notes opcionales; normalización trim y feedback de conflicto CI/NIT.
+- ConfirmSale acepta `customerId` nullable; `Consumidor final` se representa con ausencia de Customer. El selector usa clientes activos y el quick-create selecciona el recurso retornado sin abandonar el flujo.
+
+### Manifest de implementación — HU-014
+
+| Estado | Paths existentes | Evidencia / propósito |
+| --- | --- | --- |
+| IMPLEMENTED | `frontend/src/features/customers/api.ts` | Adapter y queries/mutations Customer tipados a partir de `api.generated.ts`. |
+| IMPLEMENTED | `frontend/src/features/customers/CustomerForm.tsx` | Formulario reutilizable de gestión y quick-create. |
+| IMPLEMENTED | `frontend/src/features/customers/CustomersPage.tsx` | Gestión responsive de Customers y acciones de lifecycle por rol. |
+| IMPLEMENTED | `frontend/src/features/sales/pages.tsx` | Extensión aditiva de ConfirmSale: selector, Consumidor final y quick-create. |
+| SHARED IMPLEMENTED | `frontend/src/routes/AppRoutes.tsx`; `frontend/src/features/navigation.tsx` | Ruta `/clientes`, guard y navegación compartida. |
+| TESTED | `frontend/src/features/customers/api.test.ts`; `frontend/src/features/customers/CustomerForm.test.tsx`; `frontend/src/features/customers/CustomersPage.test.tsx`; `frontend/src/features/sales/checkout.test.tsx`; `frontend/src/features/sales/pages.test.tsx`; `frontend/src/routes/AppRoutes.test.tsx`; `frontend/src/features/navigation.test.ts` | Cobertura de adapter/form/página, quick-create y regresión de ConfirmSale, rutas y navegación. |
+| REUSED / UNCHANGED | `backend/` | Backend de HU-014 reutilizado; no hay cambio backend atribuido a este frontend change. |
+| UNCHANGED | `frontend/src/types/api.generated.ts` | Contrato generado consumido; no se regeneró ni editó manualmente. |
+
+### Evidencia disponible
+
+El `verify-report.md` del change registra que, desde `frontend/`, pasaron `pnpm run format:check`, `pnpm run typecheck`, `pnpm run lint`, `pnpm test` (28 archivos / 138 tests / 0 failed) y `pnpm run build`. También registra que no se ejecutó `api:generate` y que la inspección de diff no encontró cambios en backend, OpenAPI ni `api.generated.ts`.
+
+La validación manual de navegador/responsive (~360 px, ~768 px y ~1280 px) sigue **pendiente**. No hay screenshots ni resultado manual que declarar.
