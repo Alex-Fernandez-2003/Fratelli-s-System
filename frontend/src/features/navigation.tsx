@@ -25,6 +25,13 @@ import { useEffect, useRef, useState, type ComponentType } from 'react'
 export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'] as const
 export const PRODUCT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
 export const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
+export const CUSTOMER_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO'] as const
+export const SALES_HISTORY_READ_ROLES = [
+  'ADMINISTRADOR',
+  'ENCARGADO',
+  'MESERO',
+  'CONTADORA',
+] as const
 
 export type AuthNavigationItem = {
   id: string
@@ -121,6 +128,22 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     readRoles: PURCHASE_READ_ROLES,
     target: '/compras',
     matches: startsWithRoute('/compras'),
+  },
+  {
+    id: 'clientes',
+    label: 'Clientes',
+    icon: UsersRound,
+    readRoles: CUSTOMER_READ_ROLES,
+    target: '/clientes',
+    matches: startsWithRoute('/clientes'),
+  },
+  {
+    id: 'historial-ventas',
+    label: 'Historial de ventas',
+    icon: ReceiptText,
+    readRoles: SALES_HISTORY_READ_ROLES,
+    target: '/historial-ventas',
+    matches: startsWithRoute('/historial-ventas'),
   },
   {
     id: 'gastos',

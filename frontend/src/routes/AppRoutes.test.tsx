@@ -2,7 +2,11 @@ import '@testing-library/jest-dom/vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PRODUCT_READ_ROLES } from '../features/navigation'
+import {
+  CUSTOMER_READ_ROLES,
+  PRODUCT_READ_ROLES,
+  SALES_HISTORY_READ_ROLES,
+} from '../features/navigation'
 import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { AppRoutes, RequireAnyRole } from './AppRoutes'
@@ -16,6 +20,12 @@ vi.mock('../pages/LoginPage', () => ({ LoginPage: () => <p>Login page</p> }))
 vi.mock('../pages/InicioPage', () => ({ InicioPage: () => <p>Inicio page</p> }))
 vi.mock('../pages/ForbiddenPage', () => ({ ForbiddenPage: () => <p>Forbidden page</p> }))
 vi.mock('../pages/UiKitPage', () => ({ UiKitPage: () => <p>UI kit page</p> }))
+vi.mock('../features/customers/CustomersPage', () => ({
+  CustomersPage: () => <p>Customers page</p>,
+}))
+vi.mock('../features/sales/SalesHistoryPage', () => ({
+  SalesHistoryPage: () => <p>Sales History page</p>,
+}))
 
 function Location() {
   return <p data-testid="location">{useLocation().pathname}</p>
@@ -143,6 +153,50 @@ describe('AppRoutes', () => {
         expect(screen.getByText('Forbidden page')).toBeInTheDocument()
         expect(screen.queryByText(pageName)).not.toBeInTheDocument()
       }
+    },
+  )
+
+  it.each([
+    ['/clientes', ['MESERO'], [...CUSTOMER_READ_ROLES], 'Customers page'],
+    ['/historial-ventas', ['CONTADORA'], [...SALES_HISTORY_READ_ROLES], 'Sales History page'],
+    [
+      '/historial-ventas',
+      ['MESERO', 'ENCARGADO'],
+      [...SALES_HISTORY_READ_ROLES],
+      'Sales History page',
+    ],
+  ])(
+    'allows the protected feature route %s for its authorized role union',
+    (path, roles, _allowed, page) => {
+      auth.status = 'authenticated'
+      auth.hasAnyRole = vi.fn((required: string[]) => required.some((role) => roles.includes(role)))
+      renderRoutes(path)
+
+      expect(screen.getByText(page)).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent(path)
+    },
+  )
+
+  it.each([
+    ['/clientes', ['CONTADORA']],
+    ['/historial-ventas', ['COCINA']],
+  ])('redirects a forbidden authenticated visitor from %s to 403', (path, roles) => {
+    auth.status = 'authenticated'
+    auth.hasAnyRole = vi.fn((required: string[]) => required.some((role) => roles.includes(role)))
+    renderRoutes(path)
+
+    expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent('/403')
+  })
+
+  it.each(['/clientes', '/historial-ventas'])(
+    'redirects an anonymous visit to %s to Login',
+    (path) => {
+      auth.status = 'unauthenticated'
+      renderRoutes(path)
+
+      expect(screen.getByText('Login page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/login')
     },
   )
 

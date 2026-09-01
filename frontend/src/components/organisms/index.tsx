@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { PointerEvent, ReactNode } from 'react'
 import { Spinner } from '../atoms'
 import { EmptyState } from '../molecules'
@@ -77,6 +77,9 @@ export function Modal({
   onClose: () => void
 }) {
   const closeRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLElement>(null)
+  const returnFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const dragState = useRef<{
     startX: number
@@ -87,8 +90,13 @@ export function Modal({
 
   useEffect(() => {
     if (open) {
+      returnFocusRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null
       closeRef.current?.focus()
       setOffset({ x: 0, y: 0 })
+    } else {
+      returnFocusRef.current?.focus()
+      returnFocusRef.current = null
     }
   }, [open])
 
@@ -121,6 +129,22 @@ export function Modal({
   function endDrag() {
     dragState.current = null
   }
+  function trapFocus(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key !== 'Tab') return
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+    if (!focusable?.length) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
 
   return (
     <div
@@ -130,13 +154,15 @@ export function Modal({
       }}
     >
       <section
+        ref={dialogRef}
         className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg border border-border bg-surface"
         style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
         onKeyDown={(event) => {
           if (event.key === 'Escape') onClose()
+          else trapFocus(event)
         }}
       >
         <header
@@ -146,7 +172,7 @@ export function Modal({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
         >
-          <h2 id="modal-title" className="m-0">
+          <h2 id={titleId} className="m-0">
             {title}
           </h2>
           <button

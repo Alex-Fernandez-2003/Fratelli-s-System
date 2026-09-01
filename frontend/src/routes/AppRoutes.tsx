@@ -3,7 +3,9 @@ import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
 import {
   ATTENDANCE_MANAGE_ROLES,
+  CUSTOMER_READ_ROLES,
   PRODUCT_READ_ROLES,
+  SALES_HISTORY_READ_ROLES,
   AuthenticatedLayout,
 } from '../features/navigation'
 import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
@@ -26,6 +28,8 @@ import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features
 import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { RegisterProductionPage } from '../features/production'
 import { ShiftsPage } from '../features/shifts/ShiftsPage'
+import { CustomersPage } from '../features/customers/CustomersPage'
+import { SalesHistoryPage } from '../features/sales/SalesHistoryPage'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
 
@@ -135,6 +139,16 @@ export function AppRoutes() {
           {/* Gestión de usuarios */}
           <Route element={<RequireAnyRole roles={['ADMINISTRADOR']} />}>
             <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
+
+          {/* Clientes */}
+          <Route element={<RequireAnyRole roles={[...CUSTOMER_READ_ROLES]} />}>
+            <Route path="/clientes" element={<CustomersPage />} />
+          </Route>
+
+          {/* Historial de ventas */}
+          <Route element={<RequireAnyRole roles={[...SALES_HISTORY_READ_ROLES]} />}>
+            <Route path="/historial-ventas" element={<SalesHistoryPage />} />
           </Route>
 
           {/* Proveedores */}

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { authenticatedNavigation, canManageProducts, visibleNavigation } from './navigation'
+import {
+  authenticatedNavigation,
+  canManageProducts,
+  visibleNavigation,
+  CUSTOMER_READ_ROLES,
+  SALES_HISTORY_READ_ROLES,
+} from './navigation'
 
 describe('authenticated navigation registry', () => {
   it('uses the union of multi-role capabilities and never exposes Products to CONTADORA-only', () => {
@@ -29,6 +35,30 @@ describe('authenticated navigation registry', () => {
     expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).not.toContain('turnos')
     expect(visibleNavigation(['COCINA']).map((item) => item.id)).not.toContain('turnos')
     expect(visibleNavigation(['MESERO']).map((item) => item.id)).toContain('turnos')
+  })
+
+  it('exposes Clientes and Historial de ventas through their exact role unions', () => {
+    const customers = authenticatedNavigation.find((item) => item.id === 'clientes')!
+    const salesHistory = authenticatedNavigation.find((item) => item.id === 'historial-ventas')!
+
+    expect(customers).toMatchObject({
+      label: 'Clientes',
+      readRoles: CUSTOMER_READ_ROLES,
+      target: '/clientes',
+    })
+    expect(salesHistory).toMatchObject({
+      label: 'Historial de ventas',
+      readRoles: SALES_HISTORY_READ_ROLES,
+      target: '/historial-ventas',
+    })
+    expect(visibleNavigation(['MESERO']).map((item) => item.id)).toEqual(
+      expect.arrayContaining(['clientes', 'historial-ventas']),
+    )
+    expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).not.toContain('clientes')
+    expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).toContain('historial-ventas')
+    expect(visibleNavigation(['MESERO', 'ENCARGADO']).map((item) => item.id)).toEqual(
+      expect.arrayContaining(['clientes', 'historial-ventas']),
+    )
   })
 
   it('keeps parent navigation active for child routes', () => {

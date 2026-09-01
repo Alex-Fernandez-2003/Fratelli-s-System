@@ -1,7 +1,11 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useState } from 'react'
 import { Alert, EmptyState } from '@/components/molecules/Feedback'
-import { Button, Card, Select, Spinner } from '@/components/atoms'
+import { Button, Card, Input, Select, Spinner } from '@/components/atoms'
+import { Modal } from '@/components/organisms'
+import { CustomerForm } from '@/features/customers/CustomerForm'
+import { type Customer, useCreateCustomer, useCustomers } from '@/features/customers/api'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { HttpError } from '@/lib/api/http-client'
 import { useOrder } from '@/features/orders/api'
 import { useConfirmSale } from './api'
@@ -22,6 +26,16 @@ export function CheckoutPage() {
   const [channel, setChannel] = useState<'DIRECT' | 'PEDIDOSYA'>('DIRECT')
   const [payment, setPayment] = useState<'CASH' | 'QR' | 'EXTERNAL'>('CASH')
   const [shortages, setShortages] = useState<Shortage[] | null>(null)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false)
+  const [customerError, setCustomerError] = useState<unknown>()
+  const [customerUnavailable, setCustomerUnavailable] = useState(false)
+  const { user } = useAuth()
+  const customers = useCustomers({ page: 1, pageSize: 50, isActive: true, search: customerSearch })
+  const createCustomer = useCreateCustomer()
+  const canCreateCustomer =
+    user?.roles.some((role) => ['ADMINISTRADOR', 'ENCARGADO', 'MESERO'].includes(role)) ?? false
   const [success, setSuccess] =
     useState<ReturnType<typeof sale.mutateAsync> extends Promise<infer T> ? T : null>(null)
   if (q.isLoading) return <Spinner label="Cargando pedido" />
@@ -40,7 +54,13 @@ export function CheckoutPage() {
     )
   const submit = (acknowledgeStockShortage = false) =>
     sale.mutate(
-      { orderId: o.id, salesChannel: channel, paymentMethod: payment, acknowledgeStockShortage },
+      {
+        orderId: o.id,
+        salesChannel: channel,
+        paymentMethod: payment,
+        acknowledgeStockShortage,
+        customerId: selectedCustomer?.id ?? null,
+      },
       {
         onSuccess: (value) => {
           setShortages(null)
@@ -49,9 +69,25 @@ export function CheckoutPage() {
         onError: (e) => {
           const x = shortage(e)
           if (x) setShortages(x)
+          const problem = e instanceof HttpError ? e.problem : undefined
+          if (problem && /CUSTOMER.*INACTIVE/i.test(problem.code ?? '')) {
+            setSelectedCustomer(null)
+            setCustomerUnavailable(true)
+            void customers.refetch()
+          }
         },
       },
     )
+  const saveCustomer = async (request: Parameters<typeof createCustomer.mutateAsync>[0]) => {
+    try {
+      const customer = (await createCustomer.mutateAsync(request)) as Customer
+      setSelectedCustomer(customer)
+      setCustomerError(undefined)
+      setQuickCreateOpen(false)
+    } catch (error) {
+      setCustomerError(error)
+    }
+  }
   return (
     <main className="grid gap-5 lg:grid-cols-[1fr_22rem]">
       <section className="grid gap-4">
@@ -75,6 +111,47 @@ export function CheckoutPage() {
         </Card>
       </section>
       <Card className="grid content-start gap-3">
+        <label>
+          Buscar cliente
+          <Input
+            aria-label="Buscar cliente"
+            value={customerSearch}
+            placeholder="Nombre, CI o NIT"
+            onChange={(event) => setCustomerSearch(event.target.value)}
+          />
+        </label>
+        <label>
+          Cliente
+          <Select
+            aria-label="Cliente para la venta"
+            value={selectedCustomer?.id ?? ''}
+            onChange={(event) => {
+              setCustomerUnavailable(false)
+              setSelectedCustomer(
+                customers.data?.items.find((customer) => customer.id === event.target.value) ??
+                  null,
+              )
+            }}
+          >
+            <option value="">Consumidor final</option>
+            {(customers.data?.items ?? [])
+              .filter((customer) => customer.isActive)
+              .map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name} · CI {customer.ci}
+                </option>
+              ))}
+          </Select>
+        </label>
+        {selectedCustomer && <p>Cliente seleccionado: {selectedCustomer.name}</p>}
+        {customerUnavailable && (
+          <Alert kind="error">El cliente seleccionado ya no está disponible.</Alert>
+        )}
+        {canCreateCustomer && (
+          <Button type="button" variant="outline" onClick={() => setQuickCreateOpen(true)}>
+            Nuevo cliente
+          </Button>
+        )}
         <label>
           Canal
           <Select
@@ -119,6 +196,24 @@ export function CheckoutPage() {
           Cancelar cobro
         </Button>
       </Card>
+      <Modal
+        open={quickCreateOpen}
+        title="Nuevo cliente"
+        onClose={() => {
+          setQuickCreateOpen(false)
+          setCustomerError(undefined)
+        }}
+      >
+        <CustomerForm
+          pending={createCustomer.isPending}
+          serverError={customerError}
+          onSubmit={(request) => void saveCustomer(request)}
+          onCancel={() => {
+            setQuickCreateOpen(false)
+            setCustomerError(undefined)
+          }}
+        />
+      </Modal>
       {shortages && (
         <ShortageDialog
           shortages={shortages}

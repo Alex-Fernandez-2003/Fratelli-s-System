@@ -42,7 +42,7 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-2 rounded-md border font-bold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-md border font-bold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
     >
