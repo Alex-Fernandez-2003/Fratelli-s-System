@@ -32,6 +32,7 @@ import { CustomersPage } from '../features/customers/CustomersPage'
 import { SalesHistoryPage } from '../features/sales/SalesHistoryPage'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
+import { CashClosingPage } from '../features/cash/CashClosingPage'
 
 function Bootstrap() {
   return (
@@ -170,6 +171,7 @@ export function AppRoutes() {
           </Route>
           <Route element={<RequireAnyRole roles={[...SHIFT_MANAGE_ROLES]} />}>
             <Route path="/turnos" element={<ShiftsPage />} />
+            <Route path="/turnos/cierre" element={<CashClosingPage />} />
           </Route>
         </Route>
       </Route>

@@ -141,6 +141,10 @@ export const endpoints = {
     create: () => '/api/v1/inventory/movements',
     summary: () => '/api/v1/inventory/summary',
   },
+  cash: {
+    preview: () => '/api/v1/cash/preview',
+    close: () => '/api/v1/cash/close',
+  },
   expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
   suppliers: {
     list: '/api/v1/suppliers',

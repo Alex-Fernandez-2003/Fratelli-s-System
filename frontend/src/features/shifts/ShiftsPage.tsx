@@ -1,5 +1,6 @@
-import { ArrowLeftRight, Lock, Moon, Plus, Sun, Users } from 'lucide-react'
+import { ArrowLeftRight, Moon, Plus, Sun, Users } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Badge, Button, Card, StatusDot, Textarea, Input, Checkbox } from '@/components/atoms'
 import { Alert, EmptyState, StatCard, FormError, FormField, FormHint } from '@/components/molecules'
 import { Modal, PageHeader } from '@/components/organisms'
@@ -431,16 +432,12 @@ export function ShiftsPage() {
                 trend="Disponible con el cierre (HU-027)"
               />
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              disabled
-              leftIcon={<Lock size={16} />}
-              className="w-fit"
+            <Link
+              to="/turnos/cierre"
+              className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-md border border-brand-orange bg-transparent px-3.5 py-2.5 font-bold text-brand-orange no-underline hover:bg-brand-orange hover:text-brand-black"
             >
               Cerrar caja general
-            </Button>
-            <FormHint>El cierre de caja se habilita cuando se implemente HU-026/HU-027.</FormHint>
+            </Link>
           </Card>
 
           <div>

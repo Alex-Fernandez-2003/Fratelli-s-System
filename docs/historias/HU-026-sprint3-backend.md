@@ -2,70 +2,73 @@
 
 ## Resultado
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**
+**BACKEND COMPLETO + FRONTEND IMPLEMENTADO** — `implement-sprint-3-remaining-frontend-and-demo-data`
 
-Backend completo para HU-026. Frontend productivo fuera de alcance de este change.
+Backend reused sin modificaciones. Frontend productivo de preview operativo dentro del mismo change.
 
 ## Reglas implementadas
 
-Ver `docs/openspec/changes/archive/2026-08-31-implement-sprint-3-complete-backend/spec.md` y `design.md` para reglas normativas congeladas de HU-026.
+Ver `docs/openspec/changes/implement-sprint-3-remaining-frontend-and-demo-data/spec.md` y `design.md` para reglas normativas congeladas de HU-026. La fuente de verdad es `CashPreviewDto.expectedCash` (servidor).
 
 ## Seguridad
 
-Autorización server-side. Ver `verify-report.md` y matriz de `Program.cs`. Row-level scope aplicado antes de filtros/paginación donde corresponde. Multi-role = unión.
+Autorización server-side `CashManage` (ADMINISTRADOR/ENCARGADO). Frontend guard `RequireAnyRole([...SHIFT_MANAGE_ROLES])` en `/turnos/cierre`. Multi-role = unión. Backend tetap authority.
 
-## Backend / contrato
+## Backend / contrato (reused)
 
 ### Endpoints
 
-- `GET /api/v1/cash/preview` → `CashPreviewDto` read-only, no persiste, calcula `expectedCash = opening+petty+CASH-drawer-petty-removed`
+- `GET /api/v1/cash/preview` → `CashPreviewDto` read-only, no persiste, `expectedCash = opening+petty+CASH-drawer-petty-removed`
 
-### DTOs / snapshots
+### DTOs
 
-Ver `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs` y contratos específicos de la HU.
+`CashPreviewDto` con `cashSessionId`, `businessDate`, `openingAmount`, `pettyCashOpeningAmount`, `cashRemovedAmount`, `cashAmountCarriedForward`, `salesTotal`, `cashSalesTotal`, `qrSalesTotal`, `externalSalesTotal`, `directSalesTotal`, `pedidosYaSalesTotal`, `cashDrawerExpensesTotal`, `pettyCashExpensesTotal`, `expensesTotal`, `expectedCash`, `shifts`.
+
+## Frontend — implementado
+
+### Routing
+
+- `frontend/src/routes/AppRoutes.tsx` — `/turnos/cierre` bajo `SHIFT_MANAGE_ROLES`
+- `frontend/src/features/shifts/ShiftsPage.tsx` — CTA `<Link to="/turnos/cierre">Cerrar caja general</Link>`
+- `frontend/src/features/navigation.tsx` — reuse `Turnos / Caja` sin duplicar item global
+
+### Cash feature
+
+- `frontend/src/lib/api/endpoints.ts` — `cash.preview` = `/api/v1/cash/preview`
+- `frontend/src/features/cash/api.ts` — `cashKeys.preview`, `cashApi.preview`, `useCashPreview` (404 no retry, stale 15s), `cashErrorMessage`
+- `frontend/src/features/cash/format.ts` — `formatMoney` es-BO BOB, `formatBusinessDateLong` America/La_Paz
+- `frontend/src/features/cash/CashClosingPage.tsx` — secciones Apertura / Ventas por medio (Efectivo/QR/Externo) / Ventas por canal (Directo/PedidosYa) / Gastos (principal/chica) / Traspaso (retirado + carriedForward como contexto, no re-sumado) / Resultado `expectedCash` con alta jerarquía; states loading (Skeleton/Spinner), error recuperable con Retry, 404 `No hay una caja abierta disponible para cerrar.` sin ceros ficticios
+
+### Tests
+
+- `frontend/src/features/cash/api.test.ts` — preview endpoint + keys
+- `frontend/src/features/cash/CashClosingPage.test.tsx` — loading, 404, error retry, payment/channel separation, carriedForward hidden when null
 
 ## Baseline revalidado
 
-Branch `develop` HEAD `ec708a37a7f0627fc0ac54690c89cec7f2b061eb`. Working tree con 4 migrations Sprint 3 aplicadas (`dotnet ef database update` PASS, `has-pending-model-changes` clean). `dotnet build -c Release` PASS.
+Branch `develop` HEAD `9236dd4905648c88c1ee1ae9e9df32ba2b2e1834`. `pnpm` 11.18.0. `GET /api/v1/cash/preview` y `POST /api/v1/cash/close` presentes en `api.generated.ts` (179K). No existe `cash` feature preexistente. `git diff -- backend` NONE, `api.generated.ts` NONE.
 
 ## Evidencia real
 
-- `dotnet test backend/RestaurantSystem.slnx` → 100/100 PASS (1 Domain + 18 Application + 81 Integration)
-- `curl http://localhost:5057/openapi/v1.json` → 200 (289K) con paths HU-026 presentes
-- `pnpm --dir frontend run api:generate` → 179K (openapi-typescript 7.13.0)
-- `pnpm --dir frontend run build` → PASS (1952 modules) tras compatibilidad `GET /purchases` history
+- `pnpm run format:check` PASS
+- `pnpm run typecheck` PASS
+- `pnpm run lint` PASS
+- `pnpm test` 31 files 166 tests PASS (cash focused 5+14+9)
+- `pnpm run build` PASS (2161 modules)
+- `GET /api/v1/cash/preview` 200/401/403/404 via `httpClient` + TanStack Query
+- `expectedCash` server-authoritative, PEDIDOSYA != EXTERNAL verified by test
 
-## Manifest de archivos del change
-
-### Backend
-
-| Archivo | Propósito |
-| --- | --- |
-| `backend/src/RestaurantSystem.Application/Cash/CashPositionResult.cs` | DTO posición |
-| `backend/src/RestaurantSystem.Application/Cash/ICashPositionCalculator.cs` |  |
-| `backend/src/RestaurantSystem.Infrastructure/Cash/CashPositionCalculator.cs` | opening+petty+CASH-drawer-petty-removed, payment/channel reconciliación |
-| `backend/src/RestaurantSystem.Infrastructure/Operations/OperationsService.cs` | CashPreviewAsync |
-| `backend/src/RestaurantSystem.Api/OperationsEndpoints.cs` | GET /api/v1/cash/preview (CashManage) |
-| `backend/src/RestaurantSystem.Api/Program.cs` | Policies CashManage/CashHistory |
-
-### Frontend y contrato generado
+## Manifest
 
 | Archivo | Propósito |
 | --- | --- |
-| `frontend/src/types/api.generated.ts` | Cliente generado desde OpenAPI runtime (179K), regenerado contra `http://localhost:5057/openapi/v1.json`, sin edición manual |
-| `frontend/src/features/purchases/pages.tsx` | Compatibilidad: mantiene `GET /purchases` (PurchaseDto) + nuevo `GET /purchases/history` (PurchaseHistoryDto) |
-
-### Documentación
-
-| Archivo | Propósito |
-| --- | --- |
-| `docs/historias/HU-026-sprint3-backend.md` | Esta HU (backend completo, endpoints + manifest) |
-| `docs/openspec/changes/archive/2026-08-31-implement-sprint-3-complete-backend/` | Change archivado (proposal/design/spec/tasks/apply-progress/verify-report) |
-
-## Evidencias
-
-Backend-only HU: evidencia es `apply-progress.md` + `verify-report.md` + OpenAPI runtime. No se requieren screenshots frontend para este APPLY.
+| `frontend/src/lib/api/endpoints.ts` | cash preview/close registry |
+| `frontend/src/features/cash/api.ts` | query layer |
+| `frontend/src/features/cash/format.ts` | money/date helpers |
+| `frontend/src/features/cash/CashClosingPage.tsx` | preview HU-026 (reuse shared Card/Button/Input/Alert/EmptyState/Modal/Spinner) |
+| `frontend/src/routes/AppRoutes.tsx` | `/turnos/cierre` guard |
+| `frontend/src/features/shifts/ShiftsPage.tsx` | entry point CTA |
 
 ## Estado de entrega
 
-`HU_026_BACKEND_COMPLETE: YES` — `READY_FOR_SPRINT_3_FRONTEND: YES` (frontend Sprint 3 pendiente en change separado)
+`HU_026_BACKEND_COMPLETE: YES` — `HU_026_FRONTEND_COMPLETE: YES` — `READY_FOR_DELIVERY: YES`

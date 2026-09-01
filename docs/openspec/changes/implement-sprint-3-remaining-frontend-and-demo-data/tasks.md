@@ -3,7 +3,7 @@
 ## Task 1: Revalidar el baseline local antes de tocar frontend
 
 - Objective:
-  - [ ] Registrar el `develop` LOCAL real y confirmar contratos, routing y reutilización disponibles antes de realizar cualquier implementación.
+  - [x] Registrar el `develop` LOCAL real y confirmar contratos, routing y reutilización disponibles antes de realizar cualquier implementación.
 - Files or areas likely involved:
   Revisión read-only de Git; `frontend/package.json`; router; navigation; feature Shift; endpoint registry; generated API; shared HTTP client; AuthProvider/guards; componentes shared; tests; backend Cash endpoint/service únicamente para confirmar ProblemDetails.
 - Execution notes:
@@ -16,7 +16,7 @@
 ## Task 2: Añadir la capa API/query mínima de Cash
 
 - Objective:
-  - [ ] Integrar preview y close con el endpoint registry, generated types, shared HTTP client y TanStack Query existentes.
+  - [x] Integrar preview y close con el endpoint registry, generated types, shared HTTP client y TanStack Query existentes.
 - Files or areas likely involved:
   Endpoint registry; nueva feature Cash o equivalente; query hooks; tests de API/query.
 - Execution notes:
@@ -29,7 +29,7 @@
 ## Task 3: Construir el preview funcional de HU-026
 
 - Objective:
-  - [ ] Renderizar el resumen autoritativo de caja con estados loading/error/no-session y separación correcta entre medios de pago y canales.
+  - [x] Renderizar el resumen autoritativo de caja con estados loading/error/no-session y separación correcta entre medios de pago y canales.
 - Files or areas likely involved:
   Page Cash closing; componentes feature-specific pequeños; shared Card/Alert/EmptyState/Spinner; formatter existente; tests HU-026.
 - Execution notes:
@@ -42,7 +42,7 @@
 ## Task 4: Implementar el formulario y confirmación de HU-027
 
 - Objective:
-  - [ ] Añadir declared cash, diferencia provisional, observación condicional y confirmación explícita antes del cierre.
+  - [x] Añadir declared cash, diferencia provisional, observación condicional y confirmación explícita antes del cierre.
 - Files or areas likely involved:
   Cash closing page/form; shared Input/Textarea/FormField/Modal/Button; helpers feature-locales; tests de formulario.
 - Execution notes:
@@ -55,7 +55,7 @@
 ## Task 5: Completar mutation, conflicto y estado de éxito
 
 - Objective:
-  - [ ] Cerrar el flujo operativo manejando pending, success, 400/404/409 e invalidación de estado.
+  - [x] Cerrar el flujo operativo manejando pending, success, 400/404/409 e invalidación de estado.
 - Files or areas likely involved:
   Cash query/mutation hook; Cash closing page; success/operational states; tests.
 - Execution notes:
@@ -68,7 +68,7 @@
 ## Task 6: Integrar routing, entry point y autorización
 
 - Objective:
-  - [ ] Hacer el cierre alcanzable mediante el shell existente exclusivamente para ADMINISTRADOR/ENCARGADO.
+  - [x] Hacer el cierre alcanzable mediante el shell existente exclusivamente para ADMINISTRADOR/ENCARGADO.
 - Files or areas likely involved:
   `AppRoutes` o equivalente; `ShiftsPage`; navigation/capability helpers existentes; routing/auth tests.
 - Execution notes:
@@ -81,7 +81,7 @@
 ## Task 7: Ajustar responsive y accesibilidad con las referencias suministradas
 
 - Objective:
-  - [ ] Lograr fidelity funcional desktop/mobile manteniendo 360 px usable y eliminando elementos visuales fuera de scope.
+  - [x] Lograr fidelity funcional desktop/mobile manteniendo 360 px usable y eliminando elementos visuales fuera de scope.
 - Files or areas likely involved:
   Cash closing page/components; estilos feature-locales/Tailwind; shared Modal y controls cuando no requieran cambios contractuales.
 - Execution notes:
@@ -94,7 +94,7 @@
 ## Task 8: Ejecutar regresión frontend y cerrar documentación de APPLY
 
 - Objective:
-  - [ ] Ejecutar todos los gates frontend y actualizar únicamente HU-026/HU-027 y documentación directamente necesaria con evidencia real.
+  - [x] Ejecutar todos los gates frontend y actualizar únicamente HU-026/HU-027 y documentación directamente necesaria con evidencia real.
 - Files or areas likely involved:
   Tests frontend; HU-026; HU-027; change OpenSpec/handoff según convención real.
 - Execution notes:
