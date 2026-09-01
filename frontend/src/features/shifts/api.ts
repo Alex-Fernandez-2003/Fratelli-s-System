@@ -13,6 +13,7 @@ export type ShiftDto = components['schemas']['ShiftDto']
 export type ShiftContextDto = components['schemas']['ShiftContextDto']
 export type ShiftAssignmentRequest = components['schemas']['ShiftAssignmentRequest']
 export type HandoverRequest = components['schemas']['HandoverRequest']
+export type OpenOperationalDayRequest = components['schemas']['OpenOperationalDayRequest']
 
 /** ADMIN/ENCARGADO mutan y leen el contexto operativo completo (docs handoff Sprint 2). */
 export const SHIFT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
@@ -26,7 +27,8 @@ export const shiftKeys = {
 export const shiftsApi = {
   current: () => httpClient.get<ShiftContextDto>(endpoints.shifts.current()),
   mine: () => httpClient.get<ShiftDto>(endpoints.shifts.meCurrent()),
-  open: () => httpClient.post<ShiftContextDto>(endpoints.shifts.open()),
+  open: (request: OpenOperationalDayRequest) =>
+    httpClient.post<ShiftContextDto>(endpoints.shifts.open(), request),
   updateAssignments: (id: string, request: ShiftAssignmentRequest) =>
     httpClient.put<ShiftDto>(endpoints.shifts.assignments(id), request),
   handover: (id: string, request: HandoverRequest) =>
@@ -59,7 +61,7 @@ export function useMyShift() {
 export function useOpenShift() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: shiftsApi.open,
+    mutationFn: (request: OpenOperationalDayRequest) => shiftsApi.open(request),
     onSuccess: (data) => {
       queryClient.setQueryData(shiftKeys.context, data)
       void queryClient.invalidateQueries({ queryKey: shiftKeys.mine })

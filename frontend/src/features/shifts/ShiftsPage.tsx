@@ -354,11 +354,25 @@ function HandoverSection({ shift }: { shift: ShiftDto }) {
   )
 }
 
+function parseMoneyInput(raw: string): number | null {
+  const trimmed = raw.trim()
+  if (trimmed === '') return null
+  const normalized = trimmed.replace(',', '.')
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return Number.NaN
+  const n = Number(normalized)
+  return Number.isFinite(n) ? n : Number.NaN
+}
+
 export function ShiftsPage() {
   const context = useShiftContext()
   const openShift = useOpenShift()
   const attendance = useAttendanceToday(true)
   const [managingShift, setManagingShift] = useState<ShiftDto | null>(null)
+  const [openDialog, setOpenDialog] = useState(false)
+  const [openingInput, setOpeningInput] = useState('')
+  const [pettyInput, setPettyInput] = useState('')
+  const [openFormError, setOpenFormError] = useState<string | null>(null)
+  const [openServerError, setOpenServerError] = useState<string | null>(null)
   const handoverRef = useRef<HTMLDivElement>(null)
 
   const employeeNames = useMemo(() => {
@@ -397,7 +411,11 @@ export function ShiftsPage() {
                 type="button"
                 loading={openShift.isPending}
                 leftIcon={<Plus size={16} />}
-                onClick={() => void openShift.mutateAsync()}
+                onClick={() => {
+                  setOpenFormError(null)
+                  setOpenServerError(null)
+                  setOpenDialog(true)
+                }}
               >
                 Iniciar jornada
               </Button>
@@ -405,7 +423,124 @@ export function ShiftsPage() {
           >
             Abrir la jornada crea la caja compartida y habilita el turno mañana y el turno noche.
           </EmptyState>
-          {openShift.isError && <FormError>{shiftErrorMessage(openShift.error)}</FormError>}
+          {openShift.isError && !openDialog && (
+            <FormError>{shiftErrorMessage(openShift.error)}</FormError>
+          )}
+          <Modal
+            open={openDialog}
+            title="Iniciar jornada"
+            onClose={() => !openShift.isPending && setOpenDialog(false)}
+          >
+            <div className="grid gap-4">
+              <p className="m-0 text-sm text-text-muted">
+                Ingresa los fondos con los que inicia la caja de hoy.
+              </p>
+              <FormField label="Efectivo inicial de caja" required>
+                <Input
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={openingInput}
+                  onChange={(e) => {
+                    setOpeningInput(e.target.value)
+                    setOpenFormError(null)
+                    setOpenServerError(null)
+                  }}
+                  aria-label="Efectivo inicial de caja"
+                  disabled={openShift.isPending}
+                />
+              </FormField>
+              <FormField label="Efectivo inicial de caja chica" required>
+                <Input
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={pettyInput}
+                  onChange={(e) => {
+                    setPettyInput(e.target.value)
+                    setOpenFormError(null)
+                    setOpenServerError(null)
+                  }}
+                  aria-label="Efectivo inicial de caja chica"
+                  disabled={openShift.isPending}
+                />
+              </FormField>
+              {openFormError && <FormError>{openFormError}</FormError>}
+              {openServerError && <FormError>{openServerError}</FormError>}
+              {openShift.isError && !openFormError && !openServerError && (
+                <FormError>{shiftErrorMessage(openShift.error)}</FormError>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenDialog(false)}
+                  disabled={openShift.isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  loading={openShift.isPending}
+                  disabled={openShift.isPending}
+                  onClick={() => {
+                    const opening = parseMoneyInput(openingInput)
+                    const petty = parseMoneyInput(pettyInput)
+                    if (openingInput.trim() === '' || opening === null) {
+                      setOpenFormError('Ingresá el efectivo inicial de caja.')
+                      return
+                    }
+                    if (Number.isNaN(opening)) {
+                      setOpenFormError('El efectivo inicial de caja no es un monto válido.')
+                      return
+                    }
+                    if ((opening as number) < 0) {
+                      setOpenFormError('El efectivo inicial de caja no puede ser negativo.')
+                      return
+                    }
+                    if (pettyInput.trim() === '' || petty === null) {
+                      setOpenFormError('Ingresá el efectivo inicial de caja chica.')
+                      return
+                    }
+                    if (Number.isNaN(petty)) {
+                      setOpenFormError('El efectivo inicial de caja chica no es un monto válido.')
+                      return
+                    }
+                    if ((petty as number) < 0) {
+                      setOpenFormError('El efectivo inicial de caja chica no puede ser negativo.')
+                      return
+                    }
+                    setOpenFormError(null)
+                    setOpenServerError(null)
+                    void openShift
+                      .mutateAsync({
+                        openingAmount: opening as number,
+                        pettyCashOpeningAmount: petty as number,
+                      })
+                      .then(() => {
+                        setOpenDialog(false)
+                        setOpeningInput('')
+                        setPettyInput('')
+                        setOpenFormError(null)
+                        setOpenServerError(null)
+                      })
+                      .catch((cause: unknown) => {
+                        if (cause instanceof HttpError && cause.status === 400) {
+                          const detail = (cause.problem as { detail?: string })?.detail
+                          const msg =
+                            detail && !detail.includes('INVALID_REQUEST')
+                              ? detail
+                              : 'No se pudo iniciar la jornada. Verifica los montos de apertura.'
+                          setOpenServerError(msg)
+                        } else {
+                          setOpenServerError(shiftErrorMessage(cause))
+                        }
+                      })
+                  }}
+                >
+                  Iniciar jornada
+                </Button>
+              </div>
+            </div>
+          </Modal>
         </Card>
       ) : context.isError ? (
         <Alert kind="error">No se pudo cargar la jornada actual.</Alert>
