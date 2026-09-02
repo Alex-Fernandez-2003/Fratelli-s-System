@@ -300,23 +300,27 @@ public async Task<CashClosingDto?> CashClosingAsync(Guid id, CancellationToken c
     return x is null ? null : new CashClosingDto(x.Id, x.CashSessionId, x.BusinessDate, x.OpeningAmount, x.PettyCashOpeningAmount, x.CashRemovedAmount, x.SalesTotal, x.CashSalesTotal, x.QrSalesTotal, x.ExternalSalesTotal, x.DirectSalesTotal, x.PedidosYaSalesTotal, x.CashDrawerExpensesTotal, x.PettyCashExpensesTotal, x.ExpensesTotal, x.ExpectedCash, x.DeclaredCash, x.Difference, x.Observation, x.ClosedByUserId, x.ClosedAt);
 }
 
-public async Task<SalesReportDto> SalesReportAsync(AuthorizedSalesScope scope, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+public Task<SalesReportDto> SalesReportAsync(AuthorizedSalesScope scope, DateOnly? from, DateOnly? to, CancellationToken ct = default) => SalesReportAsync(scope, from, to, null, null, ct);
+
+public async Task<SalesReportDto> SalesReportAsync(AuthorizedSalesScope scope, DateOnly? from, DateOnly? to, ShiftType? shiftType, SalesChannel? salesChannel, CancellationToken ct = default)
 {
-    var query = scope.Apply(db.Sales.AsNoTracking());
-    // from/to on BusinessDate via CashSession join; for simplicity filter on ConfirmedAt date
-    if (from is not null) query = query.Where(s => s.ConfirmedAt >= from.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-    if (to is not null) query = query.Where(s => s.ConfirmedAt <= to.Value.ToDateTime(new TimeOnly(23,59,59), DateTimeKind.Utc));
-    var sales = await query.ToArrayAsync(ct);
-    var total = sales.Sum(x => x.Total);
-    var cash = sales.Where(x => x.PaymentMethod == PaymentMethod.CASH).Sum(x => x.Total);
-    var qr = sales.Where(x => x.PaymentMethod == PaymentMethod.QR).Sum(x => x.Total);
-    var ext = sales.Where(x => x.PaymentMethod == PaymentMethod.EXTERNAL).Sum(x => x.Total);
-    var direct = sales.Where(x => x.SalesChannel == SalesChannel.DIRECT).Sum(x => x.Total);
-    var pedidos = sales.Where(x => x.SalesChannel == SalesChannel.PEDIDOSYA).Sum(x => x.Total);
-    var shiftIds = sales.Select(x => x.ShiftId).Distinct().ToArray();
-    var sessions = await db.Shifts.AsNoTracking().Where(s => shiftIds.Contains(s.Id)).Join(db.CashSessions.AsNoTracking(), sh => sh.CashSessionId, cs => cs.Id, (sh, cs) => new { sh.Id, cs.BusinessDate }).ToDictionaryAsync(x => x.Id, x => x.BusinessDate, ct);
-    var series = sales.GroupBy(s => sessions.GetValueOrDefault(s.ShiftId)).OrderBy(g => g.Key).Select(g => new SalesReportSeriesDto(g.Key, g.Count(), g.Sum(x => x.Total))).ToArray();
-    return new(sales.Length, total, cash, qr, ext, direct, pedidos, series);
+    var query = from sale in scope.Apply(db.Sales.AsNoTracking())
+join shift in db.Shifts.AsNoTracking() on sale.ShiftId equals shift.Id
+join session in db.CashSessions.AsNoTracking() on shift.CashSessionId equals session.Id
+select new { Sale = sale, ShiftType = shift.Type, BusinessDate = session.BusinessDate };
+    if (from is not null) query = query.Where(x => x.BusinessDate >= from.Value);
+    if (to is not null) query = query.Where(x => x.BusinessDate <= to.Value);
+    if (shiftType is not null) query = query.Where(x => x.ShiftType == shiftType.Value);
+    if (salesChannel is not null) query = query.Where(x => x.Sale.SalesChannel == salesChannel.Value);
+    var rows = await query.ToArrayAsync(ct);
+    var total = rows.Sum(x => x.Sale.Total);
+    var cash = rows.Where(x => x.Sale.PaymentMethod == PaymentMethod.CASH).Sum(x => x.Sale.Total);
+    var qr = rows.Where(x => x.Sale.PaymentMethod == PaymentMethod.QR).Sum(x => x.Sale.Total);
+    var ext = rows.Where(x => x.Sale.PaymentMethod == PaymentMethod.EXTERNAL).Sum(x => x.Sale.Total);
+    var direct = rows.Where(x => x.Sale.SalesChannel == SalesChannel.DIRECT).Sum(x => x.Sale.Total);
+    var pedidos = rows.Where(x => x.Sale.SalesChannel == SalesChannel.PEDIDOSYA).Sum(x => x.Sale.Total);
+    var series = rows.GroupBy(x => x.BusinessDate).OrderBy(x => x.Key).Select(x => new SalesReportSeriesDto(x.Key, x.Count(), x.Sum(row => row.Sale.Total))).ToArray();
+    return new(rows.Length, total, cash, qr, ext, direct, pedidos, series);
 }
 
 public async Task<InventoryReportDto> InventoryReportAsync(CancellationToken ct = default)
@@ -335,26 +339,57 @@ return new InventoryReportItemDto(x.p.Id, x.p.Name, qty, min, state, units.GetVa
     return new(items, items.Length, low, neg);
 }
 
-public async Task<AttendanceReportDto> AttendanceReportAsync(DateOnly? from, DateOnly? to, Guid? employeeId, CancellationToken ct = default)
+public Task<AttendanceReportDto> AttendanceReportAsync(DateOnly? from, DateOnly? to, Guid? employeeId, CancellationToken ct = default) => AttendanceReportAsync(from, to, employeeId, null, ct);
+
+public async Task<AttendanceReportDto> AttendanceReportAsync(DateOnly? from, DateOnly? to, Guid? employeeId, ShiftType? shiftType, CancellationToken ct = default)
 {
     var empQuery = db.Employees.AsNoTracking().AsQueryable();
-    if (employeeId != null) empQuery = empQuery.Where(e => e.Id == employeeId);
+    if (employeeId is not null) empQuery = empQuery.Where(e => e.Id == employeeId.Value);
     var employees = await empQuery.ToArrayAsync(ct);
-    var attQuery = db.AttendanceRecords.AsNoTracking().AsQueryable();
-    if (from != null) attQuery = attQuery.Where(a => a.BusinessDate >= from);
-    if (to != null) attQuery = attQuery.Where(a => a.BusinessDate <= to);
-    if (employeeId != null) attQuery = attQuery.Where(a => a.EmployeeId == employeeId);
-    var records = await attQuery.ToArrayAsync(ct);
-    var items = employees.Select(e =>
+    var query = from assignment in db.ShiftAssignments.AsNoTracking()
+join shift in db.Shifts.AsNoTracking() on assignment.ShiftId equals shift.Id
+join session in db.CashSessions.AsNoTracking() on shift.CashSessionId equals session.Id
+join employee in db.Employees.AsNoTracking() on assignment.EmployeeId equals employee.Id
+join record in db.AttendanceRecords.AsNoTracking()
+on new { assignment.EmployeeId, session.BusinessDate }
+equals new { record.EmployeeId, record.BusinessDate } into records
+from record in records.DefaultIfEmpty()
+select new { Assignment = assignment, Shift = shift, Session = session, Employee = employee, Record = record };
+    if (employeeId is not null) query = query.Where(x => x.Employee.Id == employeeId.Value);
+    if (from is not null) query = query.Where(x => x.Session.BusinessDate >= from.Value);
+    if (to is not null) query = query.Where(x => x.Session.BusinessDate <= to.Value);
+    if (shiftType is not null) query = query.Where(x => x.Shift.Type == shiftType.Value);
+    var rows = await query.ToArrayAsync(ct);
+    var derivation = new AttendanceDerivationService(clock);
+    var payroll = new PayrollProjectionCalculator();
+    var derivedRows = rows.Select(x => new
     {
-var empRecords = records.Where(r => r.EmployeeId == e.Id).ToArray();
-var closed = empRecords.Where(r => r.CheckOutAt != null).ToArray();
-var worked = closed.Sum(r => (int)(r.CheckOutAt!.Value - r.CheckInAt).TotalMinutes);
-var hours = worked / 60m;
-var pay = hours * e.HourlyRate;
-return new AttendanceReportItemDto(e.Id, e.FullName, empRecords.Length, worked, hours, 0, 0, e.HourlyRate, pay);
+x.Employee.Id,
+Derived = derivation.Derive(new(x.Session, x.Shift, x.Assignment, x.Record))
     }).ToArray();
-    return new(items);
+    var items = employees.Select(employee =>
+    {
+var employeeRows = derivedRows.Where(x => x.Id == employee.Id).ToArray();
+var projection = payroll.Calculate(employeeRows.Select(x => x.Derived), employee.HourlyRate);
+return new AttendanceReportItemDto(
+employee.Id,
+employee.FullName,
+employeeRows.Count(x => x.Derived.Lifecycle is AttendanceLifecycle.OPEN or AttendanceLifecycle.CLOSED),
+projection.WorkedMinutes,
+projection.WorkedHours,
+employeeRows.Count(x => x.Derived.IsLate),
+employeeRows.Count(x => x.Derived.IsAbsent),
+employee.HourlyRate,
+projection.ProjectedPay);
+    }).ToArray();
+    var summary = new AttendanceReportSummaryDto(
+items.Sum(x => x.AttendanceCount),
+items.Sum(x => x.WorkedMinutes),
+items.Sum(x => x.WorkedHours),
+items.Sum(x => x.LateCount),
+items.Sum(x => x.AbsenceCount),
+items.Sum(x => x.ProjectedPay));
+    return new(items, summary);
 }
     
     public async Task<(SaleDto? Value, string? Error, IReadOnlyList<InventoryShortageDto>? Shortages)> ConfirmSaleAsync(ConfirmSaleRequest request, string actor, CancellationToken ct = default)
