@@ -2,67 +2,70 @@
 
 ## Resultado
 
-**BACKEND IMPLEMENTADO / FRONTEND PENDIENTE**
+**APPLY COMPLETADO — BACKEND + FRONTEND IMPLEMENTADOS**
 
-Backend completo para HU-023. Frontend productivo fuera de alcance de este change.
+Este bloque implementa HU-023 en `/mi-asistencia` para cualquier rol autenticado con un `Employee` vinculado. La identidad se resuelve server-side: el llamador no selecciona `EmployeeId`.
 
-## Reglas implementadas
+## Reglas y referencias históricas
 
-Ver `docs/openspec/changes/archive/2026-08-31-implement-sprint-3-complete-backend/spec.md` y `design.md` para reglas normativas congeladas de HU-023.
+Ver `docs/openspec/changes/archive/2026-08-31-implement-sprint-3-complete-backend/spec.md` y `design.md` para las reglas normativas congeladas de HU-023. `apply-progress.md` y `verify-report.md` del change archivado se conservan como referencias históricas; el `verify-report.md` del cambio actual registra `PASS_WITH_MANUAL_EVIDENCE_DEFERRED`; la revisión ordinaria receipt-driven permanece desactivada y la evidencia manual responsive/accessibility permanece `DEFERRED_TO_SPRINT_FINAL_AUDIT`.
 
-## Seguridad
+## Contrato y seguridad
 
-Autorización server-side. Ver `verify-report.md` y matriz de `Program.cs`. Row-level scope aplicado antes de filtros/paginación donde corresponde. Multi-role = unión.
+### Asistencia propia
 
-## Backend / contrato
+| Endpoint | Comportamiento |
+| --- | --- |
+| `POST /api/v1/attendance/me/check-in` | Check-in ligado a la identidad autenticada |
+| `POST /api/v1/attendance/me/check-out` | Check-out ligado a la identidad autenticada |
+| `GET /api/v1/attendance/me/current` | Estado actual propio |
+| `GET /api/v1/attendance/me?from=&to=&page=&pageSize=` | Historial propio enriquecido; no acepta `employeeId` |
 
-### Endpoints
+El backend es la autoridad para el lifecycle de asistencia, el snapshot de horario, la puntualidad y `workedMinutes`. La autorización permanece server-side.
 
-- `GET /api/v1/attendance/me?from=&to=&page=&pageSize=` → `AttendancePage` own-only, resuelve EmployeeId desde `ClaimTypes.NameIdentifier`, 404 si no vinculado, no acepta `employeeId`
+### Contratos administrativos existentes
 
-### DTOs / snapshots
+Los endpoints gestionados `/api/v1/attendance/employees/{employeeId}/...` conservan la policy `AttendanceManage`, disponible para `ADMINISTRADOR` y `ENCARGADO`. El contrato y la policy backend de HU-024 en `/api/v1/attendance/admin` se reutilizan sin cambios.
 
-Ver `backend/src/RestaurantSystem.Application/Operations/OperationalContracts.cs` y contratos específicos de la HU.
-
-## Baseline revalidado
-
-Branch `develop` HEAD `ec708a37a7f0627fc0ac54690c89cec7f2b061eb`. Working tree con 4 migrations Sprint 3 aplicadas (`dotnet ef database update` PASS, `has-pending-model-changes` clean). `dotnet build -c Release` PASS.
-
-## Evidencia real
-
-- `dotnet test backend/RestaurantSystem.slnx` → 100/100 PASS (1 Domain + 18 Application + 81 Integration)
-- `curl http://localhost:5057/openapi/v1.json` → 200 (289K) con paths HU-023 presentes
-- `pnpm --dir frontend run api:generate` → 179K (openapi-typescript 7.13.0)
-- `pnpm --dir frontend run build` → PASS (1952 modules) tras compatibilidad `GET /purchases` history
-
-## Manifest de archivos del change
-
-### Backend
+## Backend aplicado
 
 | Archivo | Propósito |
 | --- | --- |
-| `backend/src/RestaurantSystem.Infrastructure/Attendance/AttendanceServices.cs` | MineAsync reutilizado |
-| `backend/src/RestaurantSystem.Api/Program.cs` | Policy AttendanceSelf |
-| `backend/tests/RestaurantSystem.IntegrationTests/AttendancePostgresIntegrationTests.cs` | own-only + 404 sin Employee |
+| `backend/src/RestaurantSystem.Infrastructure/Attendance/AttendanceServices.cs` | Resolución de asistencia propia (`MineAsync`) |
+| `backend/src/RestaurantSystem.Api/Program.cs` | Policy `AttendanceSelf` |
+| `backend/tests/RestaurantSystem.IntegrationTests/AttendancePostgresIntegrationTests.cs` | Own-only y 404 sin `Employee` vinculado |
 
-### Frontend y contrato generado
+## Frontend aplicado
 
-| Archivo | Propósito |
+| Área | Archivos / propósito |
 | --- | --- |
-| `frontend/src/types/api.generated.ts` | Cliente generado desde OpenAPI runtime (179K), regenerado contra `http://localhost:5057/openapi/v1.json`, sin edición manual |
-| `frontend/src/features/purchases/pages.tsx` | Compatibilidad: mantiene `GET /purchases` (PurchaseDto) + nuevo `GET /purchases/history` (PurchaseHistoryDto) |
+| Asistencia propia | `frontend/src/features/attendance/api.ts`, `hooks.ts`, `format.ts`, `frontend/src/pages/MyAttendancePage.tsx` |
+| Vista administrativa y operaciones HU-022 | `frontend/src/features/attendance/AdministrativeAttendancePage.tsx`, `AttendanceTodayPage.tsx`; `/asistencia` es read-only y `/asistencia/hoy` conserva las operaciones de HU-022 |
+| Rutas, navegación e Inicio | `frontend/src/routes/AppRoutes.tsx`, `frontend/src/features/navigation.tsx`, `frontend/src/pages/InicioPage.tsx`, `frontend/src/lib/api/endpoints.ts` |
+| Pruebas enfocadas | `frontend/src/features/attendance/api.test.ts`, `AdministrativeAttendancePage.test.tsx`, `frontend/src/pages/MyAttendancePage.test.tsx`, `frontend/src/routes/AppRoutes.test.tsx`, `frontend/src/features/navigation.test.ts` |
+| Contrato generado | `frontend/src/types/api.generated.ts`, sincronizado únicamente mediante OpenAPI runtime y sin edición manual |
 
-### Documentación
+## Contexto del APPLY
 
-| Archivo | Propósito |
+El worktree partió de `HEAD` inicial `4504e8f5…`. No se modificaron migraciones, snapshots del modelo, dependencias ni lockfiles.
+
+## Evidencia automatizada
+
+| Alcance | Resultado |
 | --- | --- |
-| `docs/historias/HU-023-sprint3-backend.md` | Esta HU (backend completo, endpoints + manifest) |
-| `docs/openspec/changes/archive/2026-08-31-implement-sprint-3-complete-backend/` | Change archivado (proposal/design/spec/tasks/apply-progress/verify-report) |
+| Frontend: `format:check`, `typecheck`, `lint` | PASS |
+| Frontend: `pnpm test` | PASS — 39 archivos / 224 tests |
+| Frontend: `build` | PASS |
+| Backend: `dotnet build -c Release` | PASS — permanece el warning existente `NU1903` de SSH.NET |
+| Regresión backend aislada por proceso | PASS — 107/107: 88 integration, 18 application, 1 domain |
+| Prueba original de la solución en un solo proceso | 105/107; 2 tests de setup de migraciones chocaron con agotamiento de clientes PostgreSQL `53300`; las reejecuciones por clase pasaron 107/107 |
+| D16 — Attendance | PASS — 8/8 |
+| D16 — derivation | PASS — 17/17 |
 
-## Evidencias
+## Límites de evidencia
 
-Backend-only HU: evidencia es `apply-progress.md` + `verify-report.md` + OpenAPI runtime. No se requieren screenshots frontend para este APPLY.
+La evidencia manual responsive/accessibility es exactamente `DEFERRED_TO_SPRINT_FINAL_AUDIT`; no se describe como PASS. El `verify-report.md` del change actual registra `PASS_WITH_MANUAL_EVIDENCE_DEFERRED`; no se afirma screenshots, commit, push ni release.
 
 ## Estado de entrega
 
-`HU_023_BACKEND_COMPLETE: YES` — `READY_FOR_SPRINT_3_FRONTEND: YES` (frontend Sprint 3 pendiente en change separado)
+`HU_023_BACKEND_COMPLETE: YES` — `HU_023_FRONTEND_APPLY: YES` — APPLY automatizado completado; auditoría manual final diferida.
