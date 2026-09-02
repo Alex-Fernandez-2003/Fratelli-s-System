@@ -4569,6 +4569,75 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/productions/summary': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: {
+          productId?: string
+          batchCode?: string
+          status?: components['schemas']['ProductionStatus']
+          responsible?: string
+          from?: string
+          to?: string
+        }
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['ProductionSummaryDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/productions/{id}': {
     parameters: {
       query?: never
@@ -7021,6 +7090,29 @@ export interface components {
     }
     /** @enum {unknown} */
     ProductionStatus: 'COMPLETED'
+    ProductionSummaryDto: {
+      /** Format: int32 */
+      productionCount: number | string
+      latestProduction: null | components['schemas']['ProductionSummaryLatestDto']
+      mostProducedPreparation: null | components['schemas']['ProductionSummaryMostProducedDto']
+    }
+    ProductionSummaryLatestDto: {
+      /** Format: uuid */
+      productionId: string
+      batchCode: string
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: date-time */
+      producedAt: string
+    }
+    ProductionSummaryMostProducedDto: {
+      /** Format: uuid */
+      productId: string
+      productName: string
+      /** Format: int32 */
+      productionCount: number | string
+    }
     ProductRequest: {
       name: string
       productType: components['schemas']['ProductType']

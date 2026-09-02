@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
@@ -13,7 +14,7 @@ import {
   User,
 } from 'lucide-react'
 import { useAuth } from '../auth/AuthProvider'
-import { productionApi } from './api'
+import { productionApi, productionHistoryKeys } from './api'
 import type { ProductionRequirementDto } from './api'
 import { Button } from '../../components/atoms'
 import { Input, Select, Textarea } from '../../components/atoms'
@@ -24,6 +25,7 @@ type View = 'form' | 'confirming' | 'success'
 
 export function RegisterProductionPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const [view, setView] = useState<View>('form')
@@ -73,6 +75,7 @@ export function RegisterProductionPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productionRequirements'] })
+      queryClient.invalidateQueries({ queryKey: productionHistoryKeys.all })
       setView('success')
     },
     onError: (err: Error & { problem?: { detail?: string; code?: string } }) => {
@@ -283,6 +286,7 @@ export function RegisterProductionPage() {
           producedAt={new Date().toISOString()}
           responsibleName={user?.fullName ?? user?.username ?? ''}
           onRegisterAnother={handleReset}
+          onViewHistory={() => navigate('/produccion')}
         />
       )}
     </div>
@@ -373,12 +377,14 @@ function SuccessView({
   producedAt,
   responsibleName,
   onRegisterAnother,
+  onViewHistory,
 }: {
   productName: string
   quantity: number
   producedAt: string
   responsibleName: string
   onRegisterAnother: () => void
+  onViewHistory: () => void
 }) {
   return (
     <div className="mx-auto max-w-lg space-y-6 py-8">
@@ -416,10 +422,13 @@ function SuccessView({
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <Button variant="ghost" onClick={onRegisterAnother}>
             <ArrowLeft size={16} />
             Registrar otra produccion
+          </Button>
+          <Button variant="outline" onClick={onViewHistory}>
+            Ver historial
           </Button>
         </div>
       </section>

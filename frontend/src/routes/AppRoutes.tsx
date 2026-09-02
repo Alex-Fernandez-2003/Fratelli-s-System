@@ -6,6 +6,9 @@ import {
   CUSTOMER_READ_ROLES,
   PRODUCT_READ_ROLES,
   SALES_HISTORY_READ_ROLES,
+  PRODUCTION_HISTORY_READ_ROLES,
+  EXPENSE_HISTORY_READ_ROLES,
+  EXPENSE_WRITE_ROLES,
   AuthenticatedLayout,
 } from '../features/navigation'
 import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
@@ -24,9 +27,13 @@ import { UsersPage } from '../features/users/pages/UsersPage'
 import { SUPPLIER_READ_ROLES } from '../features/proveedores/types'
 import { InventoryBalancesPage, InventoryMovementsPage } from '../features/inventory/pages'
 import { ExpensesPage } from '../features/expenses/pages'
+import { HistoryPage as ExpensesHistoryPage } from '../features/expenses/HistoryPage'
 import { NewPurchasePage, PurchasesPage, ReceivePurchasePage } from '../features/purchases/pages'
 import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
-import { RegisterProductionPage } from '../features/production'
+import {
+  HistoryPage as ProductionHistoryPage,
+  RegisterProductionPage,
+} from '../features/production'
 import { ShiftsPage } from '../features/shifts/ShiftsPage'
 import { CustomersPage } from '../features/customers/CustomersPage'
 import { SalesHistoryPage } from '../features/sales/SalesHistoryPage'
@@ -111,6 +118,9 @@ export function AppRoutes() {
             <Route path="/productos/:id/composicion" element={<CompositionPage />} />
           </Route>
 
+          <Route element={<RequireAnyRole roles={[...PRODUCTION_HISTORY_READ_ROLES]} />}>
+            <Route path="/produccion" element={<ProductionHistoryPage />} />
+          </Route>
           <Route element={<RequireAnyRole roles={['COCINA', 'ENCARGADO', 'ADMINISTRADOR']} />}>
             <Route path="/produccion/registrar" element={<RegisterProductionPage />} />
           </Route>
@@ -126,7 +136,10 @@ export function AppRoutes() {
             <Route path="/inventario" element={<InventoryBalancesPage />} />
             <Route path="/inventario/movimientos" element={<InventoryMovementsPage />} />
           </Route>
-          <Route element={<RequireAnyRole roles={['ADMINISTRADOR', 'ENCARGADO']} />}>
+          <Route element={<RequireAnyRole roles={[...EXPENSE_HISTORY_READ_ROLES]} />}>
+            <Route path="/gastos/historial" element={<ExpensesHistoryPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...EXPENSE_WRITE_ROLES]} />}>
             <Route path="/gastos" element={<ExpensesPage />} />
           </Route>
 

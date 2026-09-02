@@ -99,14 +99,44 @@ export const endpoints = {
   },
   productions: {
     create: () => '/api/v1/productions',
+    list: (params: {
+      page: number
+      pageSize: number
+      productId?: string
+      batchCode?: string
+      status?: string
+      responsible?: string
+      from?: string
+      to?: string
+    }) => withQuery('/api/v1/productions', params),
+    summary: (
+      params: {
+        productId?: string
+        batchCode?: string
+        status?: string
+        responsible?: string
+        from?: string
+        to?: string
+      } = {},
+    ) => withQuery('/api/v1/productions/summary', params),
+    detail: (id: string) => `/api/v1/productions/${encodeURIComponent(id)}`,
   },
   sales: {
     create: () => '/api/v1/sales',
   },
   purchases: {
-    list: (params: { page: number; pageSize: number; status?: string }) =>
-      withQuery('/api/v1/purchases', params),
-    detail: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}`,
+    list: (params: {
+      page: number
+      pageSize: number
+      status?: string
+      supplierId?: string
+      purchaseArea?: string
+      responsible?: string
+      from?: string
+      to?: string
+    }) => withQuery('/api/v1/purchases/history', params),
+    detail: (id: string) => `/api/v1/purchases/history/${encodeURIComponent(id)}`,
+    operationDetail: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}`,
     create: () => '/api/v1/purchases',
     cancel: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}/cancel`,
     receive: (id: string) => `/api/v1/purchases/${encodeURIComponent(id)}/receive`,
@@ -145,7 +175,22 @@ export const endpoints = {
     preview: () => '/api/v1/cash/preview',
     close: () => '/api/v1/cash/close',
   },
-  expenses: { categories: () => '/api/v1/expense-categories', create: () => '/api/v1/expenses' },
+  expenses: {
+    list: (
+      params: {
+        page?: number
+        pageSize?: number
+        from?: string
+        to?: string
+        categoryId?: string
+        cashSource?: string
+        responsible?: string
+        shiftType?: string
+      } = {},
+    ) => withQuery('/api/v1/expenses', params),
+    categories: () => '/api/v1/expense-categories',
+    create: () => '/api/v1/expenses',
+  },
   suppliers: {
     list: '/api/v1/suppliers',
     create: '/api/v1/suppliers',

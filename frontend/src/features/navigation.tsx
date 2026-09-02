@@ -19,8 +19,11 @@ import { HeaderClock } from '@/components/templates/HeaderClock'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 import { PURCHASE_READ_ROLES } from '@/features/purchases/api'
+import { EXPENSE_HISTORY_READ_ROLES, expenseCanWrite } from '@/features/expenses/api'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '@/features/shifts/api'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
+
+export { EXPENSE_HISTORY_READ_ROLES, EXPENSE_WRITE_ROLES } from '@/features/expenses/api'
 
 export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'] as const
 export const PRODUCT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
@@ -32,6 +35,13 @@ export const SALES_HISTORY_READ_ROLES = [
   'MESERO',
   'CONTADORA',
 ] as const
+export const PRODUCTION_HISTORY_READ_ROLES = [
+  'ADMINISTRADOR',
+  'ENCARGADO',
+  'COCINA',
+  'CONTADORA',
+] as const
+export const PRODUCTION_WRITE_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'COCINA'] as const
 
 export type AuthNavigationItem = {
   id: string
@@ -82,10 +92,10 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
   },
   {
     id: 'produccion',
-    label: 'Produccion',
+    label: 'Producción',
     icon: ChefHat,
-    readRoles: ['COCINA', 'ENCARGADO', 'ADMINISTRADOR'],
-    target: '/produccion/registrar',
+    readRoles: PRODUCTION_HISTORY_READ_ROLES,
+    target: '/produccion',
     matches: startsWithRoute('/produccion'),
   },
   {
@@ -149,8 +159,8 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     id: 'gastos',
     label: 'Gastos',
     icon: ReceiptText,
-    readRoles: ['ADMINISTRADOR', 'ENCARGADO'],
-    target: '/gastos',
+    readRoles: EXPENSE_HISTORY_READ_ROLES,
+    target: (roles) => (expenseCanWrite(roles) ? '/gastos' : '/gastos/historial'),
     matches: startsWithRoute('/gastos'),
   },
   {

@@ -1,25 +1,55 @@
 import { Banknote, CheckCircle2, CreditCard, RefreshCw } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Button, Card, Input, Select, Textarea } from '@/components/atoms'
 import { FormError, FormField, FormHint } from '@/components/molecules'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { businessDate } from '@/lib/business-time'
 import { HttpError } from '@/lib/api/http-client'
-import { type CashSource, type Expense, useCreateExpense, useExpenseCategories } from './api'
+import {
+  expenseCanWrite,
+  type CashSource,
+  type Expense,
+  useCreateExpense,
+  useExpenseCategories,
+} from './api'
 
-function boliviaToday() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/La_Paz',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts()
-  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? ''
-  return `${part('year')}-${part('month')}-${part('day')}`
-}
 const cashLabel = (cashSource: CashSource) =>
   cashSource === 'CASH_DRAWER' ? 'Caja principal' : 'Caja chica'
 
-function Confirmation({ expense, onReset }: { expense: Expense; onReset: () => void }) {
+export function ExpenseTabs() {
+  const { user } = useAuth()
+  const canWrite = expenseCanWrite(user?.roles ?? [])
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `rounded-md px-3 py-2 text-sm font-bold no-underline ${
+      isActive
+        ? 'bg-brand-orange text-brand-black'
+        : 'text-text-muted hover:bg-surface-elevated hover:text-text'
+    }`
+
+  return (
+    <nav aria-label="Secciones de gastos" className="flex flex-wrap gap-2">
+      {canWrite && (
+        <NavLink end to="/gastos" className={linkClass}>
+          Registrar gasto
+        </NavLink>
+      )}
+      <NavLink to="/gastos/historial" className={linkClass}>
+        Historial
+      </NavLink>
+    </nav>
+  )
+}
+
+function Confirmation({
+  expense,
+  onReset,
+  onHistory,
+}: {
+  expense: Expense
+  onReset: () => void
+  onHistory: () => void
+}) {
   return (
     <Card className="mx-auto grid max-w-2xl gap-5 p-6 text-center">
       <CheckCircle2 className="mx-auto text-success" size={48} />
@@ -55,15 +85,19 @@ function Confirmation({ expense, onReset }: { expense: Expense; onReset: () => v
           </div>
         )}
       </dl>
-      <Button className="mx-auto" onClick={onReset}>
-        Registrar otro gasto
-      </Button>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Button onClick={onReset}>Registrar otro gasto</Button>
+        <Button variant="outline" onClick={onHistory}>
+          Ver historial
+        </Button>
+      </div>
     </Card>
   )
 }
 
 export function ExpensesPage() {
-  const today = boliviaToday()
+  const navigate = useNavigate()
+  const today = businessDate()
   const categories = useExpenseCategories()
   const mutation = useCreateExpense()
   const { user } = useAuth()
@@ -80,7 +114,7 @@ export function ExpensesPage() {
     setCategoryId('')
     setCashSource('')
     setDescription('')
-    setExpenseDate(boliviaToday())
+    setExpenseDate(businessDate())
     setError(undefined)
     setCreated(undefined)
   }
@@ -90,7 +124,7 @@ export function ExpensesPage() {
       !cashSource ||
       !description.trim() ||
       description.trim().length > 500 ||
-      expenseDate > boliviaToday()
+      expenseDate > businessDate()
     ) {
       setError(
         'Completá un monto válido, la fuente de dinero, una descripción de hasta 500 caracteres y una fecha no futura.',
@@ -116,13 +150,24 @@ export function ExpensesPage() {
       )
     }
   }
-  if (created) return <Confirmation expense={created} onReset={reset} />
+  if (created)
+    return (
+      <div className="grid gap-6">
+        <ExpenseTabs />
+        <Confirmation
+          expense={created}
+          onReset={reset}
+          onHistory={() => navigate('/gastos/historial')}
+        />
+      </div>
+    )
   return (
     <div className="grid gap-6">
       <header>
         <h1>Gastos</h1>
         <p className="text-text-muted">Documentá un nuevo egreso del restaurante.</p>
       </header>
+      <ExpenseTabs />
       <Card className="mx-auto grid w-full max-w-4xl gap-5 p-5 sm:p-6">
         <div>
           <h2>Nuevo registro</h2>

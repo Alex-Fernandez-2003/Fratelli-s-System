@@ -1,12 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  Package,
-  PackageCheck,
-  Plus,
-  Trash2,
-  XCircle,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight, PackageCheck, Plus, Trash2, XCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, Modal, PageHeader } from '@/components/organisms'
@@ -25,16 +17,21 @@ import { HttpError } from '@/lib/api/http-client'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   PURCHASE_WRITE_ROLES,
+  createPurchaseHistoryFilters,
+  purchaseHistoryScope,
+  updatePurchaseHistoryFilters,
   useCancelPurchase,
   useCreatePurchase,
   usePurchaseDetail,
+  usePurchaseOperationDetail,
   usePurchasesList,
   useProductsForPurchase,
   useReceivePurchase,
   useSuppliersForPurchase,
   useUnitsForPurchase,
   type CreatePurchaseRequest,
-  type PurchaseDto,
+  type PurchaseHistoryDto,
+  type PurchaseHistoryFilters,
   type PurchaseLineRequest,
   type PurchaseStatus,
   type ReceiptLineRequest,
@@ -57,101 +54,200 @@ const message = (error: unknown) =>
   error instanceof HttpError && error.status === 409
     ? 'No se pudo completar la operación. Revisá el estado de la compra o intentá nuevamente.'
     : 'No se pudo completar la operación. Intentá nuevamente.'
+const date = (value: string) =>
+  new Intl.DateTimeFormat('es-BO', { dateStyle: 'short', timeZone: 'America/La_Paz' }).format(
+    new Date(`${value}T00:00:00`),
+  )
+const dateTime = (value: string) =>
+  new Intl.DateTimeFormat('es-BO', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'America/La_Paz',
+  }).format(new Date(value))
+const shortId = (id: string) => `${id.slice(0, 8)}…`
+const AREA_LABEL: Record<string, string> = { KITCHEN: 'Cocina', GENERAL: 'General' }
+
+function PurchaseDetailContent({ purchase }: { purchase: import('./api').PurchaseDetailDto }) {
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-1 text-sm">
+        <span>Fecha: {date(purchase.purchaseDate)}</span>
+        <span className="break-all">ID: {purchase.id}</span>
+        <span className="break-words">Proveedor: {purchase.supplierName}</span>
+        <span>Área: {AREA_LABEL[purchase.purchaseArea] ?? purchase.purchaseArea}</span>
+        <span>Estado: {STATUS_LABEL[purchase.status]}</span>
+        <span>Creada por: {purchase.createdByUserId}</span>
+        {purchase.responsibleName && <span>Responsable: {purchase.responsibleName}</span>}
+        {purchase.receiptReference && <span>Referencia: {purchase.receiptReference}</span>}
+        {purchase.notes && <span>Notas: {purchase.notes}</span>}
+      </div>
+      <div className="grid min-w-0 gap-3">
+        <h3 className="m-0">Ítems</h3>
+        {purchase.items.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3"
+          >
+            <div className="grid gap-1">
+              <strong className="break-words">{item.productName}</strong>
+              <span className="text-sm text-text-muted">
+                {Number(item.orderedQuantity)} {item.unitSymbol} × Bs.{' '}
+                {Number(item.unitCost).toFixed(2)}
+              </span>
+            </div>
+            <span>Bs. {Number(item.lineTotal).toFixed(2)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between border-t border-border pt-4">
+        <strong>Total</strong>
+        <strong>Bs. {Number(purchase.total).toFixed(2)}</strong>
+      </div>
+      {purchase.receipt && (
+        <Card className="grid gap-2">
+          <h3 className="m-0">Recepción registrada</h3>
+          <span>Fecha: {dateTime(purchase.receipt.receivedAt)}</span>
+          <span>Recibida por: {purchase.receipt.receivedByUserId}</span>
+          {purchase.receipt.responsibleName && (
+            <span>Responsable: {purchase.receipt.responsibleName}</span>
+          )}
+          {purchase.receipt.notes && <span>Notas: {purchase.receipt.notes}</span>}
+          <div className="grid gap-1 text-sm">
+            {purchase.receipt.lines.map((line) => (
+              <span key={line.purchaseItemId}>
+                {Number(line.receivedQuantity)} {line.unitSymbol}
+              </span>
+            ))}
+          </div>
+        </Card>
+      )}
+      {purchase.status === 'CANCELADA' && (
+        <Card className="grid gap-2">
+          <h3 className="m-0">Cancelación registrada</h3>
+          {purchase.cancellationReason && <span>Motivo: {purchase.cancellationReason}</span>}
+          {purchase.cancelledAt && <span>Fecha: {dateTime(purchase.cancelledAt)}</span>}
+          {purchase.cancelledByUserId && <span>Cancelada por: {purchase.cancelledByUserId}</span>}
+        </Card>
+      )}
+    </div>
+  )
+}
+
+function PurchaseDetailOverlay({ id, onClose }: { id?: string; onClose: () => void }) {
+  const query = usePurchaseDetail(id ?? '')
+  return (
+    <Modal open={Boolean(id)} title="Detalle de compra" onClose={onClose}>
+      {query.isLoading ? (
+        <p role="status">Cargando detalle de compra…</p>
+      ) : query.error ? (
+        <div className="grid gap-3">
+          <p role="alert">No se pudo cargar el detalle de la compra.</p>
+          <Button variant="outline" onClick={() => void query.refetch()}>
+            Reintentar
+          </Button>
+        </div>
+      ) : query.data ? (
+        <PurchaseDetailContent purchase={query.data} />
+      ) : null}
+    </Modal>
+  )
+}
 
 /* -------------------------------------------------------------------------- */
 /* Listado                                                                     */
 /* -------------------------------------------------------------------------- */
 
 export function PurchasesPage() {
-  const { hasAnyRole } = useAuth()
+  const { hasAnyRole, user } = useAuth()
   const navigate = useNavigate()
   const canWrite = hasAnyRole([...PURCHASE_WRITE_ROLES])
+  const scope = purchaseHistoryScope(user?.roles ?? [])
 
-  const [filters, setFilters] = useState<{
-    page: number
-    pageSize: number
-    status: PurchaseStatus | ''
-  }>({
-    page: 1,
-    pageSize: 20,
-    status: '',
-  })
-  const [cancelTarget, setCancelTarget] = useState<PurchaseDto | null>(null)
+  const [filters, setFilters] = useState<PurchaseHistoryFilters>(() =>
+    createPurchaseHistoryFilters(),
+  )
+  const [cancelTarget, setCancelTarget] = useState<PurchaseHistoryDto | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelError, setCancelError] = useState<string>()
-
+  const [detailId, setDetailId] = useState<string>()
   const query = usePurchasesList({
-    page: filters.page,
-    pageSize: filters.pageSize,
-    status: filters.status || undefined,
+    ...filters,
+    purchaseArea: scope === 'cocina' ? 'KITCHEN' : filters.purchaseArea,
   })
   const suppliersQuery = useSuppliersForPurchase()
   const cancel = useCancelPurchase()
+  const suppliers = suppliersQuery.data?.items ?? []
+  const updateFilter = <K extends keyof Omit<PurchaseHistoryFilters, 'page' | 'pageSize'>>(
+    key: K,
+    value: PurchaseHistoryFilters[K],
+  ) => setFilters((current) => updatePurchaseHistoryFilters(current, { [key]: value }))
 
-  const supplierName = (id: string) =>
-    suppliersQuery.data?.items.find((s) => s.id === id)?.name ?? '—'
-
+  const totalPages = Math.max(1, Number(query.data?.totalPages ?? 1))
+  const totalCount = Number(query.data?.totalCount ?? 0)
+  const currentPage = Number(filters.page)
+  const pageSize = Number(filters.pageSize)
+  const firstResult = totalCount ? (currentPage - 1) * pageSize + 1 : 0
+  const lastResult = Math.min(currentPage * pageSize, totalCount)
+  const viewAction = (purchase: PurchaseHistoryDto) => (
+    <Button size="sm" variant="outline" onClick={() => setDetailId(purchase.id)}>
+      Ver detalle de {shortId(purchase.id)}
+    </Button>
+  )
+  const actions = (purchase: PurchaseHistoryDto) => (
+    <div className="flex flex-wrap gap-1">
+      {viewAction(purchase)}
+      {canWrite && purchase.status === 'PENDIENTE' && (
+        <>
+          <IconButton
+            type="button"
+            label={`Recibir compra ${shortId(purchase.id)}`}
+            onClick={() => navigate(`/compras/${purchase.id}/recibir`)}
+          >
+            <PackageCheck size={16} />
+          </IconButton>
+          <IconButton
+            type="button"
+            label={`Cancelar compra ${shortId(purchase.id)}`}
+            onClick={() => {
+              setCancelTarget(purchase)
+              setCancelReason('')
+              setCancelError(undefined)
+            }}
+          >
+            <XCircle size={16} />
+          </IconButton>
+        </>
+      )}
+    </div>
+  )
   const columns = [
+    { id: 'date', header: 'Fecha', cell: (p: PurchaseHistoryDto) => date(p.purchaseDate) },
+    { id: 'id', header: 'ID', cell: (p: PurchaseHistoryDto) => shortId(p.id) },
+    { id: 'supplier', header: 'Proveedor', cell: (p: PurchaseHistoryDto) => p.supplierName },
     {
-      id: 'supplier',
-      header: 'Proveedor',
-      cell: (purchase: PurchaseDto) => (
-        <div className="flex items-center gap-2">
-          <Package aria-hidden="true" size={16} className="text-text-muted" />
-          <span>{supplierName(purchase.supplierId)}</span>
-        </div>
-      ),
+      id: 'area',
+      header: 'Área',
+      cell: (p: PurchaseHistoryDto) => AREA_LABEL[p.purchaseArea] ?? p.purchaseArea,
     },
     {
-      id: 'lines',
-      header: 'Ítems',
-      cell: (purchase: PurchaseDto) => purchase.lines.length,
+      id: 'responsible',
+      header: 'Responsable',
+      cell: (p: PurchaseHistoryDto) => p.responsibleName ?? '—',
     },
     {
       id: 'total',
       header: 'Total (Bs.)',
-      cell: (purchase: PurchaseDto) => Number(purchase.total).toFixed(2),
+      cell: (p: PurchaseHistoryDto) => Number(p.total).toFixed(2),
     },
     {
       id: 'status',
       header: 'Estado',
-      cell: (purchase: PurchaseDto) => <Badge>{STATUS_LABEL[purchase.status]}</Badge>,
+      cell: (p: PurchaseHistoryDto) => <Badge>{STATUS_LABEL[p.status]}</Badge>,
     },
   ]
 
-  const totalPages = Number(query.data?.totalPages ?? 0)
-  const totalCount = Number(query.data?.totalCount ?? 0)
-  const firstResult = totalCount ? (filters.page - 1) * filters.pageSize + 1 : 0
-  const lastResult = Math.min(filters.page * filters.pageSize, totalCount)
-
-  const actions = (purchase: PurchaseDto) => {
-    if (!canWrite || purchase.status !== 'PENDIENTE') return null
-    return (
-      <div className="flex gap-1">
-        <IconButton
-          type="button"
-          label={`Recibir compra ${purchase.id}`}
-          onClick={() => navigate(`/compras/${purchase.id}/recibir`)}
-        >
-          <PackageCheck size={16} />
-        </IconButton>
-        <IconButton
-          type="button"
-          label={`Cancelar compra ${purchase.id}`}
-          onClick={() => {
-            setCancelTarget(purchase)
-            setCancelReason('')
-            setCancelError(undefined)
-          }}
-        >
-          <XCircle size={16} />
-        </IconButton>
-      </div>
-    )
-  }
-
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 gap-6">
       <PageHeader
         title="Compras"
         description="Consulta y registra compras a proveedores."
@@ -169,99 +265,150 @@ export function PurchasesPage() {
         }
       />
 
-      <Card className="grid gap-4 border-border bg-surface-elevated/40 p-4 sm:p-5">
-        <div className="grid gap-3 sm:max-w-xs">
-          <FormField label="Estado">
-            <Select
-              value={filters.status}
-              onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value as PurchaseStatus | '', page: 1 })
-              }
-            >
-              <option value="">Todos</option>
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="RECIBIDA">Recibida</option>
-              <option value="CANCELADA">Cancelada</option>
-            </Select>
-          </FormField>
-        </div>
-
-        {query.isLoading ? (
-          <p role="status">Cargando compras…</p>
-        ) : query.error ? (
-          <div role="alert">
-            <p>No se pudieron cargar las compras.</p>
-            <Button type="button" onClick={() => void query.refetch()}>
-              Reintentar
-            </Button>
-          </div>
-        ) : !query.data?.items.length ? (
-          <div className="text-center">
-            <p>
-              {filters.status
-                ? 'No hay resultados para este filtro.'
-                : 'Todavía no hay compras registradas.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="hidden md:block">
-              <DataTable
-                columns={columns}
-                rows={query.data.items}
-                getRowId={(p) => p.id}
-                actions={actions}
-              />
-            </div>
-            <div className="grid gap-3 md:hidden">
-              {query.data.items.map((purchase) => (
-                <Card key={purchase.id} className="grid gap-2">
-                  <strong>{supplierName(purchase.supplierId)}</strong>
-                  <span>
-                    {purchase.lines.length} ítems — {Number(purchase.total).toFixed(2)} Bs.
-                  </span>
-                  <StatusDot
-                    label={STATUS_LABEL[purchase.status]}
-                    tone={STATUS_TONE[purchase.status]}
-                  />
-                  {actions(purchase)}
-                </Card>
-              ))}
-            </div>
-          </>
-        )}
-
-        <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm text-text-muted">
-            Mostrando {firstResult}–{lastResult} de {totalCount} compras
-          </span>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={filters.page <= 1}
-              onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-              leftIcon={<ChevronLeft size={16} />}
-            >
-              Anterior
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={filters.page >= totalPages}
-              onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-              rightIcon={<ChevronRight size={16} />}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
+      <Card className="grid gap-3 border-border bg-surface-elevated/40 p-4 sm:p-5 md:grid-cols-2 xl:grid-cols-5">
+        <FormField label="Desde">
+          <Input
+            type="date"
+            value={filters.from ?? ''}
+            onChange={(e) => updateFilter('from', e.target.value || undefined)}
+          />
+        </FormField>
+        <FormField label="Hasta">
+          <Input
+            type="date"
+            value={filters.to ?? ''}
+            onChange={(e) => updateFilter('to', e.target.value || undefined)}
+          />
+        </FormField>
+        <FormField label="Proveedor">
+          <Select
+            value={filters.supplierId ?? ''}
+            onChange={(e) => updateFilter('supplierId', e.target.value || undefined)}
+          >
+            <option value="">Todos</option>
+            {suppliers.map((supplier) => (
+              <option key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Estado">
+          <Select
+            value={filters.status ?? ''}
+            onChange={(e) =>
+              updateFilter('status', (e.target.value || undefined) as PurchaseStatus | undefined)
+            }
+          >
+            <option value="">Todos</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="RECIBIDA">Recibida</option>
+            <option value="CANCELADA">Cancelada</option>
+          </Select>
+        </FormField>
+        <FormField label="Área">
+          <Select
+            value={scope === 'cocina' ? 'KITCHEN' : (filters.purchaseArea ?? '')}
+            onChange={(e) => updateFilter('purchaseArea', e.target.value || undefined)}
+          >
+            {scope === 'broad' && <option value="">Todas</option>}
+            <option value="KITCHEN">Cocina</option>
+            {scope === 'broad' && <option value="GENERAL">General</option>}
+          </Select>
+        </FormField>
       </Card>
+
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setFilters(createPurchaseHistoryFilters())}
+        className="justify-self-start"
+      >
+        Limpiar filtros
+      </Button>
+
+      {query.isLoading ? (
+        <p role="status">Cargando compras…</p>
+      ) : query.error ? (
+        <div role="alert">
+          <p>No se pudieron cargar las compras.</p>
+          <Button type="button" onClick={() => void query.refetch()}>
+            Reintentar
+          </Button>
+        </div>
+      ) : !query.data?.items.length ? (
+        <div className="text-center">
+          <p>
+            {filters.status
+              ? 'No hay resultados para este filtro.'
+              : 'Todavía no hay compras registradas.'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="hidden md:block">
+            <DataTable
+              columns={columns}
+              rows={query.data.items}
+              getRowId={(p) => p.id}
+              actions={actions}
+            />
+          </div>
+          <div className="grid gap-3 md:hidden">
+            {query.data.items.map((purchase) => (
+              <Card key={purchase.id} className="grid min-w-0 gap-2">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <strong className="break-words">{purchase.supplierName}</strong>
+                  <span>Bs. {Number(purchase.total).toFixed(2)}</span>
+                </div>
+                <span className="break-all">
+                  {date(purchase.purchaseDate)} · ID: {shortId(purchase.id)}
+                </span>
+                <span>Área: {AREA_LABEL[purchase.purchaseArea] ?? purchase.purchaseArea}</span>
+                <StatusDot
+                  label={STATUS_LABEL[purchase.status]}
+                  tone={STATUS_TONE[purchase.status]}
+                />
+                {actions(purchase)}
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-sm text-text-muted">
+          Mostrando {firstResult}–{lastResult} de {totalCount} compras
+        </span>
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage <= 1}
+            onClick={() => setFilters({ ...filters, page: currentPage - 1 })}
+            leftIcon={<ChevronLeft size={16} />}
+            aria-label="Página anterior del historial de compras"
+            className="min-h-11"
+          >
+            Anterior
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={currentPage >= totalPages}
+            onClick={() => setFilters({ ...filters, page: currentPage + 1 })}
+            rightIcon={<ChevronRight size={16} />}
+            aria-label="Página siguiente del historial de compras"
+            className="min-h-11"
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
 
       <Modal open={!!cancelTarget} title="Cancelar compra" onClose={() => setCancelTarget(null)}>
         <p>
-          Vas a cancelar la compra a{' '}
-          <strong>{cancelTarget && supplierName(cancelTarget.supplierId)}</strong>. Esta acción no
+          Vas a cancelar la compra a <strong>{cancelTarget?.supplierName}</strong>. Esta acción no
           genera movimientos de inventario y solo es posible mientras la compra esté Pendiente.
         </p>
         <FormField label="Motivo de la cancelación" required error={cancelError}>
@@ -290,6 +437,7 @@ export function PurchasesPage() {
           </Button>
         </div>
       </Modal>
+      <PurchaseDetailOverlay id={detailId} onClose={() => setDetailId(undefined)} />
     </div>
   )
 }
@@ -622,7 +770,7 @@ export function ReceivePurchasePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const purchaseQuery = usePurchaseDetail(id ?? '')
+  const purchaseQuery = usePurchaseOperationDetail(id ?? '')
   const suppliersQuery = useSuppliersForPurchase()
   const productsQuery = useProductsForPurchase()
   const unitsQuery = useUnitsForPurchase()
