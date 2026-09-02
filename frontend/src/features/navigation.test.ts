@@ -6,6 +6,8 @@ import {
   CUSTOMER_READ_ROLES,
   SALES_HISTORY_READ_ROLES,
   ATTENDANCE_ADMIN_ROLES,
+  REPORTS_READ_ROLES,
+  reportPathForRoles,
 } from './navigation'
 
 describe('authenticated navigation registry', () => {
@@ -67,6 +69,19 @@ describe('authenticated navigation registry', () => {
     expect(visibleNavigation(['MESERO', 'ENCARGADO']).map((item) => item.id)).toEqual(
       expect.arrayContaining(['clientes', 'historial-ventas']),
     )
+  })
+
+  it('exposes Reports only to the frozen report capability union', () => {
+    const reports = authenticatedNavigation.find((item) => item.id === 'reportes')!
+    expect(reports.readRoles).toEqual(REPORTS_READ_ROLES)
+    expect(visibleNavigation(['MESERO']).map((item) => item.id)).not.toContain('reportes')
+    expect(visibleNavigation(['EMPLEADO']).map((item) => item.id)).not.toContain('reportes')
+    expect(visibleNavigation(['COCINA']).map((item) => item.id)).toContain('reportes')
+    expect(typeof reports.target === 'function' && reports.target(['COCINA'])).toBe(
+      '/reportes/inventario',
+    )
+    expect(reportPathForRoles(['CONTADORA'])).toBe('/reportes/ventas')
+    expect(reportPathForRoles(['EMPLEADO'])).toBe('/403')
   })
 
   it('keeps parent navigation active for child routes', () => {

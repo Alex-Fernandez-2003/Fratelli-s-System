@@ -6,6 +6,9 @@ import {
   CUSTOMER_READ_ROLES,
   PRODUCT_READ_ROLES,
   SALES_HISTORY_READ_ROLES,
+  REPORT_ATTENDANCE_READ_ROLES,
+  REPORT_INVENTORY_READ_ROLES,
+  REPORT_SALES_READ_ROLES,
 } from '../features/navigation'
 import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
@@ -13,6 +16,7 @@ import { AppRoutes, RequireAnyRole } from './AppRoutes'
 
 let auth = {
   status: 'checking' as 'checking' | 'authenticated' | 'unauthenticated',
+  user: null as { roles: string[] } | null,
   hasAnyRole: vi.fn<(roles: string[]) => boolean>(() => false),
 }
 vi.mock('../features/auth/AuthProvider', () => ({ useAuth: () => auth }))
@@ -32,6 +36,11 @@ vi.mock('../features/attendance/AdministrativeAttendancePage', () => ({
 vi.mock('../features/attendance/AttendanceTodayPage', () => ({
   AttendanceTodayPage: () => <p>Attendance today page</p>,
 }))
+vi.mock('../features/reports/pages', () => ({
+  SalesReportPage: () => <p>Sales report page</p>,
+  InventoryReportPage: () => <p>Inventory report page</p>,
+  AttendanceReportPage: () => <p>Attendance report page</p>,
+}))
 
 function Location() {
   return <p data-testid="location">{useLocation().pathname}</p>
@@ -46,7 +55,11 @@ function renderRoutes(path: string) {
 }
 
 afterEach(() => {
-  auth = { status: 'checking', hasAnyRole: vi.fn<(roles: string[]) => boolean>(() => false) }
+  auth = {
+    status: 'checking',
+    user: null,
+    hasAnyRole: vi.fn<(roles: string[]) => boolean>(() => false),
+  }
 })
 
 describe('AppRoutes', () => {
@@ -247,6 +260,48 @@ describe('AppRoutes', () => {
       expect(screen.getByTestId('location')).toHaveTextContent('/login')
     },
   )
+
+  it.each([
+    ['/reportes/ventas', REPORT_SALES_READ_ROLES, 'Sales report page'],
+    ['/reportes/inventario', REPORT_INVENTORY_READ_ROLES, 'Inventory report page'],
+    ['/reportes/asistencia', REPORT_ATTENDANCE_READ_ROLES, 'Attendance report page'],
+  ])('applies an independent report guard to %s', (path, allowedRoles, page) => {
+    auth.status = 'authenticated'
+    auth.user = { roles: ['COCINA'] }
+    const cocinaAllowed = (allowedRoles as readonly string[]).includes('COCINA')
+    auth.hasAnyRole = vi.fn(() => cocinaAllowed)
+    renderRoutes(path)
+
+    if (cocinaAllowed) {
+      expect(screen.getByText(page)).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent(path)
+    } else {
+      expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/403')
+    }
+  })
+
+  it.each([
+    [['ADMINISTRADOR'], '/reportes/ventas', 'Sales report page'],
+    [['COCINA'], '/reportes/inventario', 'Inventory report page'],
+    [['CONTADORA'], '/reportes/ventas', 'Sales report page'],
+  ])('redirects /reportes deterministically for %s', (roles, destination, page) => {
+    auth.status = 'authenticated'
+    auth.user = { roles }
+    auth.hasAnyRole = vi.fn((required: string[]) => required.some((role) => roles.includes(role)))
+    renderRoutes('/reportes')
+    expect(screen.getByText(page)).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent(destination)
+  })
+
+  it('redirects an authenticated EMPLEADO-only report visit to 403', () => {
+    auth.status = 'authenticated'
+    auth.user = { roles: ['EMPLEADO'] }
+    auth.hasAnyRole.mockReturnValue(false)
+    renderRoutes('/reportes')
+    expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent('/403')
+  })
 
   it('sends an EMPLEADO-only authenticated user to the generic Forbidden route', () => {
     auth.status = 'authenticated'

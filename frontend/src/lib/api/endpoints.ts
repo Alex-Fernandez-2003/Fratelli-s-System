@@ -139,6 +139,25 @@ export const endpoints = {
   sales: {
     create: () => '/api/v1/sales',
   },
+  reports: {
+    sales: (
+      params: {
+        from?: string
+        to?: string
+        shiftType?: string
+        salesChannel?: string
+      } = {},
+    ) => withQuery('/api/v1/reports/sales', params),
+    inventory: () => '/api/v1/reports/inventory',
+    attendance: (
+      params: {
+        from?: string
+        to?: string
+        employeeId?: string
+        shiftType?: string
+      } = {},
+    ) => withQuery('/api/v1/reports/attendance', params),
+  },
   purchases: {
     list: (params: {
       page: number

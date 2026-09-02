@@ -5474,6 +5474,8 @@ export interface paths {
         query?: {
           from?: string
           to?: string
+          shiftType?: components['schemas']['ShiftType']
+          salesChannel?: components['schemas']['SalesChannel']
         }
         header?: never
         path?: never
@@ -5488,6 +5490,15 @@ export interface paths {
           }
           content: {
             'application/json': components['schemas']['SalesReportDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
           }
         }
         /** @description Unauthorized */
@@ -5584,6 +5595,7 @@ export interface paths {
           from?: string
           to?: string
           employeeId?: string
+          shiftType?: components['schemas']['ShiftType']
         }
         header?: never
         path?: never
@@ -5598,6 +5610,15 @@ export interface paths {
           }
           content: {
             'application/json': components['schemas']['AttendanceReportDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails']
           }
         }
         /** @description Unauthorized */
@@ -6503,6 +6524,7 @@ export interface components {
     }
     AttendanceReportDto: {
       items: components['schemas']['AttendanceReportItemDto'][]
+      summary: components['schemas']['AttendanceReportSummaryDto']
     }
     AttendanceReportItemDto: {
       /** Format: uuid */
@@ -6520,6 +6542,20 @@ export interface components {
       absenceCount: number | string
       /** Format: double */
       hourlyRate: number | string
+      /** Format: double */
+      projectedPay: number | string
+    }
+    AttendanceReportSummaryDto: {
+      /** Format: int32 */
+      attendanceCount: number | string
+      /** Format: int32 */
+      totalWorkedMinutes: number | string
+      /** Format: double */
+      workedHours: number | string
+      /** Format: int32 */
+      lateCount: number | string
+      /** Format: int32 */
+      absenceCount: number | string
       /** Format: double */
       projectedPay: number | string
     }

@@ -29,6 +29,21 @@ export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCI
 export const PRODUCT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
 export const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
 export const ATTENDANCE_ADMIN_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'] as const
+export const REPORT_SALES_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'] as const
+export const REPORT_INVENTORY_READ_ROLES = [
+  'ADMINISTRADOR',
+  'ENCARGADO',
+  'COCINA',
+  'CONTADORA',
+] as const
+export const REPORT_ATTENDANCE_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'] as const
+export const REPORTS_READ_ROLES = [
+  ...new Set([
+    ...REPORT_SALES_READ_ROLES,
+    ...REPORT_INVENTORY_READ_ROLES,
+    ...REPORT_ATTENDANCE_READ_ROLES,
+  ]),
+] as readonly string[]
 export const CUSTOMER_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO'] as const
 export const SALES_HISTORY_READ_ROLES = [
   'ADMINISTRADOR',
@@ -53,8 +68,19 @@ export type AuthNavigationItem = {
   matches: (pathname: string) => boolean
 }
 
-const hasAnyRole = (roles: readonly string[], allowed: readonly string[]) =>
+export const hasAnyRole = (roles: readonly string[], allowed: readonly string[]) =>
   allowed.some((role) => roles.includes(role))
+export const hasReportAccess = hasAnyRole
+
+export const REPORT_NAVIGATION = [
+  { href: '/reportes/ventas', label: 'Ventas', roles: REPORT_SALES_READ_ROLES },
+  { href: '/reportes/inventario', label: 'Inventario', roles: REPORT_INVENTORY_READ_ROLES },
+  { href: '/reportes/asistencia', label: 'Asistencia', roles: REPORT_ATTENDANCE_READ_ROLES },
+] as const
+
+export function reportPathForRoles(roles: readonly string[]) {
+  return REPORT_NAVIGATION.find((link) => hasAnyRole(roles, link.roles))?.href ?? '/403'
+}
 
 const startsWithRoute = (route: string) => (pathname: string) =>
   pathname === route || pathname.startsWith(`${route}/`)
@@ -166,6 +192,14 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     readRoles: EXPENSE_HISTORY_READ_ROLES,
     target: (roles) => (expenseCanWrite(roles) ? '/gastos' : '/gastos/historial'),
     matches: startsWithRoute('/gastos'),
+  },
+  {
+    id: 'reportes',
+    label: 'Reportes',
+    icon: ReceiptText,
+    readRoles: REPORTS_READ_ROLES,
+    target: reportPathForRoles,
+    matches: startsWithRoute('/reportes'),
   },
   {
     id: 'usuarios',

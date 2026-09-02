@@ -9,6 +9,11 @@ import {
   SALES_HISTORY_READ_ROLES,
   PRODUCTION_HISTORY_READ_ROLES,
   EXPENSE_HISTORY_READ_ROLES,
+  REPORTS_READ_ROLES,
+  REPORT_SALES_READ_ROLES,
+  REPORT_INVENTORY_READ_ROLES,
+  REPORT_ATTENDANCE_READ_ROLES,
+  reportPathForRoles,
   EXPENSE_WRITE_ROLES,
   AuthenticatedLayout,
 } from '../features/navigation'
@@ -42,6 +47,11 @@ import { SalesHistoryPage } from '../features/sales/SalesHistoryPage'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
 import { CashClosingPage } from '../features/cash/CashClosingPage'
+import {
+  AttendanceReportPage,
+  InventoryReportPage,
+  SalesReportPage,
+} from '../features/reports/pages'
 
 function Bootstrap() {
   return (
@@ -74,6 +84,11 @@ export function RequireAnyRole({ roles }: { roles: string[] }) {
   if (status === 'checking') return <Bootstrap />
 
   return hasAnyRole(roles) ? <Outlet /> : <Navigate to="/403" replace />
+}
+
+function ReportsIndexRoute() {
+  const { user } = useAuth()
+  return <Navigate to={reportPathForRoles(user?.roles ?? [])} replace />
 }
 
 function LoginRoute() {
@@ -168,6 +183,20 @@ export function AppRoutes() {
           {/* Historial de ventas */}
           <Route element={<RequireAnyRole roles={[...SALES_HISTORY_READ_ROLES]} />}>
             <Route path="/historial-ventas" element={<SalesHistoryPage />} />
+          </Route>
+
+          {/* Reportes: índice determinista y guardas independientes */}
+          <Route element={<RequireAnyRole roles={[...REPORTS_READ_ROLES]} />}>
+            <Route path="/reportes" element={<ReportsIndexRoute />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...REPORT_SALES_READ_ROLES]} />}>
+            <Route path="/reportes/ventas" element={<SalesReportPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...REPORT_INVENTORY_READ_ROLES]} />}>
+            <Route path="/reportes/inventario" element={<InventoryReportPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...REPORT_ATTENDANCE_READ_ROLES]} />}>
+            <Route path="/reportes/asistencia" element={<AttendanceReportPage />} />
           </Route>
 
           {/* Proveedores */}
