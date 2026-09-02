@@ -42,6 +42,8 @@ import { SalesHistoryPage } from '../features/sales/SalesHistoryPage'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
 import { MyShiftPage } from '../pages/MyShiftPage'
 import { CashClosingPage } from '../features/cash/CashClosingPage'
+import { CashClosingHistoryPage } from '../features/cash/CashClosingHistoryPage'
+import { CASH_HISTORY_READ_ROLES } from '../features/cash/api'
 
 function Bootstrap() {
   return (
@@ -186,6 +188,9 @@ export function AppRoutes() {
           {/* Turnos / Caja */}
           <Route element={<RequireAnyRole roles={[...SHIFT_OWN_READ_ROLES]} />}>
             <Route path="/mi-turno" element={<MyShiftPage />} />
+          </Route>
+          <Route element={<RequireAnyRole roles={[...CASH_HISTORY_READ_ROLES]} />}>
+            <Route path="/turnos/cierres" element={<CashClosingHistoryPage />} />
           </Route>
           <Route element={<RequireAnyRole roles={[...SHIFT_MANAGE_ROLES]} />}>
             <Route path="/turnos" element={<ShiftsPage />} />

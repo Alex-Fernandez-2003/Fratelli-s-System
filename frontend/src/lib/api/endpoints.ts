@@ -189,6 +189,15 @@ export const endpoints = {
   cash: {
     preview: () => '/api/v1/cash/preview',
     close: () => '/api/v1/cash/close',
+    closings: (
+      params: {
+        page?: number | string
+        pageSize?: number | string
+        from?: string
+        to?: string
+      } = {},
+    ) => withQuery('/api/v1/cash/closings', params),
+    closing: (id: string) => `/api/v1/cash/closings/${encodeURIComponent(id)}`,
   },
   expenses: {
     list: (

@@ -21,6 +21,7 @@ import { SUPPLIER_READ_ROLES } from '@/features/proveedores/types'
 import { PURCHASE_READ_ROLES } from '@/features/purchases/api'
 import { EXPENSE_HISTORY_READ_ROLES, expenseCanWrite } from '@/features/expenses/api'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '@/features/shifts/api'
+import { CASH_HISTORY_READ_ROLES } from '@/features/cash/api'
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 
 export { EXPENSE_HISTORY_READ_ROLES, EXPENSE_WRITE_ROLES } from '@/features/expenses/api'
@@ -124,7 +125,16 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     icon: ArrowLeftRight,
     readRoles: SHIFT_OWN_READ_ROLES,
     target: (roles) => (hasAnyRole(roles, SHIFT_MANAGE_ROLES) ? '/turnos' : '/mi-turno'),
-    matches: (pathname) => pathname === '/turnos' || pathname === '/mi-turno',
+    matches: (pathname) =>
+      pathname === '/turnos' || pathname === '/turnos/cierre' || pathname === '/mi-turno',
+  },
+  {
+    id: 'cierres-caja',
+    label: 'Cierres de caja',
+    icon: ReceiptText,
+    readRoles: CASH_HISTORY_READ_ROLES,
+    target: '/turnos/cierres',
+    matches: startsWithRoute('/turnos/cierres'),
   },
   {
     id: 'proveedores',

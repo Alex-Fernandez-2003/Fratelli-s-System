@@ -6291,6 +6291,8 @@ export interface paths {
         query: {
           page: number | string
           pageSize: number | string
+          from?: string
+          to?: string
         }
         header?: never
         path?: never

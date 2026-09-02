@@ -244,6 +244,10 @@ describe('CashClosingPage HU-027', () => {
     fireEvent.click(confirmBtns[confirmBtns.length - 1])
     expect(await screen.findByText('Cierre registrado correctamente.')).toBeInTheDocument()
     expect(screen.getByText(/Volver a Turnos/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver historial de cierres' })).toHaveAttribute(
+      'href',
+      '/turnos/cierres',
+    )
   })
 
   it('handles invalid declared cash: empty and non-numeric', async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { QueryClient } from '@tanstack/react-query'
-import { cashApi, cashKeys } from './api'
+import { cashApi, cashClosingDetailQueryOptions, cashKeys } from './api'
 import { shiftKeys } from '@/features/shifts/api'
 
 vi.mock('@/lib/api/http-client', () => ({
@@ -56,8 +56,9 @@ describe('cash API', () => {
     const { result } = renderHook(() => useCloseCash(), { wrapper: wrapper(client) })
     await result.current.mutateAsync({ declaredCash: 100, observation: null })
     await waitFor(() => expect(invalidateSpy).toHaveBeenCalled())
-    // must invalidate cash preview
+    // must invalidate cash preview and every filtered history query
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashKeys.preview() })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashKeys.closings() })
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: shiftKeys.context })
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: shiftKeys.mine })
   })
@@ -76,8 +77,52 @@ describe('cash API', () => {
     // onError path should have invalidated
     await waitFor(() => expect(invalidateSpy).toHaveBeenCalled())
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashKeys.preview() })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashKeys.closings() })
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: shiftKeys.context })
     // no automatic retry: httpClient.post called exactly once
     expect(httpClient.post).toHaveBeenCalledTimes(1)
+  })
+
+  it('forwards inclusive date bounds and pagination to the existing history endpoint', async () => {
+    vi.mocked(httpClient.get).mockResolvedValue({
+      items: [],
+      page: 1,
+      pageSize: 25,
+      totalCount: 0,
+      totalPages: 0,
+    })
+    const filters = { from: '2026-02-01', to: '2026-02-28', page: 2, pageSize: 25 }
+    await cashApi.closings(filters)
+    expect(httpClient.get).toHaveBeenCalledWith(
+      '/api/v1/cash/closings?page=2&pageSize=25&from=2026-02-01&to=2026-02-28',
+    )
+  })
+
+  it('omits empty optional bounds and keeps independent bound support', async () => {
+    vi.mocked(httpClient.get).mockResolvedValue({ items: [] })
+    await cashApi.closings({ from: '2026-02-01', page: 1, pageSize: 25 })
+    expect(httpClient.get).toHaveBeenCalledWith(
+      '/api/v1/cash/closings?page=1&pageSize=25&from=2026-02-01',
+    )
+  })
+
+  it('uses separate list and detail cache keys', () => {
+    expect(
+      cashKeys.closings({ from: '2026-02-01', to: '2026-02-28', page: 1, pageSize: 25 }),
+    ).toEqual(['cash', 'closings', { from: '2026-02-01', to: '2026-02-28', page: 1, pageSize: 25 }])
+    expect(cashKeys.closing('closing-1')).toEqual(['cash', 'closing', 'closing-1'])
+  })
+
+  it('disables detail queries without a selected closing id', () => {
+    expect(cashClosingDetailQueryOptions(undefined)).toMatchObject({
+      queryKey: ['cash', 'closing', undefined],
+      enabled: false,
+    })
+  })
+
+  it('fetches detail only for the requested closing id', async () => {
+    vi.mocked(httpClient.get).mockResolvedValue({ id: 'closing-1' })
+    await cashApi.closing('closing-1')
+    expect(httpClient.get).toHaveBeenCalledWith('/api/v1/cash/closings/closing-1')
   })
 })
