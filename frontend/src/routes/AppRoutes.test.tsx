@@ -26,6 +26,12 @@ vi.mock('../features/customers/CustomersPage', () => ({
 vi.mock('../features/sales/SalesHistoryPage', () => ({
   SalesHistoryPage: () => <p>Sales History page</p>,
 }))
+vi.mock('../features/attendance/AdministrativeAttendancePage', () => ({
+  AdministrativeAttendancePage: () => <p>Administrative attendance page</p>,
+}))
+vi.mock('../features/attendance/AttendanceTodayPage', () => ({
+  AttendanceTodayPage: () => <p>Attendance today page</p>,
+}))
 
 function Location() {
   return <p data-testid="location">{useLocation().pathname}</p>
@@ -62,6 +68,48 @@ describe('AppRoutes', () => {
     renderRoutes('/login')
     expect(screen.getByText('Inicio page')).toBeInTheDocument()
     expect(screen.getByTestId('location')).toHaveTextContent('/inicio')
+  })
+
+  it.each([
+    ['ADMINISTRADOR', true],
+    ['ENCARGADO', true],
+    ['CONTADORA', true],
+    ['EMPLEADO', false],
+  ])('wires /asistencia through its real role guard for %s', (role, allowed) => {
+    auth.status = 'authenticated'
+    auth.hasAnyRole = vi.fn((requiredRoles: string[]) => requiredRoles.includes(role))
+    renderRoutes('/asistencia')
+
+    if (allowed) {
+      expect(screen.getByText('Administrative attendance page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/asistencia')
+      expect(auth.hasAnyRole).toHaveBeenCalledWith(['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'])
+    } else {
+      expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/403')
+      expect(screen.queryByText('Administrative attendance page')).not.toBeInTheDocument()
+    }
+  })
+
+  it.each([
+    ['ADMINISTRADOR', true],
+    ['ENCARGADO', true],
+    ['CONTADORA', false],
+    ['EMPLEADO', false],
+  ])('wires /asistencia/hoy through its real role guard for %s', (role, allowed) => {
+    auth.status = 'authenticated'
+    auth.hasAnyRole = vi.fn((requiredRoles: string[]) => requiredRoles.includes(role))
+    renderRoutes('/asistencia/hoy')
+
+    if (allowed) {
+      expect(screen.getByText('Attendance today page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/asistencia/hoy')
+      expect(auth.hasAnyRole).toHaveBeenCalledWith(['ADMINISTRADOR', 'ENCARGADO'])
+    } else {
+      expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/403')
+      expect(screen.queryByText('Attendance today page')).not.toBeInTheDocument()
+    }
   })
 
   it.each(['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA', 'CONTADORA'])(

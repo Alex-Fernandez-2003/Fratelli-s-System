@@ -28,6 +28,7 @@ export { EXPENSE_HISTORY_READ_ROLES, EXPENSE_WRITE_ROLES } from '@/features/expe
 export const PRODUCT_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO', 'COCINA'] as const
 export const PRODUCT_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
 export const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO'] as const
+export const ATTENDANCE_ADMIN_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'] as const
 export const CUSTOMER_READ_ROLES = ['ADMINISTRADOR', 'ENCARGADO', 'MESERO'] as const
 export const SALES_HISTORY_READ_ROLES = [
   'ADMINISTRADOR',
@@ -111,8 +112,11 @@ export const authenticatedNavigation: AuthNavigationItem[] = [
     label: 'Asistencia',
     icon: Clock3,
     target: (roles) =>
-      hasAnyRole(roles, ATTENDANCE_MANAGE_ROLES) ? '/asistencia' : '/mi-asistencia',
-    matches: (pathname) => pathname === '/asistencia' || pathname === '/mi-asistencia',
+      hasAnyRole(roles, ATTENDANCE_ADMIN_ROLES) ? '/asistencia' : '/mi-asistencia',
+    matches: (pathname) =>
+      pathname === '/asistencia' ||
+      pathname.startsWith('/asistencia/') ||
+      pathname === '/mi-asistencia',
   },
   {
     id: 'turnos',

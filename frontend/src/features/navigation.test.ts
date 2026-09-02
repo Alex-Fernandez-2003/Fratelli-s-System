@@ -5,6 +5,7 @@ import {
   visibleNavigation,
   CUSTOMER_READ_ROLES,
   SALES_HISTORY_READ_ROLES,
+  ATTENDANCE_ADMIN_ROLES,
 } from './navigation'
 
 describe('authenticated navigation registry', () => {
@@ -20,14 +21,21 @@ describe('authenticated navigation registry', () => {
     expect(canManageProducts(['EMPLEADO'])).toBe(false)
   })
 
-  it('resolves one Attendance destination with manager precedence', () => {
+  it('resolves one Attendance destination through the full read capability union', () => {
     const attendance = authenticatedNavigation.find((item) => item.id === 'asistencia')!
+    expect(ATTENDANCE_ADMIN_ROLES).toEqual(['ADMINISTRADOR', 'ENCARGADO', 'CONTADORA'])
     expect(typeof attendance.target === 'function' && attendance.target(['MESERO'])).toBe(
       '/mi-asistencia',
     )
     expect(
       typeof attendance.target === 'function' && attendance.target(['MESERO', 'ENCARGADO']),
     ).toBe('/asistencia')
+    expect(typeof attendance.target === 'function' && attendance.target(['CONTADORA'])).toBe(
+      '/asistencia',
+    )
+    expect(
+      visibleNavigation(['ADMINISTRADOR', 'CONTADORA']).filter((item) => item.id === 'asistencia'),
+    ).toHaveLength(1)
   })
 
   it('limits purchases and own-shift navigation to their read capabilities', () => {
@@ -69,5 +77,6 @@ describe('authenticated navigation registry', () => {
     expect(orders.matches('/pedidos/123')).toBe(true)
     expect(inventory.matches('/inventario/movimientos')).toBe(true)
     expect(attendance.matches('/mi-asistencia')).toBe(true)
+    expect(attendance.matches('/asistencia/hoy')).toBe(true)
   })
 })

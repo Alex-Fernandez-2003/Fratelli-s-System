@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Spinner } from '../components/atoms'
 import { useAuth } from '../features/auth/AuthProvider'
 import {
+  ATTENDANCE_ADMIN_ROLES,
   ATTENDANCE_MANAGE_ROLES,
   CUSTOMER_READ_ROLES,
   PRODUCT_READ_ROLES,
@@ -12,6 +13,7 @@ import {
   AuthenticatedLayout,
 } from '../features/navigation'
 import { AttendanceTodayPage } from '../features/attendance/AttendanceTodayPage'
+import { AdministrativeAttendancePage } from '../features/attendance/AdministrativeAttendancePage'
 import { ForbiddenPage } from '../pages/ForbiddenPage'
 import { InicioPage } from '../pages/InicioPage'
 import { LoginPage } from '../pages/LoginPage'
@@ -100,8 +102,11 @@ export function AppRoutes() {
 
           {/* Asistencia */}
           <Route path="/mi-asistencia" element={<MyAttendancePage />} />
+          <Route element={<RequireAnyRole roles={[...ATTENDANCE_ADMIN_ROLES]} />}>
+            <Route path="/asistencia" element={<AdministrativeAttendancePage />} />
+          </Route>
           <Route element={<RequireAnyRole roles={[...ATTENDANCE_MANAGE_ROLES]} />}>
-            <Route path="/asistencia" element={<AttendanceTodayPage />} />
+            <Route path="/asistencia/hoy" element={<AttendanceTodayPage />} />
           </Route>
 
           {/* Pedidos */}

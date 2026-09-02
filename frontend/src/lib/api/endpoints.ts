@@ -22,6 +22,21 @@ export const endpoints = {
     checkIn: (employeeId: string) => `/api/v1/attendance/employees/${employeeId}/check-in`,
     checkOut: (employeeId: string) => `/api/v1/attendance/employees/${employeeId}/check-out`,
     me: '/api/v1/attendance/me',
+    meCurrent: '/api/v1/attendance/me/current',
+    meCheckIn: '/api/v1/attendance/me/check-in',
+    meCheckOut: '/api/v1/attendance/me/check-out',
+    admin: (
+      params: {
+        employeeId?: string
+        from?: string
+        to?: string
+        shiftType?: string
+        outcome?: string
+        late?: boolean
+        page?: number | string
+        pageSize?: number | string
+      } = {},
+    ) => withQuery('/api/v1/attendance/admin', params),
   },
   orders: {
     list: (params: { page?: number; pageSize?: number; status?: string; search?: string } = {}) =>

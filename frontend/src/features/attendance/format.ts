@@ -2,6 +2,40 @@ import { BUSINESS_TIME_ZONE } from '../../lib/business-time'
 import { HttpError } from '../../lib/api/http-client'
 import type { AttendanceRecordDto } from './api'
 
+type MinutesValue = number | string | null | undefined
+
+function dateOnlyAsBusinessInstant(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return null
+  const [, year, month, day] = match
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12))
+}
+
+export function formatBusinessDate(value: string): string {
+  const date = dateOnlyAsBusinessInstant(value)
+  if (!date) return value
+  return new Intl.DateTimeFormat('es-BO', {
+    timeZone: BUSINESS_TIME_ZONE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
+export function formatBusinessDateShort(value: string): string {
+  const date = dateOnlyAsBusinessInstant(value)
+  if (!date) return value
+  return new Intl.DateTimeFormat('es-BO', {
+    timeZone: BUSINESS_TIME_ZONE,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
+}
+
+export const formatDateOnly = formatBusinessDate
+
 export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-BO', {
     timeZone: BUSINESS_TIME_ZONE,
@@ -64,8 +98,21 @@ export function totalDuration(records: AttendanceRecordDto[]): string {
   return `${hours}h ${minutes}m`
 }
 
-export function elapsedSince(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime()
+export function formatDurationMinutes(value: MinutesValue): string {
+  if (value === null || value === undefined || value === '') return '—'
+  const minutes = Number(value)
+  if (!Number.isFinite(minutes)) return '—'
+  const wholeMinutes = Math.max(0, Math.trunc(minutes))
+  const hours = Math.floor(wholeMinutes / 60)
+  const remainder = wholeMinutes % 60
+  return hours > 0 ? `${hours}h ${remainder}m` : `${remainder}m`
+}
+
+export const formatMinutes = formatDurationMinutes
+export const formatWorkedMinutes = formatDurationMinutes
+
+export function elapsedSince(iso: string, now = Date.now()): string {
+  const ms = Math.max(0, now - new Date(iso).getTime())
   const hours = Math.floor(ms / 3_600_000)
   const minutes = Math.floor((ms % 3_600_000) / 60_000)
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`

@@ -2,13 +2,12 @@ import { Button } from '../components/atoms'
 import { Link } from 'react-router-dom'
 import { Clock, Users, LogOut } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthProvider'
-
-const ATTENDANCE_MANAGE_ROLES = ['ADMINISTRADOR', 'ENCARGADO']
+import { ATTENDANCE_ADMIN_ROLES } from '../features/navigation'
 
 export function InicioPage() {
   const { user, logout, pending, error, hasAnyRole } = useAuth()
 
-  const canManageAttendance = hasAnyRole(ATTENDANCE_MANAGE_ROLES)
+  const canManageAttendance = hasAnyRole([...ATTENDANCE_ADMIN_ROLES])
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

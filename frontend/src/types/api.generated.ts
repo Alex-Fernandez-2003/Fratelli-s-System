@@ -2677,6 +2677,201 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/attendance/me/check-in': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PersonalAttendanceRecordDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attendance/me/check-out': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['PersonalAttendanceRecordDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/attendance/me/current': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/json': components['schemas']['AttendanceCurrentResponse']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/attendance/me': {
     parameters: {
       query?: never
@@ -6270,10 +6465,19 @@ export interface components {
       /** Format: uuid */
       waiterEmployeeId: string
     }
+    AttendanceCurrentResponse: {
+      /** Format: date */
+      businessDate: string
+      timeZone: string
+      /** Format: uuid */
+      employeeId: string
+      lifecycle: components['schemas']['AttendanceLifecycle']
+      record: null | components['schemas']['PersonalAttendanceRecordDto']
+    }
     /** @enum {unknown} */
     AttendanceLifecycle: 'NO_ASSIGNMENT' | 'NO_RECORD' | 'OPEN' | 'CLOSED' | 'ABSENT'
     AttendancePage: {
-      items: components['schemas']['AttendanceRecordDto'][]
+      items: components['schemas']['PersonalAttendanceRecordDto'][]
       /** Format: int32 */
       page: number | string
       /** Format: int32 */
@@ -6973,6 +7177,33 @@ export interface components {
     }
     /** @enum {unknown} */
     PaymentMethod: 'CASH' | 'QR' | 'EXTERNAL'
+    PersonalAttendanceRecordDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      employeeId: string
+      /** Format: date */
+      businessDate: string
+      /** Format: date-time */
+      checkInAt: string
+      checkInByUserId: string
+      /** Format: date-time */
+      checkOutAt: null | string
+      checkOutByUserId: null | string
+      /** Format: uuid */
+      shiftId: null | string
+      shiftType: null | components['schemas']['ShiftType']
+      /** Format: date-time */
+      plannedStart: null | string
+      /** Format: date-time */
+      plannedEnd: null | string
+      lifecycle: components['schemas']['AttendanceLifecycle']
+      /** Format: int32 */
+      workedMinutes: null | number | string
+      isLate: boolean
+      /** Format: int32 */
+      lateMinutes: number | string
+    }
     ProblemDetails: {
       type?: null | string
       title?: null | string
