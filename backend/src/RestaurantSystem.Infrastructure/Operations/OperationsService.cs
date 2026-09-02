@@ -286,11 +286,13 @@ public async Task<(CashClosingDto? Value, string? Error)> CloseCashAsync(CloseCa
     return (new CashClosingDto(closing.Id, closing.CashSessionId, closing.BusinessDate, closing.OpeningAmount, closing.PettyCashOpeningAmount, closing.CashRemovedAmount, closing.SalesTotal, closing.CashSalesTotal, closing.QrSalesTotal, closing.ExternalSalesTotal, closing.DirectSalesTotal, closing.PedidosYaSalesTotal, closing.CashDrawerExpensesTotal, closing.PettyCashExpensesTotal, closing.ExpensesTotal, closing.ExpectedCash, closing.DeclaredCash, closing.Difference, closing.Observation, closing.ClosedByUserId, closing.ClosedAt), null);
 }
 
-public async Task<PagedResponse<CashClosingDto>> CashClosingsAsync(int page, int pageSize, CancellationToken ct = default)
+public async Task<PagedResponse<CashClosingDto>> CashClosingsAsync(int page, int pageSize, DateOnly? from, DateOnly? to, CancellationToken ct = default)
 {
     var query = db.CashClosings.AsNoTracking();
+    if (from is not null) query = query.Where(x => x.BusinessDate >= from.Value);
+    if (to is not null) query = query.Where(x => x.BusinessDate <= to.Value);
     var total = await query.CountAsync(ct);
-    var rows = await query.OrderByDescending(x => x.ClosedAt).Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync(ct);
+    var rows = await query.OrderByDescending(x => x.ClosedAt).ThenByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).ToArrayAsync(ct);
     return new(rows.Select(x => new CashClosingDto(x.Id, x.CashSessionId, x.BusinessDate, x.OpeningAmount, x.PettyCashOpeningAmount, x.CashRemovedAmount, x.SalesTotal, x.CashSalesTotal, x.QrSalesTotal, x.ExternalSalesTotal, x.DirectSalesTotal, x.PedidosYaSalesTotal, x.CashDrawerExpensesTotal, x.PettyCashExpensesTotal, x.ExpensesTotal, x.ExpectedCash, x.DeclaredCash, x.Difference, x.Observation, x.ClosedByUserId, x.ClosedAt)).ToArray(), page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
 }
 

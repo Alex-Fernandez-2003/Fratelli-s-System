@@ -6,6 +6,19 @@ export function formatMoney(value: number | string): string {
   )
 }
 
+export function formatMoneyOrDash(value: number | string | null | undefined): string {
+  const amount = typeof value === 'string' && value.trim() === '' ? Number.NaN : Number(value)
+  return value === null || value === undefined || !Number.isFinite(amount)
+    ? '—'
+    : formatMoney(value)
+}
+
+export function formatSignedMoney(value: number | string | null | undefined): string {
+  const amount = typeof value === 'string' && value.trim() === '' ? Number.NaN : Number(value)
+  if (!Number.isFinite(amount)) return '—'
+  return amount > 0 ? `+${formatMoney(amount)}` : formatMoney(amount)
+}
+
 export function formatBusinessDateLong(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number)
   return new Intl.DateTimeFormat('es-BO', {
@@ -32,14 +45,20 @@ export function parseDeclaredCash(input: string): number | null {
 }
 
 export type DifferenceKind = 'zero' | 'positive' | 'negative'
+export type DifferenceSemantic = 'Sobrante' | 'Faltante' | 'Cuadrado'
 
 export function differenceKind(diff: number): DifferenceKind {
   if (diff === 0) return 'zero'
   return diff > 0 ? 'positive' : 'negative'
 }
 
-export function differenceLabel(diff: number): string {
-  if (diff === 0) return 'Caja cuadrada'
-  if (diff > 0) return `Sobrante +${formatMoney(diff)}`
-  return `Faltante ${formatMoney(diff)}`
+export function differenceSemantic(diff: number | string): DifferenceSemantic {
+  const amount = Number(diff)
+  if (amount === 0) return 'Cuadrado'
+  return amount > 0 ? 'Sobrante' : 'Faltante'
+}
+
+export function differenceLabel(diff: number | string): string {
+  const semantic = differenceSemantic(diff)
+  return semantic === 'Cuadrado' ? 'Caja cuadrada' : `${semantic} ${formatSignedMoney(diff)}`
 }

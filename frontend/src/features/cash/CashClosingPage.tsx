@@ -175,6 +175,12 @@ export function CashClosingPage() {
               Volver a Turnos / Caja
             </Link>
             <Link
+              to="/turnos/cierres"
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-brand-orange bg-transparent px-3.5 py-2.5 font-bold text-brand-orange no-underline"
+            >
+              Ver historial de cierres
+            </Link>
+            <Link
               to="/inicio"
               className="inline-flex min-h-10 items-center justify-center rounded-md border border-border bg-surface px-3.5 py-2.5 font-bold text-text no-underline"
             >

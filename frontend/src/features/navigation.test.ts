@@ -9,6 +9,7 @@ import {
   REPORTS_READ_ROLES,
   reportPathForRoles,
 } from './navigation'
+import { CASH_HISTORY_READ_ROLES } from './cash/api'
 
 describe('authenticated navigation registry', () => {
   it('uses the union of multi-role capabilities and never exposes Products to CONTADORA-only', () => {
@@ -38,6 +39,25 @@ describe('authenticated navigation registry', () => {
     expect(
       visibleNavigation(['ADMINISTRADOR', 'CONTADORA']).filter((item) => item.id === 'asistencia'),
     ).toHaveLength(1)
+  })
+
+  it('exposes Cierres de caja directly to the CashHistory role union', () => {
+    const history = authenticatedNavigation.find((item) => item.id === 'cierres-caja')!
+    expect(history).toMatchObject({
+      label: 'Cierres de caja',
+      readRoles: CASH_HISTORY_READ_ROLES,
+      target: '/turnos/cierres',
+    })
+    expect(history.matches('/turnos/cierres')).toBe(true)
+    expect(visibleNavigation(['ADMINISTRADOR']).map((item) => item.id)).toContain('cierres-caja')
+    expect(visibleNavigation(['ENCARGADO']).map((item) => item.id)).toContain('cierres-caja')
+    expect(visibleNavigation(['CONTADORA']).map((item) => item.id)).toContain('cierres-caja')
+    expect(visibleNavigation(['MESERO']).map((item) => item.id)).not.toContain('cierres-caja')
+    expect(visibleNavigation(['COCINA']).map((item) => item.id)).not.toContain('cierres-caja')
+    expect(visibleNavigation(['EMPLEADO']).map((item) => item.id)).not.toContain('cierres-caja')
+    expect(visibleNavigation(['CONTADORA', 'ENCARGADO']).map((item) => item.id)).toEqual(
+      expect.arrayContaining(['turnos', 'cierres-caja']),
+    )
   })
 
   it('limits purchases and own-shift navigation to their read capabilities', () => {

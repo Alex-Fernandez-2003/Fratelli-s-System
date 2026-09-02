@@ -12,6 +12,7 @@ import {
 } from '../features/navigation'
 import { PURCHASE_READ_ROLES, PURCHASE_WRITE_ROLES } from '../features/purchases/api'
 import { SHIFT_MANAGE_ROLES, SHIFT_OWN_READ_ROLES } from '../features/shifts/api'
+import { CASH_HISTORY_READ_ROLES } from '../features/cash/api'
 import { AppRoutes, RequireAnyRole } from './AppRoutes'
 
 let auth = {
@@ -40,6 +41,12 @@ vi.mock('../features/reports/pages', () => ({
   SalesReportPage: () => <p>Sales report page</p>,
   InventoryReportPage: () => <p>Inventory report page</p>,
   AttendanceReportPage: () => <p>Attendance report page</p>,
+}))
+vi.mock('../features/cash/CashClosingHistoryPage', () => ({
+  CashClosingHistoryPage: () => <p>Cash closing history page</p>,
+}))
+vi.mock('../features/cash/CashClosingPage', () => ({
+  CashClosingPage: () => <p>Cash closing page</p>,
 }))
 
 function Location() {
@@ -149,6 +156,44 @@ describe('AppRoutes', () => {
       expect(screen.getByText('Inventory page')).toBeInTheDocument()
     },
   )
+
+  it.each([
+    [['ADMINISTRADOR'], true],
+    [['ENCARGADO'], true],
+    [['CONTADORA'], true],
+    [['MESERO'], false],
+    [['COCINA'], false],
+    [['EMPLEADO'], false],
+    [['CONTADORA', 'ENCARGADO'], true],
+  ])('protects /turnos/cierres for the CashHistory role union %s', (userRoles, allowed) => {
+    auth.status = 'authenticated'
+    auth.hasAnyRole = vi.fn((requiredRoles: string[]) =>
+      requiredRoles.some((role) => userRoles.includes(role)),
+    )
+    renderRoutes('/turnos/cierres')
+
+    if (allowed) {
+      expect(screen.getByText('Cash closing history page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/turnos/cierres')
+    } else {
+      expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+      expect(screen.getByTestId('location')).toHaveTextContent('/403')
+      expect(screen.queryByText('Cash closing history page')).not.toBeInTheDocument()
+    }
+    expect(auth.hasAnyRole).toHaveBeenCalledWith([...CASH_HISTORY_READ_ROLES])
+  })
+
+  it('keeps CashManage and CashHistory route guards independent', () => {
+    auth.status = 'authenticated'
+    auth.hasAnyRole = vi.fn((requiredRoles: string[]) => requiredRoles.includes('CONTADORA'))
+    renderRoutes('/turnos/cierre')
+    expect(screen.getByText('Forbidden page')).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent('/403')
+
+    auth.hasAnyRole = vi.fn((requiredRoles: string[]) => requiredRoles.includes('CONTADORA'))
+    renderRoutes('/turnos/cierres')
+    expect(screen.getByText('Cash closing history page')).toBeInTheDocument()
+  })
 
   it.each([
     ['/productos/preparation-1/composicion', ['MESERO'], [...PRODUCT_READ_ROLES], true],
