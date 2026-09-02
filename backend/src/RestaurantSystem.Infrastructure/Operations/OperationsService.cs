@@ -95,13 +95,7 @@ public sealed class OperationsService(ApplicationDbContext db, IInventoryWriter 
 
     public async Task<PagedResponse<ProductionHistoryDto>> ProductionsAsync(int page, int pageSize, Guid? productId, string? batchCode, ProductionStatus? status, string? responsible, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default)
     {
-        var query = db.Productions.AsNoTracking();
-        if (productId is not null) query = query.Where(x => x.ProductId == productId);
-        if (!string.IsNullOrWhiteSpace(batchCode)) query = query.Where(x => x.BatchCode.ToLower().Contains(batchCode.Trim().ToLower()));
-        if (status is not null) query = query.Where(x => x.Status == status);
-        if (!string.IsNullOrWhiteSpace(responsible)) query = query.Where(x => x.CreatedByUserId == responsible.Trim());
-        if (from is not null) query = query.Where(x => x.ProducedAt >= from);
-        if (to is not null) query = query.Where(x => x.ProducedAt <= to);
+        var query = ProductionQuery(productId, batchCode, status, responsible, from, to);
         var total = await query.CountAsync(ct);
         var rows = await query.OrderByDescending(x => x.ProducedAt).ThenByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize)
             .Join(db.Products.AsNoTracking(), p => p.ProductId, product => product.Id, (p, product) => new { p, product })
@@ -110,6 +104,40 @@ public sealed class OperationsService(ApplicationDbContext db, IInventoryWriter 
         var responsibleIds = rows.Where(x => x.p.ResponsibleEmployeeId is not null).Select(x => x.p.ResponsibleEmployeeId!.Value).ToArray();
         var responsibleNames = await db.Employees.AsNoTracking().Where(x => responsibleIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.FullName, ct);
         return new(rows.Select(x => new ProductionHistoryDto(x.p.Id, x.p.BatchCode, x.p.Status, x.product.Id, x.product.Name, x.p.QuantityProduced, x.unit.Id, x.unit.Symbol, x.p.ProducedAt, x.p.CreatedByUserId, x.p.ResponsibleEmployeeId is { } employeeId && responsibleNames.TryGetValue(employeeId, out var name) ? name : null, x.p.Notes)).ToArray(), page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
+    }
+
+    public async Task<ProductionSummaryDto> ProductionSummaryAsync(Guid? productId, string? batchCode, ProductionStatus? status, string? responsible, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default)
+    {
+        var query = ProductionQuery(productId, batchCode, status, responsible, from, to);
+        var productionCount = await query.CountAsync(ct);
+        var latest = await query
+            .Join(db.Products.AsNoTracking(), production => production.ProductId, product => product.Id, (production, product) => new { production, product })
+            .OrderByDescending(x => x.production.ProducedAt)
+            .ThenByDescending(x => x.production.Id)
+            .Select(x => new ProductionSummaryLatestDto(x.production.Id, x.production.BatchCode, x.product.Id, x.product.Name, x.production.ProducedAt))
+            .FirstOrDefaultAsync(ct);
+        var mostProduced = await query
+            .GroupBy(x => x.ProductId)
+            .Select(group => new { ProductId = group.Key, ProductionCount = group.Count(), LatestProducedAt = group.Max(x => x.ProducedAt) })
+            .Join(db.Products.AsNoTracking(), aggregate => aggregate.ProductId, product => product.Id, (aggregate, product) => new { aggregate, product })
+            .OrderByDescending(x => x.aggregate.ProductionCount)
+            .ThenByDescending(x => x.aggregate.LatestProducedAt)
+            .ThenBy(x => x.aggregate.ProductId)
+            .Select(x => new ProductionSummaryMostProducedDto(x.aggregate.ProductId, x.product.Name, x.aggregate.ProductionCount))
+            .FirstOrDefaultAsync(ct);
+        return new(productionCount, latest, mostProduced);
+    }
+
+    private IQueryable<Production> ProductionQuery(Guid? productId, string? batchCode, ProductionStatus? status, string? responsible, DateTimeOffset? from, DateTimeOffset? to)
+    {
+        var query = db.Productions.AsNoTracking();
+        if (productId is not null) query = query.Where(x => x.ProductId == productId);
+        if (!string.IsNullOrWhiteSpace(batchCode)) query = query.Where(x => x.BatchCode.ToLower().Contains(batchCode.Trim().ToLower()));
+        if (status is not null) query = query.Where(x => x.Status == status);
+        if (!string.IsNullOrWhiteSpace(responsible)) query = query.Where(x => x.CreatedByUserId == responsible.Trim());
+        if (from is not null) query = query.Where(x => x.ProducedAt >= from);
+        if (to is not null) query = query.Where(x => x.ProducedAt <= to);
+        return query;
     }
 
     public async Task<ProductionDetailDto?> ProductionAsync(Guid id, CancellationToken ct = default)
