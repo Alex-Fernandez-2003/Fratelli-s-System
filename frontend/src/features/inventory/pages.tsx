@@ -13,6 +13,7 @@ import { Badge, Button, Card, Input, Select, StatusDot } from '@/components/atom
 import { FormField, FormError } from '@/components/molecules'
 import { Modal, PageHeader } from '@/components/organisms'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { businessDate } from '@/lib/business-time'
 import { HttpError } from '@/lib/api/http-client'
 import {
   type Balance,
@@ -381,7 +382,7 @@ export function InventoryBalancesPage() {
     page: 1,
     pageSize: 20,
     search: '',
-    productType: '',
+    productType: 'SALE_ITEM',
     lowStockOnly: false,
   })
   const [dialog, setDialog] = useState<'ENTRY' | 'WRITE_OFF' | null>(null)
@@ -396,8 +397,7 @@ export function InventoryBalancesPage() {
   })
   const lowStockItems = (summary.data?.lowStockItems ?? []).filter(
     (item) =>
-      (!filters.search || item.productName.toLowerCase().includes(filters.search.toLowerCase())) &&
-      (!filters.productType || item.productType === filters.productType),
+      !filters.search || item.productName.toLowerCase().includes(filters.search.toLowerCase()),
   )
   const items = filters.lowStockOnly
     ? lowStockItems.slice((filters.page - 1) * filters.pageSize, filters.page * filters.pageSize)
@@ -572,7 +572,10 @@ export function InventoryBalancesPage() {
 }
 
 export function InventoryMovementsPage() {
-  const [filters, setFilters] = useState<MovementFilters>({ page: 1, pageSize: 20 })
+  const [filters, setFilters] = useState<MovementFilters>(() => {
+    const today = businessDate()
+    return { page: 1, pageSize: 20, from: today, to: today }
+  })
   const query = useMovements(filters)
   const products = useBalances({ page: 1, pageSize: 100 })
   const items = query.data?.items ?? []

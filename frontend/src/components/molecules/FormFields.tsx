@@ -43,15 +43,15 @@ export function FormField({
 
   const control = isValidElement<Record<string, unknown>>(children)
     ? cloneElement(children, {
-        id: controlId,
-        'aria-describedby':
-          [children.props['aria-describedby'] as string | undefined, hintId, errorId]
-            .filter(Boolean)
-            .flatMap((value) => value!.split(/\s+/))
-            .filter((value, index, values) => values.indexOf(value) === index)
-            .join(' ') || undefined,
-        'aria-invalid': error ? true : children.props['aria-invalid'],
-      })
+      id: controlId,
+      'aria-describedby':
+        [children.props['aria-describedby'] as string | undefined, hintId, errorId]
+          .filter(Boolean)
+          .flatMap((value) => value!.split(/\s+/))
+          .filter((value, index, values) => values.indexOf(value) === index)
+          .join(' ') || undefined,
+      'aria-invalid': error ? true : children.props['aria-invalid'],
+    })
     : children
 
   return (
@@ -119,11 +119,80 @@ export function PasswordStrength({ value }: { value: string }) {
     /[0-9]/.test(value),
     /[^A-Za-z0-9]/.test(value),
   ].filter(Boolean).length
-  const label = ['Muy débil', 'Débil', 'Aceptable', 'Fuerte', 'Muy fuerte'][score]
+
+  const levels = [
+    {
+      label: 'Muy débil',
+      color: 'bg-danger',
+      text: 'text-danger',
+    },
+    {
+      label: 'Débil',
+      color: 'bg-danger',
+      text: 'text-danger',
+    },
+    {
+      label: 'Aceptable',
+      color: 'bg-warning',
+      text: 'text-warning',
+    },
+    {
+      label: 'Fuerte',
+      color: 'bg-brand-orange',
+      text: 'text-brand-orange',
+    },
+    {
+      label: 'Muy fuerte',
+      color: 'bg-success',
+      text: 'text-success',
+    },
+  ]
+
+  const level = levels[score]
+
   return (
-    <div className="grid gap-1 text-sm text-text-muted" aria-live="polite">
-      <span>Fortaleza de la contraseña: {label}</span>
-      <progress className="accent-brand-orange" value={score} max="4" />
+    <div
+      className="grid gap-2"
+      aria-live="polite"
+    >
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="text-text-muted">
+          Fortaleza de la contraseña
+        </span>
+
+        <span
+          className={`font-semibold transition-colors duration-300 ${level.text}`}
+        >
+          {level.label}
+        </span>
+      </div>
+
+      <div
+        className="grid grid-cols-4 gap-1.5"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={4}
+        aria-valuenow={score}
+        aria-label={`Fortaleza de la contraseña: ${level.label}`}
+      >
+        {Array.from({ length: 4 }).map((_, index) => {
+          const active = index < score
+
+          return (
+            <span
+              key={index}
+              className={`h-2 rounded-full transition-all duration-300 ease-out ${active
+                ? `${level.color} scale-x-100 opacity-100`
+                : 'bg-border scale-x-95 opacity-60'
+                }`}
+              style={{
+                transitionDelay: `${index * 60}ms`,
+              }}
+              aria-hidden="true"
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }

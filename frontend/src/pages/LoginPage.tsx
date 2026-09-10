@@ -1,4 +1,5 @@
-import { ArrowRight, Info, LockKeyhole, UserRound, Utensils } from 'lucide-react'
+import { ArrowRight, Info, UserRound, Utensils } from 'lucide-react'
+import LockKeyhole from '@/assets/lock.svg?react'
 import { useState } from 'react'
 import { Button, Input, Spinner } from '../components/atoms'
 import { Alert, FormField, PasswordInput } from '../components/molecules'
@@ -64,7 +65,7 @@ export function LoginPage() {
           {error && <Alert kind="error">{error}</Alert>}
 
           <FormField
-            label="Identificador de acceso"
+            label="Usuario"
             required
             error={usernameError}
             leadingIcon={<UserRound size={19} />}
@@ -73,7 +74,7 @@ export function LoginPage() {
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               autoComplete="username"
-              placeholder="Ingresa tu ID"
+              placeholder="Ingresa tu usuario"
               required
             />
           </FormField>
@@ -82,7 +83,7 @@ export function LoginPage() {
             label="Contraseña"
             required
             error={passwordError}
-            leadingIcon={<LockKeyhole size={19} />}
+            leadingIcon={<LockKeyhole className="size-5" />}
           >
             <PasswordInput
               value={password}
@@ -112,7 +113,10 @@ export function LoginPage() {
           <Info size={15} />
         </span>
 
-        <span>Contacta al administrador si necesitas restablecer tu acceso</span>
+        <span>Si olvidaste tus credenciales, por
+          favor contacta al administrador del
+          sistema para restablecer tu
+          acceso.</span>
       </p>
     </AuthLayout>
   )

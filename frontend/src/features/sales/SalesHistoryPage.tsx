@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Search } from 'lucide-react'
 import { useState } from 'react'
-import { Button, Card, Input, Select } from '@/components/atoms'
+import { Button, Card, IconButton, Input, Select } from '@/components/atoms'
 import { FormField } from '@/components/molecules'
 import { DataTable, PageHeader } from '@/components/organisms'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -77,14 +77,14 @@ export function SalesHistoryPage() {
     { id: 'total', header: 'Total', cell: (sale: SaleHistory) => money(sale.total) },
   ]
   const detailAction = (sale: SaleHistory) => (
-    <Button
-      size="sm"
-      variant="outline"
+    <IconButton
+      type="button"
+      label={`Ver detalle de ${sale.id}`}
       aria-pressed={selectedSaleId === sale.id}
       onClick={() => setSelectedSaleId(sale.id)}
     >
-      Ver detalle de {sale.id}
-    </Button>
+      <Eye size={17} aria-hidden="true" />
+    </IconButton>
   )
 
   return (

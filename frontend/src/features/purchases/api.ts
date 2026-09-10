@@ -43,15 +43,9 @@ const normalizeHistoryFilters = (filters: PurchaseHistoryFilters) => ({
   to: filters.to || undefined,
 })
 
-function dateDaysBefore(date: string, days: number) {
-  const value = new Date(`${date}T00:00:00.000Z`)
-  value.setUTCDate(value.getUTCDate() - days)
-  return value.toISOString().slice(0, 10)
-}
-
 export function createPurchaseHistoryFilters(date = new Date()): PurchaseHistoryFilters {
   const today = businessDate(date)
-  return { from: dateDaysBefore(today, 29), to: today, page: 1, pageSize: 25 }
+  return { from: `${today.slice(0, 7)}-01`, to: today, page: 1, pageSize: 25 }
 }
 
 export function updatePurchaseHistoryFilters(

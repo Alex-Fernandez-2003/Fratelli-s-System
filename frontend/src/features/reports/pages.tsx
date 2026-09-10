@@ -513,7 +513,7 @@ export function SalesReportPage() {
             <div>
               <h2 className="m-0">Historial de ventas</h2>
               <p className="m-0 text-sm text-text-muted">
-                Consulta el detalle transaccional en HU-015.
+                Consulta el detalle transaccional del historial autorizado.
               </p>
             </div>
             <LinkButton href="/historial-ventas" variant="outline">

@@ -29,9 +29,19 @@ export function StatusDot({
 }: {
   label: string
   tone?: keyof typeof toneClasses
+
 }) {
+  const toneClasses = {
+    success: 'bg-success/15 text-success',
+    danger: 'bg-danger/15 text-danger',
+    warning: 'bg-warning/15 text-warning',
+    neutral: 'bg-surface-elevated text-text-muted',
+  }
   return (
-    <span className={`inline-flex items-center gap-1.5 ${toneClasses[tone]}`} role="status">
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium ${toneClasses[tone]}`}
+      role="status"
+    >
       <span className="size-2 rounded-full bg-current" aria-hidden="true" />
       {label}
     </span>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Badge, Button } from '../../components/atoms'
+import { Eye, Pencil, UserX } from 'lucide-react'
+import { Badge, Button, IconButton } from '../../components/atoms'
 import { PrimaryNav, SearchInput } from '../../components/molecules'
 import { AppShell } from '../../components/templates'
 import { DataTable, Modal, PageHeader } from '../../components/organisms'
@@ -46,6 +47,7 @@ export function SuppliersPage() {
   const [page, setPage] = useState(1)
 
   const [editing, setEditing] = useState<Supplier | null>(null)
+  const [viewing, setViewing] = useState<Supplier | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -121,7 +123,7 @@ export function SuppliersPage() {
     >
       {listError && <p role="alert">{listError}</p>}
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <SearchInput
           value={search}
           onChange={(event) => {
@@ -179,22 +181,37 @@ export function SuppliersPage() {
             ]}
             rows={items}
             getRowId={(row) => row.id}
-            actions={
-              canWrite
-                ? (row: Supplier) => (
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(row)}>
-                        Editar
-                      </Button>
-                      {row.isActive && (
-                        <Button size="sm" variant="ghost" onClick={() => setToDeactivate(row)}>
-                          Desactivar
-                        </Button>
-                      )}
-                    </div>
-                  )
-                : undefined
-            }
+            actions={(row: Supplier) => (
+              <div className="flex flex-wrap gap-1">
+                <IconButton
+                  type="button"
+                  label={`Ver detalle de ${row.name}`}
+                  onClick={() => setViewing(row)}
+                >
+                  <Eye size={17} aria-hidden="true" />
+                </IconButton>
+                {canWrite && (
+                  <>
+                    <IconButton
+                      type="button"
+                      label={`Editar proveedor ${row.name}`}
+                      onClick={() => openEdit(row)}
+                    >
+                      <Pencil size={17} aria-hidden="true" />
+                    </IconButton>
+                    {row.isActive && (
+                      <IconButton
+                        type="button"
+                        label={`Desactivar proveedor ${row.name}`}
+                        onClick={() => setToDeactivate(row)}
+                      >
+                        <UserX size={17} aria-hidden="true" />
+                      </IconButton>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           />
 
           {data && data.totalPages > 1 && (
@@ -202,6 +219,33 @@ export function SuppliersPage() {
           )}
         </>
       )}
+
+      <Modal open={Boolean(viewing)} title="Detalle de proveedor" onClose={() => setViewing(null)}>
+        {viewing && (
+          <dl className="grid gap-3 text-sm">
+            <div>
+              <dt className="text-text-muted">Nombre</dt>
+              <dd>{viewing.name}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Teléfono</dt>
+              <dd>{viewing.phoneNumber}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Correo</dt>
+              <dd>{viewing.email ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Estado</dt>
+              <dd>{viewing.isActive ? 'Activo' : 'Inactivo'}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Notas</dt>
+              <dd className="break-words">{viewing.notes ?? '—'}</dd>
+            </div>
+          </dl>
+        )}
+      </Modal>
 
       <Modal
         open={formOpen}

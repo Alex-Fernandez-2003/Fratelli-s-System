@@ -1,7 +1,7 @@
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Input, Select } from '../../components/atoms'
+import { Button, Card, IconButton, Input, Select } from '../../components/atoms'
 import { FormField } from '../../components/molecules'
 import { DataTable, PageHeader } from '../../components/organisms'
 import { useAuth } from '../auth/AuthProvider'
@@ -127,14 +127,14 @@ export function HistoryPage() {
     },
   ]
   const detailAction = (item: ProductionHistory) => (
-    <Button
-      size="sm"
-      variant="outline"
+    <IconButton
+      type="button"
+      label={`Ver detalle de ${item.batchCode}`}
       aria-pressed={selectedProductionId === item.id}
       onClick={() => setSelectedProductionId(item.id)}
     >
-      Ver detalle de {item.batchCode}
-    </Button>
+      <Eye size={17} aria-hidden="true" />
+    </IconButton>
   )
 
   return (

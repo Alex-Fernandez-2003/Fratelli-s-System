@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Input } from '@/components/atoms'
 import { FormField } from '@/components/molecules'
@@ -137,7 +137,23 @@ export function CashClosingHistoryPage() {
   const defaults = useMemo(() => createCashClosingHistoryFilters(), [])
   const history = useCashClosingHistory(filters)
   const [selectedClosingId, setSelectedClosingId] = useState<string>()
+  const [search, setSearch] = useState('')
   const items = history.data?.items ?? []
+  const normalizedSearch = search.trim().toLocaleLowerCase('es-BO')
+  const filteredItems = normalizedSearch
+    ? items.filter((closing) =>
+        [
+          closing.businessDate,
+          formatBusinessDateLong(closing.businessDate),
+          closing.closedByUserId,
+          formatMoneyOrDash(closing.expectedCash),
+          formatMoneyOrDash(closing.declaredCash),
+          String(closing.expectedCash),
+          String(closing.declaredCash),
+        ].some((value) => value.toLocaleLowerCase('es-BO').includes(normalizedSearch)),
+      )
+    : items
+
   const totalCount = Number(history.data?.totalCount ?? 0)
   const totalPages = Number(history.data?.totalPages ?? 0)
   const safeTotalPages = Math.max(1, totalPages)
@@ -206,8 +222,21 @@ export function CashClosingHistoryPage() {
               onChange={(event) => updateFilters({ to: event.target.value || undefined })}
             />
           </FormField>
+          <FormField label="Buscar en resultados" leadingIcon={<Search size={16} />}>
+            <Input
+              value={search}
+              placeholder="Fecha, responsable o monto"
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </FormField>
           <div className="flex items-end">
-            <Button variant="ghost" onClick={clearFilters}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                clearFilters()
+                setSearch('')
+              }}
+            >
               Limpiar filtros
             </Button>
           </div>
@@ -225,15 +254,21 @@ export function CashClosingHistoryPage() {
             Reintentar
           </Button>
         </Card>
-      ) : !items.length ? (
+      ) : !filteredItems.length ? (
         <Card className="text-center">
           <p>
-            {isFiltered
+            {isFiltered || normalizedSearch
               ? 'No se encontraron cierres con los filtros aplicados.'
               : 'No hay cierres registrados en el período seleccionado.'}
           </p>
-          {isFiltered && (
-            <Button variant="outline" onClick={clearFilters}>
+          {(isFiltered || normalizedSearch) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                clearFilters()
+                setSearch('')
+              }}
+            >
               Limpiar filtros
             </Button>
           )}
@@ -243,7 +278,7 @@ export function CashClosingHistoryPage() {
           <div className="hidden min-w-0 md:block" data-testid="cash-closing-table">
             <DataTable
               columns={columns}
-              rows={items}
+              rows={filteredItems}
               getRowId={(closing) => closing.id}
               actions={(closing) => (
                 <ClosingAction closing={closing} onSelect={setSelectedClosingId} />
@@ -251,7 +286,7 @@ export function CashClosingHistoryPage() {
             />
           </div>
           <div className="grid gap-3 md:hidden" data-testid="cash-closing-mobile">
-            {items.map((closing) => (
+            {filteredItems.map((closing) => (
               <Card key={closing.id} className="grid min-w-0 gap-2">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <strong className="break-words">

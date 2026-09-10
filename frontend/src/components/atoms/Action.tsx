@@ -65,8 +65,7 @@ export function IconButton({
   return (
     <button
       {...props}
-      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-border bg-transparent p-2 text-text transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
-      aria-label={label}
+      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border border-border bg-transparent p-2 text-text transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:outline-none ${className}`} aria-label={label}
     >
       {children}
     </button>

@@ -1,8 +1,8 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useMemo } from 'react'
-import { Button, Card, Input, Select } from '@/components/atoms'
+import { ChevronLeft, ChevronRight, Eye } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Button, Card, IconButton, Input, Select } from '@/components/atoms'
 import { FormField } from '@/components/molecules'
-import { DataTable, PageHeader } from '@/components/organisms'
+import { DataTable, Modal, PageHeader } from '@/components/organisms'
 import {
   createExpenseHistoryFilters,
   useExpenseCategories,
@@ -146,6 +146,7 @@ function HistoryPagination({
 
 export function HistoryPage() {
   const { filters, updateFilters, setPage, clearFilters } = useExpenseHistoryFilterState()
+  const [selectedExpense, setSelectedExpense] = useState<ExpenseHistory>()
   const defaultFilters = useMemo(() => createExpenseHistoryFilters(), [])
   const history = useExpenseHistory(filters)
   const categories = useExpenseCategories()
@@ -175,6 +176,16 @@ export function HistoryPage() {
     },
     { id: 'amount', header: 'Monto', cell: (expense: ExpenseHistory) => money(expense.amount) },
   ]
+  const detailAction = (expense: ExpenseHistory) => (
+    <IconButton
+      type="button"
+      label={`Ver detalle del gasto ${expense.id}`}
+      aria-pressed={selectedExpense?.id === expense.id}
+      onClick={() => setSelectedExpense(expense)}
+    >
+      <Eye size={17} aria-hidden="true" />
+    </IconButton>
+  )
 
   return (
     <div className="grid min-w-0 gap-6">
@@ -301,7 +312,12 @@ export function HistoryPage() {
       ) : (
         <Card aria-busy={history.isFetching}>
           <div className="hidden md:block">
-            <DataTable columns={columns} rows={items} getRowId={(expense) => expense.id} />
+            <DataTable
+              columns={columns}
+              rows={items}
+              getRowId={(expense) => expense.id}
+              actions={detailAction}
+            />
           </div>
           <div className="grid gap-3 md:hidden">
             {items.map((expense) => (
@@ -315,6 +331,7 @@ export function HistoryPage() {
                 <span>Fuente: {CASH_SOURCE_LABELS[expense.cashSource]}</span>
                 <span>Turno: {shiftName(expense)}</span>
                 <span className="break-words">Responsable: {responsibleName(expense)}</span>
+                {detailAction(expense)}
               </Card>
             ))}
           </div>
@@ -326,6 +343,44 @@ export function HistoryPage() {
           />
         </Card>
       )}
+      <Modal
+        open={Boolean(selectedExpense)}
+        title="Detalle de gasto"
+        onClose={() => setSelectedExpense(undefined)}
+      >
+        {selectedExpense && (
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-text-muted">Fecha</dt>
+              <dd>{expenseDate(selectedExpense.expenseDate)}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Monto</dt>
+              <dd className="font-bold">{money(selectedExpense.amount)}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Categoría</dt>
+              <dd>{categoryName(selectedExpense)}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Fuente</dt>
+              <dd>{CASH_SOURCE_LABELS[selectedExpense.cashSource]}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Turno</dt>
+              <dd>{shiftName(selectedExpense)}</dd>
+            </div>
+            <div>
+              <dt className="text-text-muted">Responsable</dt>
+              <dd>{responsibleName(selectedExpense)}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-text-muted">Descripción</dt>
+              <dd className="break-words">{selectedExpense.description}</dd>
+            </div>
+          </dl>
+        )}
+      </Modal>
       {history.isFetching && history.data && !history.error && (
         <p className="text-sm text-text-muted" role="status">
           Actualizando historial…

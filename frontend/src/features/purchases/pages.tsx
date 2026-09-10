@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, PackageCheck, Plus, Trash2, XCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, PackageCheck, Plus, Trash2, XCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, Modal, PageHeader } from '@/components/organisms'
@@ -189,9 +189,13 @@ export function PurchasesPage() {
   const firstResult = totalCount ? (currentPage - 1) * pageSize + 1 : 0
   const lastResult = Math.min(currentPage * pageSize, totalCount)
   const viewAction = (purchase: PurchaseHistoryDto) => (
-    <Button size="sm" variant="outline" onClick={() => setDetailId(purchase.id)}>
-      Ver detalle de {shortId(purchase.id)}
-    </Button>
+    <IconButton
+      type="button"
+      label={`Ver detalle de ${shortId(purchase.id)}`}
+      onClick={() => setDetailId(purchase.id)}
+    >
+      <Eye size={17} aria-hidden="true" />
+    </IconButton>
   )
   const actions = (purchase: PurchaseHistoryDto) => (
     <div className="flex flex-wrap gap-1">

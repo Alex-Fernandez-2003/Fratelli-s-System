@@ -20,7 +20,7 @@ const { httpClient } = await import('@/lib/api/http-client')
 describe('Purchase history query layer', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('defaults to the last 30 business dates and sends history filters plus pagination', async () => {
+  it('defaults to the current business month and sends history filters plus pagination', async () => {
     vi.mocked(httpClient.get).mockResolvedValue({ items: [], page: 2, pageSize: 25 })
     const initial = createPurchaseHistoryFilters(new Date('2026-08-31T02:30:00.000Z'))
     expect(initial).toMatchObject({ from: '2026-08-01', to: '2026-08-30', page: 1, pageSize: 25 })

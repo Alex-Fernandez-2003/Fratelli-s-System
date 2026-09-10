@@ -6,6 +6,7 @@ import { Alert, EmptyState, StatCard, FormError, FormField, FormHint } from '@/c
 import { Modal, PageHeader } from '@/components/organisms'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useAttendanceToday } from '@/features/attendance/hooks'
+import { useCashPreview } from '@/features/cash/api'
 import { formatBusinessTime } from '@/lib/business-time'
 import {
   useHandoverShift,
@@ -86,7 +87,7 @@ function ShiftCard({
                   type="button"
                   variant="danger"
                   disabled
-                  title="El Turno Noche es el último del día: no hay un turno siguiente al cual traspasar. El cierre general llega con HU-026/HU-027."
+                  title="El Turno Noche es el último del día: el cierre general se realiza desde Cerrar caja."
                 >
                   Finalizar turno
                 </Button>
@@ -221,9 +222,9 @@ function HandoverSection({ shift }: { shift: ShiftDto }) {
   }
 
   async function submit() {
-    // El contrato actual de HU-025 (HandoverRequest) solo persiste `note`.
+    // El contrato actual de HandoverRequest solo persiste `note`.
     // Los montos desglosados se incluyen dentro de la nota hasta que el
-    // backend incorpore campos estructurados (previsto para HU-026/HU-027).
+    // backend exponga campos estructurados para este detalle.
     const breakdown = [
       cashHanded && `Efectivo entregado: ${cashHanded}`,
       qrAmount && `Monto QR/Digital: ${qrAmount}`,
@@ -354,6 +355,9 @@ function HandoverSection({ shift }: { shift: ShiftDto }) {
   )
 }
 
+const formatMoney = (value: number | string) =>
+  new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(Number(value))
+
 function parseMoneyInput(raw: string): number | null {
   const trimmed = raw.trim()
   if (trimmed === '') return null
@@ -365,6 +369,7 @@ function parseMoneyInput(raw: string): number | null {
 
 export function ShiftsPage() {
   const context = useShiftContext()
+  const cashPreview = useCashPreview()
   const openShift = useOpenShift()
   const attendance = useAttendanceToday(true)
   const [managingShift, setManagingShift] = useState<ShiftDto | null>(null)
@@ -557,16 +562,30 @@ export function ShiftsPage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <StatCard
                 label="Monto inicial caja"
-                value="—"
-                trend="Disponible con el cierre (HU-026)"
+                value={cashPreview.data ? formatMoney(cashPreview.data.openingAmount) : '—'}
+                trend="Valor real de la jornada"
               />
-              <StatCard label="Caja chica" value="—" trend="Disponible con el cierre (HU-026)" />
               <StatCard
-                label="Total estimado en caja"
-                value="—"
-                trend="Disponible con el cierre (HU-027)"
+                label="Caja chica"
+                value={
+                  cashPreview.data ? formatMoney(cashPreview.data.pettyCashOpeningAmount) : '—'
+                }
+                trend="Valor real de la jornada"
+              />
+              <StatCard
+                label="Efectivo esperado"
+                value={cashPreview.data ? formatMoney(cashPreview.data.expectedCash) : '—'}
+                trend="Calculado por la caja operativa"
               />
             </div>
+            {cashPreview.isLoading && !cashPreview.data && (
+              <p className="text-sm text-text-muted" role="status">
+                Cargando resumen de caja…
+              </p>
+            )}
+            {cashPreview.isError && (
+              <Alert kind="warning">No se pudo cargar el resumen de caja actualizado.</Alert>
+            )}
             <Link
               to="/turnos/cierre"
               className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-md border border-brand-orange bg-transparent px-3.5 py-2.5 font-bold text-brand-orange no-underline hover:bg-brand-orange hover:text-brand-black"
@@ -599,9 +618,8 @@ export function ShiftsPage() {
               <Card className="grid gap-2">
                 <h2 className="text-lg font-bold">Traspaso de turno &amp; continuidad</h2>
                 <FormHint>
-                  El Turno Noche es el último del día, así que no hay un turno siguiente al cual
-                  traspasar. El cierre general de la jornada se habilita cuando se implemente
-                  HU-026/HU-027.
+                  El Turno Noche es el último del día. El cierre general de la jornada se realiza
+                  desde la acción de cierre de caja.
                 </FormHint>
               </Card>
             </div>

@@ -20,6 +20,7 @@ import { Button } from '../../components/atoms'
 import { Input, Select, Textarea } from '../../components/atoms'
 import { FormField } from '../../components/molecules'
 import { Alert } from '../../components/molecules'
+import { useUnitsList } from '../products/api'
 
 type View = 'form' | 'confirming' | 'success'
 
@@ -48,11 +49,17 @@ export function RegisterProductionPage() {
       }),
   })
 
+  const { data: unitsData } = useUnitsList()
   const products = useMemo(() => productsData?.items ?? [], [productsData])
+  const units = useMemo(() => unitsData?.items ?? [], [unitsData])
 
   const selectedProduct = useMemo(
     () => products.find((p) => p.id === selectedProductId) ?? null,
     [products, selectedProductId],
+  )
+  const selectedUnit = useMemo(
+    () => units.find((unit) => unit.id === selectedProduct?.inventoryUnitId) ?? null,
+    [selectedProduct, units],
   )
 
   const quantityNum = useMemo(() => {
@@ -60,10 +67,17 @@ export function RegisterProductionPage() {
     return Number.isFinite(n) && n > 0 ? n : 0
   }, [quantity])
 
+  const quantityIsValid = Boolean(
+    selectedProduct &&
+    selectedUnit &&
+    quantityNum > 0 &&
+    (selectedUnit.dimension !== 'COUNT' || Number.isInteger(quantityNum)),
+  )
+
   const { data: requirements, isLoading: loadingRequirements } = useQuery({
     queryKey: ['productionRequirements', selectedProductId, quantityNum],
     queryFn: () => productionApi.getRequirements(selectedProductId, quantityNum),
-    enabled: !!selectedProductId && quantityNum > 0,
+    enabled: !!selectedProductId && quantityIsValid,
   })
 
   const createMutation = useMutation({
@@ -97,7 +111,7 @@ export function RegisterProductionPage() {
     setError(null)
   }, [])
 
-  const canSubmit = selectedProductId && quantityNum > 0 && !createMutation.isPending
+  const canSubmit = selectedProductId && quantityIsValid && !createMutation.isPending
 
   return (
     <div className="grid gap-6">
@@ -166,19 +180,23 @@ export function RegisterProductionPage() {
                     <Input
                       type="number"
                       min="0.01"
-                      step="0.01"
-                      placeholder="0.00"
+                      step={selectedUnit?.dimension === 'COUNT' ? '1' : '0.01'}
+                      placeholder={selectedUnit?.dimension === 'COUNT' ? '0' : '0.00'}
                       value={quantity}
                       onChange={(e) => {
                         setQuantity(e.target.value)
                         setError(null)
                       }}
                       className="max-w-[140px]"
+                      aria-describedby="production-unit-hint production-quantity-hint"
                     />
-                    <span className="whitespace-nowrap text-sm text-text-muted">
-                      {selectedProduct?.preparationArea
-                        ? `(${selectedProduct.preparationArea})`
-                        : ''}
+                    <span
+                      id="production-unit-hint"
+                      className="whitespace-nowrap text-sm text-text-muted"
+                    >
+                      {selectedUnit
+                        ? `${selectedUnit.name} (${selectedUnit.symbol})`
+                        : 'Unidad no disponible'}
                     </span>
                   </div>
                 </FormField>
@@ -191,6 +209,24 @@ export function RegisterProductionPage() {
                   />
                 </FormField>
               </div>
+              <p id="production-quantity-hint" className="mt-3 text-xs text-text-muted">
+                {selectedUnit?.dimension === 'COUNT'
+                  ? 'Esta unidad es discreta: ingresá un número entero.'
+                  : 'La cantidad admite decimales según la unidad del producto.'}
+              </p>
+              {selectedProduct && !selectedUnit && (
+                <Alert kind="warning" title="Unidad no disponible">
+                  No se pudo resolver la unidad de inventario de este producto. Actualizá la lista
+                  antes de continuar.
+                </Alert>
+              )}
+              {selectedUnit?.dimension === 'COUNT' &&
+                quantityNum > 0 &&
+                !Number.isInteger(quantityNum) && (
+                  <Alert kind="warning" title="Cantidad inválida">
+                    Las unidades discretas solo aceptan cantidades enteras.
+                  </Alert>
+                )}
             </section>
 
             {error && (
@@ -283,7 +319,7 @@ export function RegisterProductionPage() {
         <SuccessView
           productName={selectedProduct?.name ?? ''}
           quantity={quantityNum}
-          producedAt={new Date().toISOString()}
+          producedAt={createMutation.data?.producedAt ?? new Date().toISOString()}
           responsibleName={user?.fullName ?? user?.username ?? ''}
           onRegisterAnother={handleReset}
           onViewHistory={() => navigate('/produccion')}
