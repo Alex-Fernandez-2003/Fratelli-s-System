@@ -84,7 +84,10 @@ public sealed class OperationsService(ApplicationDbContext db, IInventoryWriter 
 
     public async Task<(ProductionRequirementsDto? Value, string? Error)> RequirementsAsync(Guid id, decimal quantity, CancellationToken ct = default)
     {
-        if (quantity <= 0) return (null, "INVALID_REQUEST"); var target = await db.Products.Include(x => x.InventoryUnit).SingleOrDefaultAsync(x => x.Id == id && x.IsActive, ct); if (target is null) return (null, "NOT_FOUND");
+        if (quantity <= 0) return (null, "INVALID_REQUEST");
+        var target = await db.Products.Include(x => x.InventoryUnit).SingleOrDefaultAsync(x => x.Id == id && x.IsActive, ct);
+        if (target is null) return (null, "NOT_FOUND");
+        if (target.InventoryUnit is null || !IsValidQuantity(quantity, target.InventoryUnit)) return (null, "INVALID_REQUEST");
         var rows = await db.ProductCompositions.Where(x => x.ParentProductId == id).ToArrayAsync(ct); if (rows.Length == 0) return (null, "NO_USABLE_COMPOSITION");
         var products = await db.Products.Include(x => x.InventoryUnit).Where(x => rows.Select(r => r.ComponentProductId).Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct);
         var units = await db.Units.Where(x => rows.Select(r => r.UnitId).Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct);
@@ -135,9 +138,21 @@ public sealed class OperationsService(ApplicationDbContext db, IInventoryWriter 
         if (!string.IsNullOrWhiteSpace(batchCode)) query = query.Where(x => x.BatchCode.ToLower().Contains(batchCode.Trim().ToLower()));
         if (status is not null) query = query.Where(x => x.Status == status);
         if (!string.IsNullOrWhiteSpace(responsible)) query = query.Where(x => x.CreatedByUserId == responsible.Trim());
-        if (from is not null) query = query.Where(x => x.ProducedAt >= from);
-        if (to is not null) query = query.Where(x => x.ProducedAt <= to);
-        return query;
+            if (from is { } fromValue)
+            {
+                var start = IsDateOnlyBoundary(fromValue)
+                    ? UtcBoundary(DateOnly.FromDateTime(fromValue.DateTime))
+                    : fromValue;
+                query = query.Where(x => x.ProducedAt >= start);
+            }
+            if (to is { } toValue)
+            {
+                if (IsDateOnlyBoundary(toValue))
+                    query = query.Where(x => x.ProducedAt < UtcBoundary(DateOnly.FromDateTime(toValue.DateTime).AddDays(1)));
+                else
+                    query = query.Where(x => x.ProducedAt <= toValue);
+            }
+            return query;
     }
 
     public async Task<ProductionDetailDto?> ProductionAsync(Guid id, CancellationToken ct = default)
@@ -161,7 +176,7 @@ public sealed class OperationsService(ApplicationDbContext db, IInventoryWriter 
         await using var tx = await db.Database.BeginTransactionAsync(ct); requirements = await RequirementsAsync(request.ProductId, request.QuantityProduced, ct); if (!requirements.Value!.HasSufficientStock) return (null, "PRODUCTION_STOCK_INSUFFICIENT");
         var productionId = Guid.NewGuid(); var production = new Production { Id = productionId, BatchCode = $"PRD-{productionId:N}", Status = ProductionStatus.COMPLETED, ProductId = request.ProductId, QuantityProduced = request.QuantityProduced, Notes = request.Notes?.Trim(), ProducedAt = clock.UtcNow, CreatedByUserId = actor, ResponsibleEmployeeId = await db.Employees.Where(x => x.UserId == actor && x.IsActive).Select(x => (Guid?)x.Id).SingleOrDefaultAsync(ct) };
         var commands = requirements.Value.Components.Select(x => new InventoryWriteCommand(x.ProductId, InventoryMovementType.PRODUCTION_CONSUMPTION, -x.RequiredQuantity, "Production", InventoryReferenceType.PRODUCTION, production.Id, actor)).Append(new InventoryWriteCommand(request.ProductId, InventoryMovementType.PRODUCTION_OUTPUT, request.QuantityProduced, "Production", InventoryReferenceType.PRODUCTION, production.Id, actor)).ToArray();
-        var batch = await inventory.WriteBatchAsync(commands, false, ct); if (batch.Error is not null) return (null, "PRODUCTION_STOCK_INSUFFICIENT");
+        var batch = await inventory.WriteBatchAsync(commands, false, ct); if (batch.Error is not null) return (null, batch.Error == "INVALID_REQUEST" ? "INVALID_REQUEST" : "PRODUCTION_STOCK_INSUFFICIENT");
         db.Productions.Add(production); db.ProductionConsumptions.AddRange(requirements.Value.Components.Select(x => new ProductionConsumption { ProductionId = production.Id, ComponentProductId = x.ProductId, QuantityConsumed = x.RequiredQuantity })); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return (new(production.Id, request.ProductId, request.QuantityProduced, production.ProducedAt, requirements.Value.Components, production.BatchCode, production.Status), null);
     }
 
@@ -421,8 +436,20 @@ items.Sum(x => x.ProjectedPay));
     public async Task<PagedResponse<SalesHistoryDto>> SalesAsync(AuthorizedSalesScope scope, int page, int pageSize, DateTimeOffset? from, DateTimeOffset? to, Guid? shiftId, SalesChannel? salesChannel, PaymentMethod? paymentMethod, string? customerSearch, CancellationToken ct = default)
     {
         var query = scope.Apply(db.Sales.AsNoTracking());
-        if (from is not null) query = query.Where(sale => sale.ConfirmedAt >= from);
-        if (to is not null) query = query.Where(sale => sale.ConfirmedAt <= to);
+            if (from is { } fromValue)
+            {
+                var start = IsDateOnlyBoundary(fromValue)
+                    ? UtcBoundary(DateOnly.FromDateTime(fromValue.DateTime))
+                    : fromValue;
+                query = query.Where(sale => sale.ConfirmedAt >= start);
+            }
+            if (to is { } toValue)
+            {
+                if (IsDateOnlyBoundary(toValue))
+                    query = query.Where(sale => sale.ConfirmedAt < UtcBoundary(DateOnly.FromDateTime(toValue.DateTime).AddDays(1)));
+                else
+                    query = query.Where(sale => sale.ConfirmedAt <= toValue);
+            }
         if (shiftId is not null) query = query.Where(sale => sale.ShiftId == shiftId);
         if (salesChannel is not null) query = query.Where(sale => sale.SalesChannel == salesChannel);
         if (paymentMethod is not null) query = query.Where(sale => sale.PaymentMethod == paymentMethod);
@@ -462,6 +489,7 @@ items.Sum(x => x.ProjectedPay));
         if (request.Lines is null || request.Lines.Count == 0 || request.Lines.Any(x => x.Quantity <= 0 || x.UnitCost < 0)) return (null, "INVALID_REQUEST"); var supplier = await db.Suppliers.SingleOrDefaultAsync(x => x.Id == request.SupplierId && x.IsActive, ct); if (supplier is null) return (null, "NOT_FOUND");
         var productIds = request.Lines.Select(x => x.ProductId).ToArray(); var unitIds = request.Lines.Select(x => x.UnitId).Distinct().ToArray(); var products = await db.Products.Include(x => x.InventoryUnit).Where(x => productIds.Contains(x.Id) && x.IsActive).ToDictionaryAsync(x => x.Id, ct); var units = await db.Units.Where(x => unitIds.Contains(x.Id) && x.IsActive).ToDictionaryAsync(x => x.Id, ct);
         if (products.Count != request.Lines.Count || units.Count != unitIds.Length || request.Lines.Any(x => units[x.UnitId].Dimension != products[x.ProductId].InventoryUnit!.Dimension || units[x.UnitId].FactorToBase <= 0 || products[x.ProductId].InventoryUnit!.FactorToBase <= 0)) return (null, "INVALID_UNIT_CONVERSION");
+        if (request.Lines.Any(x => !IsValidQuantity(Convert(x.Quantity, units[x.UnitId], products[x.ProductId].InventoryUnit!), products[x.ProductId].InventoryUnit!))) return (null, "INVALID_REQUEST");
         var kitchenOnly = roles.Contains("COCINA") && !roles.Contains("ADMINISTRADOR") && !roles.Contains("ENCARGADO"); if (kitchenOnly && (products.Values.Any(x => x.ProductType != ProductType.INGREDIENT) || string.IsNullOrWhiteSpace(request.ReceiptReference))) return (null, "PURCHASE_SCOPE_FORBIDDEN");
         var purchase = new Purchase { SupplierId = request.SupplierId, PurchaseDate = clock.BusinessDate, ReceiptReference = request.ReceiptReference?.Trim(), Notes = request.Notes?.Trim(), CreatedAt = clock.UtcNow, CreatedByUserId = actor }; purchase.Items.AddRange(request.Lines.Select(x => new PurchaseItem { ProductId = x.ProductId, Quantity = x.Quantity, UnitId = x.UnitId, UnitCost = x.UnitCost, LineTotal = x.Quantity * x.UnitCost })); purchase.Total = purchase.Items.Sum(x => x.LineTotal); db.Purchases.Add(purchase); await db.SaveChangesAsync(ct); return (await PurchaseAsync(purchase.Id, ct), null);
     }
@@ -506,12 +534,20 @@ items.Sum(x => x.ProjectedPay));
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct); var purchase = await db.Purchases.FromSqlInterpolated($"SELECT * FROM public.purchases WHERE \"Id\"={id} FOR UPDATE").Include(x => x.Items).SingleOrDefaultAsync(ct); if (purchase is null) return (null, "NOT_FOUND"); if (!await IsPurchaseScopeAllowedAsync(purchase.Items.Select(x => x.ProductId), roles, ct)) return (null, "PURCHASE_SCOPE_FORBIDDEN"); if (purchase.Status != PurchaseStatus.PENDIENTE) return (null, "PURCHASE_ALREADY_RECEIVED"); if (request.Lines is null || request.Lines.Count != purchase.Items.Count || request.Lines.Any(x => x.ReceivedQuantity <= 0) || request.Lines.Select(x => x.PurchaseItemId).Distinct().Count() != purchase.Items.Count || request.Lines.Any(x => !purchase.Items.Any(i => i.Id == x.PurchaseItemId))) return (null, "RECEIPT_INCOMPLETE");
         var receipt = new PurchaseReceipt { PurchaseId = id, ReceivedAt = clock.UtcNow, ReceivedByUserId = actor, Notes = request.Notes?.Trim() }; receipt.Lines.AddRange(request.Lines.Select(x => new PurchaseReceiptLine { PurchaseItemId = x.PurchaseItemId, ReceivedQuantity = x.ReceivedQuantity, UnitId = x.UnitId })); db.PurchaseReceipts.Add(receipt); await db.SaveChangesAsync(ct); var commands = new List<InventoryWriteCommand>();
-        foreach (var line in request.Lines) { var item = purchase.Items.Single(x => x.Id == line.PurchaseItemId); var product = await db.Products.Include(x => x.InventoryUnit).SingleAsync(x => x.Id == item.ProductId, ct); var unit = await db.Units.SingleAsync(x => x.Id == line.UnitId, ct); if (unit.Dimension != product.InventoryUnit!.Dimension || unit.FactorToBase <= 0 || product.InventoryUnit.FactorToBase <= 0) return (null, "INVALID_UNIT_CONVERSION"); commands.Add(new(product.Id, InventoryMovementType.PURCHASE_RECEIPT, Convert(line.ReceivedQuantity, unit, product.InventoryUnit!), "Purchase receipt", InventoryReferenceType.PURCHASE, id, actor)); }
+        foreach (var line in request.Lines) { var item = purchase.Items.Single(x => x.Id == line.PurchaseItemId); var product = await db.Products.Include(x => x.InventoryUnit).SingleAsync(x => x.Id == item.ProductId, ct); var unit = await db.Units.SingleAsync(x => x.Id == line.UnitId, ct); if (unit.Dimension != product.InventoryUnit!.Dimension || unit.FactorToBase <= 0 || product.InventoryUnit.FactorToBase <= 0) return (null, "INVALID_UNIT_CONVERSION"); var converted = Convert(line.ReceivedQuantity, unit, product.InventoryUnit); if (!IsValidQuantity(converted, product.InventoryUnit)) return (null, "INVALID_REQUEST"); commands.Add(new(product.Id, InventoryMovementType.PURCHASE_RECEIPT, converted, "Purchase receipt", InventoryReferenceType.PURCHASE, id, actor)); }
         var batch = await inventory.WriteBatchAsync(commands, true, ct); if (batch.Error is not null) return (null, batch.Error); purchase.Status = PurchaseStatus.RECIBIDA; await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return (await PurchaseAsync(id, ct), null);
     }
 
     private async Task<Dictionary<Guid, (decimal Quantity, Guid UnitId)>> ReceiptLinesAsync(Guid[] purchaseIds, CancellationToken ct) => await db.PurchaseReceiptLines.AsNoTracking().Join(db.PurchaseReceipts.AsNoTracking(), line => line.PurchaseReceiptId, receipt => receipt.Id, (line, receipt) => new { line, receipt }).Where(x => purchaseIds.Contains(x.receipt.PurchaseId)).ToDictionaryAsync(x => x.line.PurchaseItemId, x => (x.line.ReceivedQuantity, x.line.UnitId), ct);
     private static PurchaseDto PurchaseDto(Purchase purchase, IEnumerable<PurchaseItem> items, IReadOnlyDictionary<Guid, (decimal Quantity, Guid UnitId)> receipts) => new(purchase.Id, purchase.SupplierId, purchase.Status, purchase.Total, items.Select(x => receipts.TryGetValue(x.Id, out var receipt) ? new PurchaseLineDto(x.Id, x.ProductId, x.Quantity, x.UnitId, x.UnitCost, receipt.Quantity, receipt.UnitId) : new PurchaseLineDto(x.Id, x.ProductId, x.Quantity, x.UnitId, x.UnitCost, null, null)).ToArray());
     private async Task<bool> IsPurchaseScopeAllowedAsync(IEnumerable<Guid> productIds, IReadOnlySet<string> roles, CancellationToken ct) => roles.Contains("ADMINISTRADOR") || roles.Contains("ENCARGADO") || (roles.Contains("COCINA") && !await db.Products.AnyAsync(x => productIds.Contains(x.Id) && x.ProductType != ProductType.INGREDIENT, ct));
-    private static decimal Convert(decimal quantity, Unit from, Unit to) => quantity * from.FactorToBase / to.FactorToBase;
+        private static decimal Convert(decimal quantity, Unit from, Unit to) => quantity * from.FactorToBase / to.FactorToBase;
+        private static bool IsValidQuantity(decimal quantity, Unit unit) => unit.Dimension != UnitDimension.COUNT || decimal.Truncate(quantity) == quantity;
+        private static bool IsDateOnlyBoundary(DateTimeOffset value) => value.TimeOfDay == TimeSpan.Zero;
+        private DateTimeOffset UtcBoundary(DateOnly date)
+        {
+            var zone = TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
+            var local = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified);
+            return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone), TimeSpan.Zero);
+        }
 }

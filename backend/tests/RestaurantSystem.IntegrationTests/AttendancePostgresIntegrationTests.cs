@@ -148,6 +148,14 @@ public sealed class AttendancePostgresIntegrationTests(PostgresFixture postgres)
                 Assert.Equal(identity.EmployeeId, checkOutBody.GetProperty("employeeId").GetGuid());
                 AssertPersonalProjectionShape(checkOutBody);
                 Assert.Equal("CLOSED", checkOutBody.GetProperty("lifecycle").GetString());
+
+                var history = await Send(client, HttpMethod.Get, "/api/v1/attendance/me?page=1&pageSize=20", tokens[username]);
+                Assert.Equal(HttpStatusCode.OK, history.StatusCode);
+                var historyBody = await history.Content.ReadFromJsonAsync<JsonElement>();
+                Assert.Contains(historyBody.GetProperty("items").EnumerateArray(), item =>
+                    item.GetProperty("id").GetGuid() == checkOutBody.GetProperty("id").GetGuid() &&
+                    item.GetProperty("employeeId").GetGuid() == identity.EmployeeId &&
+                    item.GetProperty("lifecycle").GetString() == "CLOSED");
             }
 
             await using (var db = new ApplicationDbContext(options))

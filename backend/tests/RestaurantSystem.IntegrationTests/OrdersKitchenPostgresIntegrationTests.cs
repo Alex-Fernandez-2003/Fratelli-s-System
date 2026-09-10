@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Orders;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Orders;
@@ -45,6 +46,42 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
         var duplicate = await Send(client, HttpMethod.Post, "/api/v1/orders", admin, new { items = new[] { new { productId = barProduct, quantity = 1m }, new { productId = barProduct, quantity = 1m } } }); Assert.Equal(HttpStatusCode.BadRequest, duplicate.StatusCode);
         await using var verify = new ApplicationDbContext(options); Assert.Equal(OrderStatus.ENTREGADO, (await verify.Orders.SingleAsync(x => x.Id == orderId)).Status); Assert.Equal(KitchenCommandStatus.LISTA, (await verify.KitchenCommands.SingleAsync(x => x.Id == commandId)).Status);
     }
+    [Fact]
+    public async Task Kitchen_list_defaults_to_the_current_business_day_and_excludes_yesterday()
+    {
+        var cs = new NpgsqlConnectionStringBuilder(postgres.ConnectionString) { Database = "kitchen_current_day_" + Guid.NewGuid().ToString("N") }.ConnectionString;
+        await postgres.MigrateAsync(cs);
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(cs).Options;
+        var businessDate = new DateOnly(2026, 8, 31);
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("America/La_Paz");
+        var start = new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(businessDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified), zone), TimeSpan.Zero);
+        Guid productId;
+        await using (var db = new ApplicationDbContext(options))
+        {
+            var actor = (await db.Users.SingleAsync(x => x.UserName == "admin.test")).Id;
+            productId = AddProduct(db, (await db.Units.FirstAsync()).Id, actor, "Kitchen current day", "KITCHEN", 1m);
+            var oldOrder = new Order { Status = OrderStatus.PENDIENTE, CreatedAt = start.AddMinutes(-1), CreatedByUserId = actor };
+            var oldItem = new OrderItem { Order = oldOrder, ProductId = productId, Quantity = 1m, UnitPrice = 1m, CreatedAt = oldOrder.CreatedAt };
+            oldOrder.Items.Add(oldItem);
+            var oldCommand = new KitchenCommand { Order = oldOrder, Status = KitchenCommandStatus.PENDIENTE, CreatedAt = oldOrder.CreatedAt };
+            oldCommand.Items.Add(new KitchenCommandItem { OrderItem = oldItem, CreatedAt = oldOrder.CreatedAt });
+            var currentOrder = new Order { Status = OrderStatus.PENDIENTE, CreatedAt = start.AddMinutes(1), CreatedByUserId = actor };
+            var currentItem = new OrderItem { Order = currentOrder, ProductId = productId, Quantity = 1m, UnitPrice = 1m, CreatedAt = currentOrder.CreatedAt };
+            currentOrder.Items.Add(currentItem);
+            var currentCommand = new KitchenCommand { Order = currentOrder, Status = KitchenCommandStatus.PENDIENTE, CreatedAt = currentOrder.CreatedAt };
+            currentCommand.Items.Add(new KitchenCommandItem { OrderItem = currentItem, CreatedAt = currentOrder.CreatedAt });
+            db.KitchenCommands.AddRange(oldCommand, currentCommand);
+            await db.SaveChangesAsync();
+        }
+
+        await using var queryDb = new ApplicationDbContext(options);
+        var service = new KitchenCommandService(queryDb, new SilentNotifier(), NullLogger<KitchenCommandService>.Instance, new FixedClock(start.AddHours(8), businessDate));
+        var page = await service.ListAsync(1, 10, null);
+        Assert.Single(page.Items);
+        Assert.Equal(start.AddMinutes(1), page.Items[0].CreatedAt);
+        Assert.Equal(productId, page.Items[0].Items[0].ProductId);
+    }
+
     [Fact]
     public async Task Hu013_order_shortage_matrix_is_read_only_revalidated_and_audited()
     {
@@ -167,5 +204,6 @@ public sealed class OrdersKitchenPostgresIntegrationTests(PostgresFixture postgr
     private static Guid AddProduct(ApplicationDbContext db, Guid unitId, string actor, string name, string area, decimal price) { var product = new Product { Name = name, ProductType = ProductType.SALE_ITEM, InventoryUnitId = unitId, PreparationArea = area, SalePrice = price, IsSellable = true, CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow, CreatedByUserId = actor, UpdatedByUserId = actor }; db.Products.Add(product); return product.Id; }
     private static async Task<string> Token(HttpClient c, string username) => (await (await c.PostAsJsonAsync("/api/v1/auth/login", new { username, password = "Sprint1.Test!123" })).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("accessToken").GetString()!;
     private static Task<HttpResponseMessage> Send(HttpClient c, HttpMethod method, string path, string? token = null, object? body = null) { var request = new HttpRequestMessage(method, path); if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); if (body is not null) request.Content = JsonContent.Create(body); return c.SendAsync(request); }
+    private sealed class FixedClock(DateTimeOffset utcNow, DateOnly businessDate) : IBusinessClock { public DateTimeOffset UtcNow => utcNow; public DateOnly BusinessDate => businessDate; public string TimeZoneId => "America/La_Paz"; }
     private sealed class ThrowingNotifier : IKitchenRealtimeNotifier { public Task CreatedAsync(KitchenRealtimeEvent v, CancellationToken ct = default) => Task.FromException(new InvalidOperationException()); public Task UpdatedAsync(KitchenRealtimeEvent v, CancellationToken ct = default) => Task.FromException(new InvalidOperationException()); public Task CancelledAsync(KitchenRealtimeEvent v, CancellationToken ct = default) => Task.FromException(new InvalidOperationException()); }
 }

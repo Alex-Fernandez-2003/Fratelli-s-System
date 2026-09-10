@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Inventory;
 using RestaurantSystem.Domain.Catalog;
@@ -7,8 +8,10 @@ using RestaurantSystem.Domain.Inventory;
 
 namespace RestaurantSystem.Infrastructure.Inventory;
 
-public sealed class InventoryService(ApplicationDbContext db) : IInventoryService, IInventoryWriter, IInventoryAvailability
+public sealed class InventoryService(ApplicationDbContext db, IBusinessClock? clock = null) : IInventoryService, IInventoryWriter, IInventoryAvailability
 {
+    private const string DefaultBusinessTimeZone = "America/La_Paz";
+
     public async Task<(InventoryMovementDto? Value, string? Error)> RecordManualAsync(RecordManualInventoryMovementRequest request, string actorUserId, CancellationToken ct = default)
     {
         if (request.ProductId == Guid.Empty || request.Quantity <= 0 || string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length > 500)
@@ -26,6 +29,8 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         var product = await db.Products.FromSqlInterpolated($"SELECT * FROM public.\"Products\" WHERE \"Id\" = {command.ProductId} FOR UPDATE").SingleOrDefaultAsync(ct);
         if (product is null) return (null, "NOT_FOUND");
         if (!product.IsActive) return (null, "PRODUCT_INACTIVE");
+        var unit = await db.Units.AsNoTracking().SingleOrDefaultAsync(x => x.Id == product.InventoryUnitId, ct);
+        if (unit is null || !IsValidQuantity(command.QuantityDelta, unit)) return (null, "INVALID_REQUEST");
         await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO public.inventory_balances (product_id, quantity, updated_at) VALUES ({command.ProductId}, {0m}, {DateTimeOffset.UtcNow}) ON CONFLICT (product_id) DO NOTHING", ct);
         var balance = await db.InventoryBalances.FromSqlInterpolated($"SELECT * FROM public.inventory_balances WHERE product_id = {command.ProductId} FOR UPDATE").SingleAsync(ct);
         var now = DateTimeOffset.UtcNow;
@@ -74,10 +79,15 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         public async Task<PagedResponse<InventoryMovementDto>> MovementsAsync(int page, int pageSize, Guid? productId, InventoryMovementType? movementType, DateOnly? from, DateOnly? to, CancellationToken ct = default)
     {
         if (from > to) throw new ArgumentException("Invalid date range");
+        if (from is null && to is null)
+        {
+            var zone = TimeZoneInfo.FindSystemTimeZoneById(clock?.TimeZoneId ?? DefaultBusinessTimeZone);
+            from = to = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).DateTime);
+        }
         var q = db.InventoryMovements.AsNoTracking().AsQueryable();
         if (productId is not null) q = q.Where(x => x.ProductId == productId); if (movementType is not null) q = q.Where(x => x.MovementType == movementType);
-        var start = from is null ? (DateTimeOffset?)null : new DateTimeOffset(from.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var end = to is null ? (DateTimeOffset?)null : new DateTimeOffset(to.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var start = from is null ? (DateTimeOffset?)null : UtcBoundary(from.Value);
+        var end = to is null ? (DateTimeOffset?)null : UtcBoundary(to.Value.AddDays(1));
         if (start is not null) q = q.Where(x => x.CreatedAt >= start); if (end is not null) q = q.Where(x => x.CreatedAt < end);
         var total = await q.CountAsync(ct);
         var ids = await q.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Id).ToArrayAsync(ct);
@@ -107,6 +117,9 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         var ids = commands.Select(x => x.ProductId).Distinct().OrderBy(x => x).ToArray();
         var products = new Dictionary<Guid, Product>();
         foreach (var id in ids) { var p = await db.Products.FromSqlInterpolated($"SELECT * FROM public.\"Products\" WHERE \"Id\" = {id} FOR UPDATE").SingleOrDefaultAsync(ct); if (p is null) return (null, "NOT_FOUND"); if (!p.IsActive) return (null, "PRODUCT_INACTIVE"); products[id] = p; }
+        var unitIds = products.Values.Select(x => x.InventoryUnitId).Distinct().ToArray();
+        var units = await db.Units.AsNoTracking().Where(x => unitIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct);
+        if (units.Count != unitIds.Length || commands.Any(x => !IsValidQuantity(x.QuantityDelta, units[products[x.ProductId].InventoryUnitId]))) return (null, "INVALID_REQUEST");
         foreach (var id in ids) await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO public.inventory_balances (product_id, quantity, updated_at) VALUES ({id}, {0m}, {DateTimeOffset.UtcNow}) ON CONFLICT (product_id) DO NOTHING", ct);
         var balances = new Dictionary<Guid, InventoryBalance>();
         foreach (var id in ids) { balances[id] = await db.InventoryBalances.FromSqlInterpolated($"SELECT * FROM public.inventory_balances WHERE product_id = {id} FOR UPDATE").SingleAsync(ct); await db.Entry(balances[id]).ReloadAsync(ct); }
@@ -117,7 +130,20 @@ public sealed class InventoryService(ApplicationDbContext db) : IInventoryServic
         foreach (var pair in deltas) { balances[pair.Key].Quantity += pair.Value; balances[pair.Key].UpdatedAt = now; }
         foreach (var c in commands) movements.Add(new InventoryMovement { ProductId=c.ProductId, MovementType=c.Type, QuantityDelta=c.QuantityDelta, Reason=c.Reason, ReferenceType=c.ReferenceType, ReferenceId=c.ReferenceId, CreatedAt=now, CreatedByUserId=c.ActorUserId });
         db.InventoryMovements.AddRange(movements); await db.SaveChangesAsync(ct); if (owns) await tx!.CommitAsync(ct);
-        var result = movements.Select(x => new InventoryMovementDto(x.Id,x.ProductId,products[x.ProductId].Name,x.MovementType,x.QuantityDelta,products[x.ProductId].InventoryUnitId,"","","",x.Reason,x.ReferenceType,x.ReferenceId,x.CreatedAt,x.CreatedByUserId,null)).ToArray(); return (new InventoryBatchResult(result, []), null);
+        var result = movements.Select(x =>
+        {
+            var unit = units[products[x.ProductId].InventoryUnitId];
+            return new InventoryMovementDto(x.Id, x.ProductId, products[x.ProductId].Name, x.MovementType, x.QuantityDelta, unit.Id, unit.Code, unit.Name, unit.Symbol, x.Reason, x.ReferenceType, x.ReferenceId, x.CreatedAt, x.CreatedByUserId, null);
+        }).ToArray();
+        return (new InventoryBatchResult(result, []), null);
+    }
+
+    private bool IsValidQuantity(decimal quantity, Unit unit) => unit.Dimension != UnitDimension.COUNT || decimal.Truncate(quantity) == quantity;
+    private DateTimeOffset UtcBoundary(DateOnly date)
+    {
+        var zone = TimeZoneInfo.FindSystemTimeZoneById(clock?.TimeZoneId ?? DefaultBusinessTimeZone);
+        var local = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified);
+        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone), TimeSpan.Zero);
     }
 
     private static InventoryBalanceDto Balance(Product p, InventoryBalance? b, Unit u) { var quantity = b?.Quantity ?? 0m; return new(p.Id, p.Name, p.ProductType, u.Id, u.Code, u.Name, u.Symbol, quantity, p.MinStock, quantity < 0m || (p.MinStock is not null && quantity <= p.MinStock.Value), p.IsActive); }

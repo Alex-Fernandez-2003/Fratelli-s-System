@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RestaurantSystem.Application.Attendance;
 using RestaurantSystem.Application.Catalog;
 using RestaurantSystem.Application.Orders;
-    using RestaurantSystem.Application.Inventory;
+using RestaurantSystem.Application.Inventory;
 using RestaurantSystem.Domain.Catalog;
 using RestaurantSystem.Domain.Identity;
 using RestaurantSystem.Domain.Orders;
@@ -157,10 +158,22 @@ public sealed class OrderService(ApplicationDbContext db, IInventoryAvailability
     }
 }
 
-public sealed class KitchenCommandService(ApplicationDbContext db, IKitchenRealtimeNotifier notifier, ILogger<KitchenCommandService> logger) : IKitchenCommandService
+public sealed class KitchenCommandService(ApplicationDbContext db, IKitchenRealtimeNotifier notifier, ILogger<KitchenCommandService> logger, IBusinessClock? clock = null) : IKitchenCommandService
 {
     public async Task<PagedResponse<KitchenCommandDto>> ListAsync(int page, int pageSize, KitchenCommandStatus? status, CancellationToken ct = default)
-    { var q = db.KitchenCommands.AsNoTracking().AsQueryable(); if (status is not null) q = q.Where(x => x.Status == status); var total = await q.CountAsync(ct); var ids = await q.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Id).ToListAsync(ct); var items = new List<KitchenCommandDto>(); foreach (var id in ids) items.Add((await MapAsync(id, ct))!); return new(items, page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)); }
+        {
+            var zone = clock is null ? TimeZoneInfo.Utc : TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
+            var businessDate = clock?.BusinessDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            var start = UtcBoundary(businessDate, zone);
+            var end = UtcBoundary(businessDate.AddDays(1), zone);
+            var q = db.KitchenCommands.AsNoTracking().Where(x => x.CreatedAt >= start && x.CreatedAt < end);
+            if (status is not null) q = q.Where(x => x.Status == status);
+            var total = await q.CountAsync(ct);
+            var ids = await q.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Id).ToListAsync(ct);
+            var items = new List<KitchenCommandDto>();
+            foreach (var id in ids) items.Add((await MapAsync(id, ct))!);
+            return new(items, page, pageSize, total, total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize));
+        }
     public Task<KitchenCommandDto?> GetAsync(Guid id, CancellationToken ct = default) => MapAsync(id, ct);
     public Task<(KitchenCommandDto? Value, string? Error)> StartAsync(Guid id, OrderActor actor, CancellationToken ct = default) => TransitionAsync(id, actor, false, ct);
     public Task<(KitchenCommandDto? Value, string? Error)> ReadyAsync(Guid id, OrderActor actor, CancellationToken ct = default) => TransitionAsync(id, actor, true, ct);
@@ -184,7 +197,12 @@ public sealed class KitchenCommandService(ApplicationDbContext db, IKitchenRealt
         if (order.Status != sourceOrder || command.Status != sourceCommand) return (null, "KITCHEN_INVALID_TRANSITION");
         var now = DateTimeOffset.UtcNow; order.Status = targetOrder; OrderService.Touch(order, actor.UserId, now); command.Status = targetCommand; command.UpdatedByUserId = actor.UserId; if (ready) command.ReadyAt = now; else command.StartedAt = now; await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); await Publish(() => notifier.UpdatedAsync(new(command.Id, order.Id, command.Status, now), ct)); return (await MapAsync(id, ct), null);
     }
-    private async Task<KitchenCommandDto?> MapAsync(Guid id, CancellationToken ct)
-    { var command = await db.KitchenCommands.AsNoTracking().Include(x => x.Items).SingleOrDefaultAsync(x => x.Id == id, ct); if (command is null) return null; var order = await db.Orders.AsNoTracking().Include(x => x.Items).SingleAsync(x => x.Id == command.OrderId, ct); var itemIds = command.Items.Select(x => x.OrderItemId).ToHashSet(); var orderItems = order.Items.Where(x => itemIds.Contains(x.Id)).ToArray(); var products = await db.Products.AsNoTracking().Where(x => orderItems.Select(i => i.ProductId).Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct); return new(command.Id, command.OrderId, command.Status, order.TableReference, order.Notes, command.CreatedAt, command.StartedAt, command.ReadyAt, command.CancelledAt, orderItems.Select(x => new KitchenCommandItemDto(x.Id, x.ProductId, products[x.ProductId].Name, x.Quantity, x.Notes)).ToArray()); }
-    private async Task Publish(Func<Task> publish) { try { await publish(); } catch (Exception ex) { logger.LogError(ex, "Kitchen realtime notifier failed after commit"); } }
+        private async Task<KitchenCommandDto?> MapAsync(Guid id, CancellationToken ct)
+        { var command = await db.KitchenCommands.AsNoTracking().Include(x => x.Items).SingleOrDefaultAsync(x => x.Id == id, ct); if (command is null) return null; var order = await db.Orders.AsNoTracking().Include(x => x.Items).SingleAsync(x => x.Id == command.OrderId, ct); var itemIds = command.Items.Select(x => x.OrderItemId).ToHashSet(); var orderItems = order.Items.Where(x => itemIds.Contains(x.Id)).ToArray(); var products = await db.Products.AsNoTracking().Where(x => orderItems.Select(i => i.ProductId).Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct); return new(command.Id, command.OrderId, command.Status, order.TableReference, order.Notes, command.CreatedAt, command.StartedAt, command.ReadyAt, command.CancelledAt, orderItems.Select(x => new KitchenCommandItemDto(x.Id, x.ProductId, products[x.ProductId].Name, x.Quantity, x.Notes)).ToArray()); }
+        private static DateTimeOffset UtcBoundary(DateOnly date, TimeZoneInfo zone)
+        {
+            var local = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified);
+            return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone), TimeSpan.Zero);
+        }
+        private async Task Publish(Func<Task> publish) { try { await publish(); } catch (Exception ex) { logger.LogError(ex, "Kitchen realtime notifier failed after commit"); } }
 }

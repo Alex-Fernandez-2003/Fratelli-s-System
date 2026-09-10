@@ -249,4 +249,5 @@ kitchen.MapPost("/{id:guid}/cancel", async (Guid id, CancelOrderRequest r, Claim
 app.MapOperations(); app.MapHub<AttendanceHub>("/hubs/attendance").RequireAuthorization(PolicyNames.AttendanceHubAccess); app.MapHub<KitchenHub>("/hubs/kitchen").RequireAuthorization(PolicyNames.KitchenHubAccess); app.Run();
 static CookieOptions CookieOptions(HttpContext context) => new() { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/api/v1/auth", Secure = !context.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment() };
 static void SetCookie(HttpContext context, string token) => context.Response.Cookies.Append("refreshToken", token, CookieOptions(context));
+
 public partial class Program { }
